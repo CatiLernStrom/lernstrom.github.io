@@ -40,7 +40,6 @@
   .feature-card h3 { font-size: 20px; font-weight: 800; margin-bottom: 12px; }
   .feature-card p { color: var(--gray); font-size: 15px; line-height: 1.6; font-weight: 300; }
 
-  /* PRICING */
   .pricing-section { padding: 100px 24px; background: var(--dark); }
   .pricing-inner { max-width: 1100px; margin: 0 auto; }
   .profession-tabs { display: flex; gap: 12px; margin-bottom: 40px; flex-wrap: wrap; }
@@ -51,8 +50,6 @@
   .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
   .pricing-card { background: var(--card); border: 1px solid #222; border-radius: 20px; padding: 24px; position: relative; transition: transform 0.3s; text-align: center; }
   .pricing-card:hover { transform: translateY(-4px); border-color: rgba(255,214,0,0.3); }
-  .pricing-card.featured { border-color: var(--yellow); background: linear-gradient(135deg, #1a1a00 0%, var(--card) 100%); }
-  .featured-badge { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: var(--yellow); color: var(--black); padding: 5px 16px; border-radius: 100px; font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; }
   .pricing-card h3 { font-size: 16px; font-weight: 800; margin-bottom: 8px; color: var(--white); }
   .price { font-size: 36px; font-weight: 900; letter-spacing: -1px; margin: 12px 0 4px; }
   .price span { font-size: 16px; font-weight: 400; color: var(--gray); }
@@ -164,10 +161,9 @@
       <p class="section-label">Preise</p>
       <h2 class="section-title">Wähle deinen<br>Beruf & Lehrjahr.</h2>
 
-      <!-- Tabs -->
       <div class="profession-tabs">
-        <button class="tab-btn active" onclick="switchTab('elektro')">⚡ Elektroinstallateur</button>
-        <button class="tab-btn" onclick="switchTab('montage')">🔧 Montage-Elektriker</button>
+        <button class="tab-btn active" onclick="switchTab('elektro', this)">⚡ Elektroinstallateur</button>
+        <button class="tab-btn" onclick="switchTab('montage', this)">🔧 Montage-Elektriker</button>
       </div>
 
       <!-- Elektroinstallateur -->
@@ -177,36 +173,36 @@
             <h3>1. Lehrjahr</h3>
             <div class="price">CHF 9<span>.90</span></div>
             <p class="price-note">Einmalig</p>
-            <a href="https://buy.stripe.com/aFaaEZgP098H40W3C60x200" class="btn-buy outline" target="_blank">Kaufen</a>
+            <a href="https://buy.stripe.com/bJedRbcyK1Gf0OK6Oi0x20i" class="btn-buy outline" target="_blank">Kaufen</a>
           </div>
           <div class="pricing-card">
             <h3>2. Lehrjahr</h3>
             <div class="price">CHF 9<span>.90</span></div>
             <p class="price-note">Einmalig</p>
-            <a href="https://buy.stripe.com/6oU4gBcyK3On8hcc8C0x201" class="btn-buy outline" target="_blank">Kaufen</a>
+            <a href="https://buy.stripe.com/00w14paqC3Onbto7Sm0x20h" class="btn-buy outline" target="_blank">Kaufen</a>
           </div>
           <div class="pricing-card">
             <h3>3. Lehrjahr</h3>
             <div class="price">CHF 9<span>.90</span></div>
             <p class="price-note">Einmalig</p>
-            <a href="https://buy.stripe.com/6oU14p1U6et11SO6Oi0x202" class="btn-buy outline" target="_blank">Kaufen</a>
+            <a href="https://buy.stripe.com/3cIfZjdCOacLgNI3C60x20f" class="btn-buy outline" target="_blank">Kaufen</a>
           </div>
           <div class="pricing-card">
             <h3>4. Lehrjahr</h3>
             <div class="price">CHF 9<span>.90</span></div>
             <p class="price-note">Einmalig</p>
-            <a href="https://buy.stripe.com/8x24gBfKW3On6946Oi0x203" class="btn-buy outline" target="_blank">Kaufen</a>
+            <a href="https://buy.stripe.com/bJeaEZdCOacLfJE1tY0x20e" class="btn-buy outline" target="_blank">Kaufen</a>
           </div>
         </div>
         <div class="bundle-card">
           <div class="bundle-info">
             <h3>🎓 Elektroinstallateur Bundle</h3>
-            <p>Alle 4 Lehrjahre — spare über 60% gegenüber Einzelkauf</p>
+            <p>Alle 4 Lehrjahre — spare gegenüber dem Einzelkauf!</p>
           </div>
           <div class="bundle-price">
-            <div class="save">⚡ Spare CHF 14.70</div>
+            <div class="save">⚡ Bestes Angebot</div>
             <div class="price">CHF 24<span>.90</span></div>
-            <a href="https://buy.stripe.com/fZufZj8iu0Cbcxs1tY0x204" class="btn-buy yellow" target="_blank">Bundle kaufen</a>
+            <a href="https://buy.stripe.com/bJe4gB2Yaet11SO2y20x20d" class="btn-buy yellow" target="_blank">Bundle kaufen</a>
           </div>
         </div>
       </div>
@@ -218,30 +214,30 @@
             <h3>1. Lehrjahr</h3>
             <div class="price">CHF 9<span>.90</span></div>
             <p class="price-note">Einmalig</p>
-            <a href="https://buy.stripe.com/7sY6oJ7eq5Wvbtob4y0x205" class="btn-buy outline" target="_blank">Kaufen</a>
+            <a href="https://buy.stripe.com/5kQdRbeGSgB9gNI3C60x20c" class="btn-buy outline" target="_blank">Kaufen</a>
           </div>
           <div class="pricing-card">
             <h3>2. Lehrjahr</h3>
             <div class="price">CHF 9<span>.90</span></div>
             <p class="price-note">Einmalig</p>
-            <a href="https://buy.stripe.com/28E4gBcyK3Onbto2y20x206" class="btn-buy outline" target="_blank">Kaufen</a>
+            <a href="https://buy.stripe.com/dRmaEZ6am2Kj1SO4Ga0x20b" class="btn-buy outline" target="_blank">Kaufen</a>
           </div>
           <div class="pricing-card">
             <h3>3. Lehrjahr</h3>
             <div class="price">CHF 9<span>.90</span></div>
             <p class="price-note">Einmalig</p>
-            <a href="https://buy.stripe.com/3cI00l7eqgB9apkdcG0x207" class="btn-buy outline" target="_blank">Kaufen</a>
+            <a href="https://buy.stripe.com/5kQ00l1U61GfdBwc8C0x20a" class="btn-buy outline" target="_blank">Kaufen</a>
           </div>
         </div>
         <div class="bundle-card">
           <div class="bundle-info">
             <h3>🎓 Montage-Elektriker Bundle</h3>
-            <p>Alle 3 Lehrjahre — spare über 60% gegenüber Einzelkauf</p>
+            <p>Alle 3 Lehrjahre — spare gegenüber dem Einzelkauf!</p>
           </div>
           <div class="bundle-price">
-            <div class="save">⚡ Spare CHF 4.80</div>
+            <div class="save">⚡ Bestes Angebot</div>
             <div class="price">CHF 24<span>.90</span></div>
-            <a href="https://buy.stripe.com/6oUdRb7eq3On2WSgoS0x208" class="btn-buy yellow" target="_blank">Bundle kaufen</a>
+            <a href="https://buy.stripe.com/eVq7sN7eq3On8hca0u0x209" class="btn-buy yellow" target="_blank">Bundle kaufen</a>
           </div>
         </div>
       </div>
@@ -252,7 +248,7 @@
           <h3>🏫 Klassen-Lizenz</h3>
           <p>Für ÜK-Lehrer und Betriebe ab 10 Lernenden — mehrere Berufe, alle Lehrjahre, persönlicher Support.</p>
         </div>
-        <a href="mailto:distefano.cataldo@hotmail.com?subject=Klassenlizenz Anfrage" class="btn-buy outline" style="min-width:160px">Anfragen</a>
+        <a href="mailto:distefano.cataldo@hotmail.com?subject=Klassenlizenz Anfrage" class="btn-buy outline" style="min-width:160px; white-space:nowrap">Anfragen</a>
       </div>
 
     </div>
@@ -356,11 +352,11 @@ function showPage(page) {
   document.getElementById('page-' + page).classList.add('active');
   window.scrollTo(0, 0);
 }
-function switchTab(tab) {
+function switchTab(tab, btn) {
   document.querySelectorAll('.profession-content').forEach(c => c.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-' + tab).classList.add('active');
-  event.target.classList.add('active');
+  btn.classList.add('active');
 }
 </script>
 
