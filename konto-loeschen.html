@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Konto löschen – LernStrom</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #111; color: #eee; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem; }
+  .card { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 16px; max-width: 520px; width: 100%; padding: 2.5rem; }
+  .logo { display: flex; align-items: center; gap: 12px; margin-bottom: 2rem; }
+  .logo svg { width: 36px; height: 36px; }
+  .logo span { font-size: 22px; font-weight: 700; color: #F5C800; }
+  h1 { font-size: 20px; font-weight: 600; margin-bottom: 0.75rem; color: #fff; }
+  p { font-size: 15px; color: #aaa; line-height: 1.7; margin-bottom: 1rem; }
+  .info-box { background: #222; border-left: 3px solid #F5C800; border-radius: 4px; padding: 1rem 1.25rem; margin: 1.5rem 0; }
+  .info-box p { margin: 0; font-size: 14px; color: #ccc; }
+  label { display: block; font-size: 14px; color: #aaa; margin-bottom: 6px; margin-top: 1rem; }
+  input { width: 100%; background: #222; border: 1px solid #333; border-radius: 8px; padding: 10px 14px; font-size: 15px; color: #eee; outline: none; }
+  input:focus { border-color: #F5C800; }
+  textarea { width: 100%; background: #222; border: 1px solid #333; border-radius: 8px; padding: 10px 14px; font-size: 15px; color: #eee; outline: none; resize: vertical; min-height: 100px; margin-top: 0; }
+  textarea:focus { border-color: #F5C800; }
+  button { width: 100%; margin-top: 1.5rem; background: #F5C800; color: #111; border: none; border-radius: 8px; padding: 12px; font-size: 16px; font-weight: 600; cursor: pointer; border-radius: 8px; }
+  button:hover { background: #e0b800; }
+  .success { display: none; text-align: center; padding: 1rem; }
+  .success p { color: #4caf50; font-size: 16px; }
+  .footer { margin-top: 2rem; font-size: 13px; color: #666; text-align: center; }
+  .footer a { color: #888; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">
+    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="40" height="40" rx="8" fill="#111"/>
+      <polygon points="23,4 12,20 18,20 16,34 28,17 21,17 24,4" fill="#F5C800"/>
+      <polygon points="24,4.5 20,12 22.5,12 21.5,17 25.5,11 22.5,11 24.5,4.5" fill="#FFF5A0" opacity="0.9"/>
+    </svg>
+    <span>LernStrom</span>
+  </div>
+
+  <h1>Konto löschen</h1>
+  <p>Du kannst hier die Löschung deines LernStrom-Kontos und aller zugehörigen Daten beantragen.</p>
+
+  <div class="info-box">
+    <p>Nach der Löschung werden dein Profil, dein Lernfortschritt, deine XP und alle gespeicherten Daten dauerhaft entfernt. Käufe können nicht rückerstattet werden.</p>
+  </div>
+
+  <div id="form-area">
+    <label>E-Mail-Adresse deines Kontos</label>
+    <input type="email" id="email" placeholder="deine@email.com" />
+
+    <label>Grund (optional)</label>
+    <textarea id="reason" placeholder="Warum möchtest du dein Konto löschen?"></textarea>
+
+    <button onclick="submitRequest()">Löschung beantragen</button>
+  </div>
+
+  <div class="success" id="success-area">
+    <p>✓ Deine Anfrage wurde gesendet. Wir löschen dein Konto innerhalb von 30 Tagen und bestätigen dies per E-Mail.</p>
+  </div>
+
+  <div class="footer">
+    <a href="https://catilernstrom.github.io/lernstrom.github.io">Zurück zur Website</a>
+  </div>
+</div>
+
+<script>
+function submitRequest() {
+  const email = document.getElementById('email').value;
+  if (!email || !email.includes('@')) {
+    alert('Bitte gib eine gültige E-Mail-Adresse ein.');
+    return;
+  }
+  document.getElementById('form-area').style.display = 'none';
+  document.getElementById('success-area').style.display = 'block';
+}
+</script>
+</body>
+</html>
