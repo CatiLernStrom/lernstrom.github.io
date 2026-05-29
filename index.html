@@ -67,6 +67,15 @@
   .bundle-price .price { font-size: 48px; }
   .bundle-price .save { color: var(--yellow); font-size: 13px; font-weight: 700; margin-bottom: 12px; }
 
+  .qv-card { background: linear-gradient(135deg, #1a1a00 0%, var(--card) 100%); border: 2px solid var(--yellow); border-radius: 20px; padding: 32px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; margin-bottom: 24px; }
+  .qv-info h3 { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .qv-info p { color: var(--gray); font-size: 14px; line-height: 1.6; max-width: 520px; }
+  .qv-faecher { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .qv-fach { background: rgba(255,214,0,0.08); border: 1px solid rgba(255,214,0,0.2); color: var(--yellow); padding: 4px 12px; border-radius: 100px; font-size: 12px; font-weight: 600; }
+  .qv-price { text-align: right; flex-shrink: 0; }
+  .qv-price .price { font-size: 48px; }
+  .qv-price .price-note { color: var(--gray); font-size: 12px; margin-bottom: 16px; }
+
   .klassencard { background: var(--card); border: 1px solid #222; border-radius: 20px; padding: 32px; margin-top: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; }
   .klassencard h3 { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
   .klassencard p { color: var(--gray); font-size: 14px; max-width: 500px; }
@@ -109,6 +118,8 @@
     .pricing-section { padding: 60px 20px; }
     .bundle-card { flex-direction: column; }
     .bundle-price { text-align: left; }
+    .qv-card { flex-direction: column; }
+    .qv-price { text-align: left; }
   }
 </style>
 </head>
@@ -164,8 +175,10 @@
       <div class="profession-tabs">
         <button class="tab-btn active" onclick="switchTab('elektro', this)">⚡ Elektroinstallateur</button>
         <button class="tab-btn" onclick="switchTab('montage', this)">🔧 Montage-Elektriker</button>
+        <button class="tab-btn" onclick="switchTab('planer', this)">📐 Elektroplaner</button>
       </div>
 
+      <!-- Elektroinstallateur -->
       <div id="tab-elektro" class="profession-content active">
         <div class="pricing-grid">
           <div class="pricing-card"><h3>1. Lehrjahr</h3><div class="price">CHF 16<span>.-</span></div><p class="price-note">Einmalig</p><a href="https://buy.stripe.com/bJedRbcyK1Gf0OK6Oi0x20i" class="btn-buy outline" target="_blank">Kaufen</a></div>
@@ -173,12 +186,31 @@
           <div class="pricing-card"><h3>3. Lehrjahr</h3><div class="price">CHF 21<span>.-</span></div><p class="price-note">Einmalig</p><a href="https://buy.stripe.com/3cIfZjdCOacLgNI3C60x20f" class="btn-buy outline" target="_blank">Kaufen</a></div>
           <div class="pricing-card"><h3>4. Lehrjahr</h3><div class="price">CHF 26<span>.-</span></div><p class="price-note">Einmalig</p><a href="https://buy.stripe.com/bJeaEZdCOacLfJE1tY0x20e" class="btn-buy outline" target="_blank">Kaufen</a></div>
         </div>
-        <div class="bundle-card">
+        <div class="bundle-card" style="margin-bottom:24px">
           <div class="bundle-info"><h3>🎓 Elektroinstallateur Bundle</h3><p>Alle 4 Lehrjahre — spare CHF 9.- gegenüber dem Einzelkauf!</p></div>
           <div class="bundle-price"><div class="save">⚡ Spare CHF 9.-</div><div class="price">CHF 75<span>.-</span></div><a href="https://buy.stripe.com/bJe4gB2Yaet11SO2y20x20d" class="btn-buy yellow" target="_blank">Bundle kaufen</a></div>
         </div>
+        <div class="qv-card">
+          <div class="qv-info">
+            <h3>QV Elektroinstallateur</h3>
+            <p>Bereite dich gezielt auf das Qualifikationsverfahren vor. Alle 5 Prüfungsfächer abgedeckt — praxisnahe Fragen direkt aus den Prüfungsunterlagen.</p>
+            <div class="qv-faecher">
+              <span class="qv-fach">Bearbeitungstechnik</span>
+              <span class="qv-fach">Elektrische Systemtechnik</span>
+              <span class="qv-fach">Kommunikationstechnik</span>
+              <span class="qv-fach">Regeln der Technik</span>
+              <span class="qv-fach">Technologische Grundlagen</span>
+            </div>
+          </div>
+          <div class="qv-price">
+            <div class="price">CHF 165<span>.-</span></div>
+            <div class="price-note">Einmalig</div>
+            <a href="https://buy.stripe.com/14AfZjfKW4Sr1SO0pU0x20j" class="btn-buy yellow" target="_blank">QV kaufen</a>
+          </div>
+        </div>
       </div>
 
+      <!-- Montage-Elektriker -->
       <div id="tab-montage" class="profession-content">
         <div class="pricing-grid">
           <div class="pricing-card"><h3>1. Lehrjahr</h3><div class="price">CHF 16<span>.-</span></div><p class="price-note">Einmalig</p><a href="https://buy.stripe.com/5kQdRbeGSgB9gNI3C60x20c" class="btn-buy outline" target="_blank">Kaufen</a></div>
@@ -188,6 +220,29 @@
         <div class="bundle-card">
           <div class="bundle-info"><h3>🎓 Montage-Elektriker Bundle</h3><p>Alle 3 Lehrjahre — spare CHF 9.- gegenüber dem Einzelkauf!</p></div>
           <div class="bundle-price"><div class="save">⚡ Spare CHF 9.-</div><div class="price">CHF 49<span>.-</span></div><a href="https://buy.stripe.com/eVq7sN7eq3On8hca0u0x209" class="btn-buy yellow" target="_blank">Bundle kaufen</a></div>
+        </div>
+      </div>
+
+      <!-- Elektroplaner -->
+      <div id="tab-planer" class="profession-content">
+        <div class="qv-card">
+          <div class="qv-info">
+            <h3>QV Elektroplaner</h3>
+            <p>Bereite dich gezielt auf das Qualifikationsverfahren als Elektroplaner vor. Alle 6 Prüfungsfächer abgedeckt — praxisnahe Fragen direkt aus den Prüfungsunterlagen.</p>
+            <div class="qv-faecher">
+              <span class="qv-fach">Bearbeitungstechnik</span>
+              <span class="qv-fach">Elektrische Systemtechnik</span>
+              <span class="qv-fach">Kommunikationstechnik</span>
+              <span class="qv-fach">Regeln der Technik</span>
+              <span class="qv-fach">Technologische Grundlagen</span>
+              <span class="qv-fach">NIV / SIA</span>
+            </div>
+          </div>
+          <div class="qv-price">
+            <div class="price">CHF 165<span>.-</span></div>
+            <div class="price-note">Einmalig</div>
+            <a href="https://buy.stripe.com/9B628t56i0Cb1SOgoS0x20k" class="btn-buy yellow" target="_blank">QV kaufen</a>
+          </div>
         </div>
       </div>
 
