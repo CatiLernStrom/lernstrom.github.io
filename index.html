@@ -76,10 +76,6 @@
   .qv-price .price { font-size: 48px; }
   .qv-price .price-note { color: var(--gray); font-size: 12px; margin-bottom: 16px; }
 
-  .klassencard { background: var(--card); border: 1px solid #222; border-radius: 20px; padding: 32px; margin-top: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; }
-  .klassencard h3 { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
-  .klassencard p { color: var(--gray); font-size: 14px; max-width: 500px; }
-
   .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 32px; margin-top: 60px; }
   .step { text-align: center; }
   .step-num { font-family: 'Space Mono', monospace; font-size: 48px; font-weight: 700; color: var(--yellow); opacity: 0.3; line-height: 1; margin-bottom: 16px; }
@@ -130,7 +126,6 @@
   <a href="#preise" class="nav-cta" onclick="showPage('home')">Jetzt starten</a>
 </nav>
 
-<!-- HOME -->
 <div id="page-home" class="page active">
 
   <section class="hero">
@@ -154,6 +149,11 @@
       <div class="feature-card"><div class="feature-icon">📊</div><h3>Lernfortschritt</h3><p>Sieh genau welche Fragen du falsch hattest und wiederhole gezielt nur diese.</p></div>
       <div class="feature-card"><div class="feature-icon">🏆</div><h3>Achievements</h3><p>8 verschiedene Badges zum Freischalten — vom ersten Quiz bis zum 10-Tage-Streak.</p></div>
       <div class="feature-card"><div class="feature-icon">🔒</div><h3>Fingerabdruck-Login</h3><p>Schnell und sicher mit biometrischer Authentifizierung — kein Passwort tippen.</p></div>
+      <div class="feature-card"><div class="feature-icon">⚔️</div><h3>Duell-Modus</h3><p>Fordere Freunde oder Mitlernende heraus — teile einen 6-stelligen Code und spielt dasselbe Quiz gegeneinander in Echtzeit.</p></div>
+      <div class="feature-card"><div class="feature-icon">📝</div><h3>Prüfungsmodus</h3><p>Simuliere die echte Prüfungssituation — 30 Fragen, maximal 3 Fehler erlaubt, kein Timer. Bestehst du?</p></div>
+      <div class="feature-card"><div class="feature-icon">🏅</div><h3>Rangliste</h3><p>Miss dich mit anderen Lernenden — globale XP-Rangliste, dein eigener Rang ist immer sichtbar auch wenn du nicht in den Top 10 bist.</p></div>
+      <div class="feature-card"><div class="feature-icon">📈</div><h3>Quiz-Historie</h3><p>Behalte den Überblick — sieh alle vergangenen Quizzes mit Ergebnis, XP und Datum auf einen Blick.</p></div>
+      <div class="feature-card"><div class="feature-icon">🔁</div><h3>Falsche Fragen wiederholen</h3><p>Nach jedem Quiz kannst du gezielt nur die falsch beantworteten Fragen nochmals üben — effizient und zeitsparend.</p></div>
     </div>
   </section>
 
@@ -245,7 +245,8 @@
           </div>
         </div>
       </div>
-      </div>
+
+    </div>
   </section>
 
   <section class="cta-section">
