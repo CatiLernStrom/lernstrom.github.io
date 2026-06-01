@@ -17,7 +17,6 @@
   .nav-cta { background: var(--yellow); color: var(--black); padding: 10px 24px; border-radius: 100px; font-weight: 800; font-size: 14px; text-decoration: none; transition: transform 0.2s, box-shadow 0.2s; }
   .nav-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,214,0,0.3); }
 
-  /* Menü-Button (drei Punkte) */
   .menu-btn { background: none; border: none; cursor: pointer; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
   .menu-btn:hover { background: rgba(255,255,255,0.08); }
   .menu-btn span { display: block; width: 5px; height: 5px; border-radius: 50%; background: var(--white); position: relative; }
@@ -25,7 +24,6 @@
   .menu-btn span::before { top: -9px; }
   .menu-btn span::after { top: 9px; }
 
-  /* Dropdown */
   .dropdown { position: absolute; top: 70px; right: 40px; background: var(--card); border: 1px solid #2a2a2a; border-radius: 16px; padding: 8px; min-width: 240px; opacity: 0; visibility: hidden; transform: translateY(-10px); transition: all 0.2s; box-shadow: 0 16px 48px rgba(0,0,0,0.6); }
   .dropdown.open { opacity: 1; visibility: visible; transform: translateY(0); }
   .dropdown-label { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--gray); letter-spacing: 2px; text-transform: uppercase; padding: 12px 14px 6px; }
@@ -52,7 +50,6 @@
   .section-label { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--yellow); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 16px; }
   .section-title { font-size: clamp(32px, 5vw, 56px); font-weight: 900; letter-spacing: -1px; margin-bottom: 60px; line-height: 1.1; }
 
-  /* Persönlicher Abschnitt */
   .about-section { padding: 100px 24px; max-width: 800px; margin: 0 auto; text-align: center; }
   .about-section .quote { font-size: clamp(22px, 3vw, 32px); font-weight: 800; line-height: 1.4; letter-spacing: -0.5px; margin-bottom: 24px; }
   .about-section .quote span { color: var(--yellow); }
@@ -157,19 +154,18 @@
   </div>
 </nav>
 
-<!-- Dropdown Menü -->
 <div class="dropdown" id="dropdown">
   <div class="dropdown-label">Beruf wählen</div>
   <a onclick="goToProfession('elektro')">⚡ Elektroinstallateur</a>
   <a onclick="goToProfession('montage')">🔧 Montage-Elektriker</a>
   <a onclick="goToProfession('planer')">📐 Elektroplaner</a>
+  <a onclick="goToProfession('sanitaer')">🚿 Sanitär</a>
   <div class="dropdown-divider"></div>
   <a onclick="scrollToSection('features')">✨ Features</a>
   <a onclick="scrollToSection('how')">📲 So funktioniert's</a>
   <a onclick="scrollToSection('preise')">💛 Preise</a>
 </div>
 
-<!-- HOME -->
 <div id="page-home" class="page active">
 
   <section class="hero">
@@ -184,7 +180,6 @@
     </div>
   </section>
 
-  <!-- Persönlicher Abschnitt -->
   <section class="about-section">
     <p class="section-label">Warum LernStrom</p>
     <div class="quote">Ich war selbst Lernender — und wollte ein Tool, das ich mir <span>damals gewünscht hätte.</span></div>
@@ -229,6 +224,7 @@
         <button class="tab-btn active" id="tabbtn-elektro" onclick="switchTab('elektro', this)">⚡ Elektroinstallateur</button>
         <button class="tab-btn" id="tabbtn-montage" onclick="switchTab('montage', this)">🔧 Montage-Elektriker</button>
         <button class="tab-btn" id="tabbtn-planer" onclick="switchTab('planer', this)">📐 Elektroplaner</button>
+        <button class="tab-btn" id="tabbtn-sanitaer" onclick="switchTab('sanitaer', this)">🚿 Sanitär</button>
       </div>
 
       <!-- Elektroinstallateur -->
@@ -299,6 +295,26 @@
         </div>
       </div>
 
+      <!-- Sanitär -->
+      <div id="tab-sanitaer" class="profession-content">
+        <div class="qv-card">
+          <div class="qv-info">
+            <h3>QV Sanitär</h3>
+            <p>Bereite dich gezielt auf das Qualifikationsverfahren Sanitär vor. Alle Prüfungsfächer abgedeckt — praxisnahe Fragen direkt aus den Prüfungsunterlagen.</p>
+            <div class="qv-faecher">
+              <span class="qv-fach">Arbeitssicherheit &amp; Werkstoffkunde</span>
+              <span class="qv-fach">Berufskunde 1 &amp; 2</span>
+              <span class="qv-fach">Berufskunde 3 &amp; 4</span>
+            </div>
+          </div>
+          <div class="qv-price">
+            <div class="price">CHF 80<span>.-</span></div>
+            <div class="price-note">Einmalig</div>
+            <a href="https://buy.stripe.com/28EcN7eGS0CbdBw1tY0x20o" class="btn-buy yellow" target="_blank">QV kaufen</a>
+          </div>
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -310,7 +326,6 @@
 
 </div>
 
-<!-- IMPRESSUM -->
 <div id="page-impressum" class="page">
   <div class="legal-section">
     <h1>Impressum</h1>
@@ -322,7 +337,6 @@
   </div>
 </div>
 
-<!-- AGB -->
 <div id="page-agb" class="page">
   <div class="legal-section">
     <h1>Allgemeine Geschäftsbedingungen (AGB)</h1>
@@ -389,7 +403,6 @@
   </div>
 </div>
 
-<!-- DATENSCHUTZ -->
 <div id="page-datenschutz" class="page">
   <div class="legal-section">
     <h1>Datenschutzerklärung</h1>
@@ -448,7 +461,6 @@ function goToProfession(tab) {
     document.getElementById('preise').scrollIntoView({ behavior: 'smooth' });
   }, 50);
 }
-// Menü schliessen bei Klick ausserhalb
 document.addEventListener('click', function(e) {
   var dd = document.getElementById('dropdown');
   var btn = document.querySelector('.menu-btn');
