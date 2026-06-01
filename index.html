@@ -455,11 +455,12 @@ function scrollToSection(id) {
 }
 function goToProfession(tab) {
   showPage('home');
-  switchTab(tab, null);
   document.getElementById('dropdown').classList.remove('open');
+  switchTab(tab, null);
   setTimeout(function() {
-    document.getElementById('preise').scrollIntoView({ behavior: 'smooth' });
-  }, 50);
+    var el = document.getElementById('preise');
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  }, 150);
 }
 document.addEventListener('click', function(e) {
   var dd = document.getElementById('dropdown');
