@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LernStrom – ÜK Lernplattform für Elektro-Lehrlinge</title>
+<title>LernStrom – ÜK Lernplattform für Lehrlinge</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Barlow:wght@300;400;600;800;900&display=swap" rel="stylesheet">
 <style>
   :root { --yellow: #FFD600; --black: #0A0A0A; --dark: #111111; --card: #1A1A1A; --gray: #888888; --white: #F5F5F5; }
@@ -13,15 +13,34 @@
 
   nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; background: rgba(10,10,10,0.9); backdrop-filter: blur(12px); border-bottom: 1px solid #1f1f1f; }
   .nav-logo { font-family: 'Space Mono', monospace; font-size: 22px; font-weight: 700; color: var(--yellow); text-decoration: none; }
+  .nav-right { display: flex; align-items: center; gap: 16px; }
   .nav-cta { background: var(--yellow); color: var(--black); padding: 10px 24px; border-radius: 100px; font-weight: 800; font-size: 14px; text-decoration: none; transition: transform 0.2s, box-shadow 0.2s; }
   .nav-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,214,0,0.3); }
+
+  /* Menü-Button (drei Punkte) */
+  .menu-btn { background: none; border: none; cursor: pointer; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+  .menu-btn:hover { background: rgba(255,255,255,0.08); }
+  .menu-btn span { display: block; width: 5px; height: 5px; border-radius: 50%; background: var(--white); position: relative; }
+  .menu-btn span::before, .menu-btn span::after { content: ''; position: absolute; width: 5px; height: 5px; border-radius: 50%; background: var(--white); left: 0; }
+  .menu-btn span::before { top: -9px; }
+  .menu-btn span::after { top: 9px; }
+
+  /* Dropdown */
+  .dropdown { position: absolute; top: 70px; right: 40px; background: var(--card); border: 1px solid #2a2a2a; border-radius: 16px; padding: 8px; min-width: 240px; opacity: 0; visibility: hidden; transform: translateY(-10px); transition: all 0.2s; box-shadow: 0 16px 48px rgba(0,0,0,0.6); }
+  .dropdown.open { opacity: 1; visibility: visible; transform: translateY(0); }
+  .dropdown-label { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--gray); letter-spacing: 2px; text-transform: uppercase; padding: 12px 14px 6px; }
+  .dropdown a { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 10px; color: var(--white); text-decoration: none; font-size: 15px; font-weight: 600; transition: background 0.15s; cursor: pointer; }
+  .dropdown a:hover { background: rgba(255,214,0,0.1); color: var(--yellow); }
+  .dropdown-divider { height: 1px; background: #2a2a2a; margin: 8px 0; }
 
   .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 120px 24px 80px; position: relative; overflow: hidden; }
   .hero::before { content: ''; position: absolute; top: -200px; left: 50%; transform: translateX(-50%); width: 600px; height: 600px; background: radial-gradient(circle, rgba(255,214,0,0.12) 0%, transparent 70%); }
   .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,214,0,0.1); border: 1px solid rgba(255,214,0,0.3); color: var(--yellow); padding: 8px 18px; border-radius: 100px; font-size: 13px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 32px; animation: fadeUp 0.6s ease both; }
   .hero h1 { font-size: clamp(48px, 8vw, 96px); font-weight: 900; line-height: 1; letter-spacing: -2px; margin-bottom: 24px; animation: fadeUp 0.6s ease 0.1s both; }
   .hero h1 span { color: var(--yellow); }
-  .hero p { font-size: clamp(16px, 2vw, 20px); color: var(--gray); max-width: 560px; line-height: 1.6; margin-bottom: 48px; font-weight: 300; animation: fadeUp 0.6s ease 0.2s both; }
+  .hero p { font-size: clamp(16px, 2vw, 20px); color: var(--gray); max-width: 560px; line-height: 1.6; margin-bottom: 24px; font-weight: 300; animation: fadeUp 0.6s ease 0.2s both; }
+  .hero-motivation { font-size: clamp(15px, 1.8vw, 18px); color: #BBBBBB; max-width: 600px; line-height: 1.7; margin-bottom: 48px; font-weight: 300; animation: fadeUp 0.6s ease 0.25s both; }
+  .hero-motivation strong { color: var(--white); font-weight: 600; }
   .hero-buttons { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; animation: fadeUp 0.6s ease 0.3s both; }
   .btn-primary { background: var(--yellow); color: var(--black); padding: 16px 36px; border-radius: 100px; font-weight: 800; font-size: 16px; text-decoration: none; transition: transform 0.2s, box-shadow 0.2s; }
   .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(255,214,0,0.35); }
@@ -32,6 +51,13 @@
   .section { padding: 100px 24px; max-width: 1100px; margin: 0 auto; }
   .section-label { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--yellow); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 16px; }
   .section-title { font-size: clamp(32px, 5vw, 56px); font-weight: 900; letter-spacing: -1px; margin-bottom: 60px; line-height: 1.1; }
+
+  /* Persönlicher Abschnitt */
+  .about-section { padding: 100px 24px; max-width: 800px; margin: 0 auto; text-align: center; }
+  .about-section .quote { font-size: clamp(22px, 3vw, 32px); font-weight: 800; line-height: 1.4; letter-spacing: -0.5px; margin-bottom: 24px; }
+  .about-section .quote span { color: var(--yellow); }
+  .about-section p { color: var(--gray); font-size: 16px; line-height: 1.8; font-weight: 300; }
+  .about-signature { margin-top: 32px; font-family: 'Space Mono', monospace; color: var(--yellow); font-size: 14px; }
 
   .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
   .feature-card { background: var(--card); border: 1px solid #222; border-radius: 20px; padding: 32px; transition: border-color 0.3s, transform 0.3s; }
@@ -108,10 +134,12 @@
 
   @media (max-width: 600px) {
     nav { padding: 16px 20px; }
+    .dropdown { right: 20px; left: 20px; min-width: 0; }
     .hero { padding: 100px 20px 60px; }
     .hero-bolt { font-size: 80px; }
     .section { padding: 60px 20px; }
     .pricing-section { padding: 60px 20px; }
+    .about-section { padding: 60px 20px; }
     .bundle-card { flex-direction: column; }
     .bundle-price { text-align: left; }
     .qv-card { flex-direction: column; }
@@ -122,21 +150,46 @@
 <body>
 
 <nav>
-  <a href="#" class="nav-logo" onclick="showPage('home')">⚡ LernStrom</a>
-  <a href="#preise" class="nav-cta" onclick="showPage('home')">Jetzt starten</a>
+  <a href="#" class="nav-logo" onclick="showPage('home'); return false;">⚡ LernStrom</a>
+  <div class="nav-right">
+    <a href="#preise" class="nav-cta" onclick="showPage('home')">Jetzt starten</a>
+    <button class="menu-btn" onclick="toggleMenu(event)" aria-label="Menü"><span></span></button>
+  </div>
 </nav>
 
+<!-- Dropdown Menü -->
+<div class="dropdown" id="dropdown">
+  <div class="dropdown-label">Beruf wählen</div>
+  <a onclick="goToProfession('elektro')">⚡ Elektroinstallateur</a>
+  <a onclick="goToProfession('montage')">🔧 Montage-Elektriker</a>
+  <a onclick="goToProfession('planer')">📐 Elektroplaner</a>
+  <div class="dropdown-divider"></div>
+  <a onclick="scrollToSection('features')">✨ Features</a>
+  <a onclick="scrollToSection('how')">📲 So funktioniert's</a>
+  <a onclick="scrollToSection('preise')">💛 Preise</a>
+</div>
+
+<!-- HOME -->
 <div id="page-home" class="page active">
 
   <section class="hero">
     <div class="hero-bolt">⚡</div>
     <div class="hero-badge">🇨🇭 Schweizer ÜK Lernplattform</div>
     <h1>Lern smarter.<br><span>Nicht mehr.</span></h1>
-    <p>LernStrom ist die App für Elektro-Lehrlinge in der Schweiz — interaktive ÜK-Quizzes, Lernfortschritt und Gamification für jedes Lehrjahr.</p>
+    <p>LernStrom ist die App für Lehrlinge in der Schweiz — interaktive ÜK-Quizzes, Lernfortschritt und Gamification für jedes Lehrjahr.</p>
+    <p class="hero-motivation">Schluss mit stundenlangem Pauken aus dicken Ordnern. Hier lernst du <strong>in deinem Tempo</strong>, sammelst XP, forderst Kollegen zum Duell heraus und siehst genau, wo du stehst. <strong>Jede Frage bringt dich näher an dein Ziel</strong> — Schritt für Schritt, ohne Druck.</p>
     <div class="hero-buttons">
       <a href="#preise" class="btn-primary">Zugang kaufen</a>
       <a href="#features" class="btn-secondary">Mehr erfahren</a>
     </div>
+  </section>
+
+  <!-- Persönlicher Abschnitt -->
+  <section class="about-section">
+    <p class="section-label">Warum LernStrom</p>
+    <div class="quote">Ich war selbst Lernender — und wollte ein Tool, das ich mir <span>damals gewünscht hätte.</span></div>
+    <p>LernStrom ist aus der Praxis entstanden: keine trockene Theorie, sondern Fragen so wie sie im ÜK und im QV wirklich drankommen. Lernen soll sich nicht wie eine Strafe anfühlen, sondern wie ein Spiel das du gewinnen kannst. Genau dafür wurde diese App gebaut — von jemandem der den Weg selbst gegangen ist.</p>
+    <div class="about-signature">— Cataldo, Gründer von LernStrom</div>
   </section>
 
   <section class="section" id="features">
@@ -173,9 +226,9 @@
       <h2 class="section-title">Wähle deinen<br>Beruf & Lehrjahr.</h2>
 
       <div class="profession-tabs">
-        <button class="tab-btn active" onclick="switchTab('elektro', this)">⚡ Elektroinstallateur</button>
-        <button class="tab-btn" onclick="switchTab('montage', this)">🔧 Montage-Elektriker</button>
-        <button class="tab-btn" onclick="switchTab('planer', this)">📐 Elektroplaner</button>
+        <button class="tab-btn active" id="tabbtn-elektro" onclick="switchTab('elektro', this)">⚡ Elektroinstallateur</button>
+        <button class="tab-btn" id="tabbtn-montage" onclick="switchTab('montage', this)">🔧 Montage-Elektriker</button>
+        <button class="tab-btn" id="tabbtn-planer" onclick="switchTab('planer', this)">📐 Elektroplaner</button>
       </div>
 
       <!-- Elektroinstallateur -->
@@ -251,7 +304,7 @@
 
   <section class="cta-section">
     <h2>Bereit für die<br><span>nächste Prüfung?</span></h2>
-    <p>Starte jetzt und lern mit der App die für Elektro-Lehrlinge in der Schweiz gemacht wurde.</p>
+    <p>Starte jetzt und lern mit der App die für Lehrlinge in der Schweiz gemacht wurde.</p>
     <a href="#preise" class="btn-primary">Zugang kaufen ⚡</a>
   </section>
 
@@ -269,6 +322,73 @@
   </div>
 </div>
 
+<!-- AGB -->
+<div id="page-agb" class="page">
+  <div class="legal-section">
+    <h1>Allgemeine Geschäftsbedingungen (AGB)</h1>
+    <p class="subtitle">Stand: Juni 2026</p>
+
+    <div class="legal-block">
+      <h2>1. Geltungsbereich</h2>
+      <p>Diese AGB gelten für die Nutzung der LernStrom-App und der Website lernstrom.ch sowie für alle darüber abgeschlossenen Käufe. Mit dem Kauf eines Zugangs oder der Nutzung der App akzeptierst du diese Bedingungen.</p>
+    </div>
+
+    <div class="legal-block">
+      <h2>2. Leistung</h2>
+      <p>LernStrom stellt digitale Lerninhalte (Quizfragen, Übungen) zur Vorbereitung auf überbetriebliche Kurse (ÜK) und das Qualifikationsverfahren (QV) bereit. Es handelt sich um ein freiwilliges Lern- und Übungsangebot ohne offiziellen oder behördlichen Charakter.</p>
+    </div>
+
+    <div class="legal-block">
+      <h2>3. Keine Gewähr auf Richtigkeit und Vollständigkeit</h2>
+      <p>Die Lerninhalte werden teilweise mithilfe von künstlicher Intelligenz (KI) erstellt und manuell aufbereitet. Trotz sorgfältiger Kontrolle kann nicht garantiert werden, dass alle Fragen, Antworten und Erklärungen jederzeit korrekt, vollständig oder aktuell sind. Die Inhalte ersetzen weder den offiziellen Unterricht noch die offiziellen Lehrmittel. Es besteht kein Anspruch auf Vollständigkeit der abgedeckten Themen oder Fächer.</p>
+    </div>
+
+    <div class="legal-block">
+      <h2>4. Verfügbarkeit der Inhalte</h2>
+      <p>Nicht alle Inhalte sind zwingend zu jedem Zeitpunkt verfügbar. Der Betreiber behält sich ausdrücklich vor, Fragen, Fächer oder ganze Bereiche jederzeit zu ändern, zu ergänzen, zu reduzieren oder offline zu nehmen — auch nach einem Kauf — ohne dass daraus ein Anspruch auf Rückerstattung, Schadenersatz oder Wiederherstellung entsteht. Ein Anspruch auf eine bestimmte Anzahl Fragen oder einen bestimmten Inhaltsumfang besteht nicht.</p>
+    </div>
+
+    <div class="legal-block">
+      <h2>5. Kein garantierter Prüfungserfolg</h2>
+      <p>LernStrom ist ein Hilfsmittel zur Vorbereitung. Es wird kein Bestehen des Qualifikationsverfahrens, einer Prüfung oder ein bestimmter Lernerfolg garantiert oder zugesichert. Die Verantwortung für die Prüfungsvorbereitung liegt allein bei der lernenden Person.</p>
+    </div>
+
+    <div class="legal-block">
+      <h2>6. Preise und Zahlung</h2>
+      <p>Alle Preise verstehen sich in Schweizer Franken (CHF). Der Kauf erfolgt einmalig über den Zahlungsdienstleister Stripe. Nach erfolgreicher Zahlung wird der gekaufte Zugang freigeschaltet.</p>
+    </div>
+
+    <div class="legal-block">
+      <h2>7. Kein Widerrufsrecht bei digitalen Inhalten</h2>
+      <p>Da es sich um sofort nutzbare digitale Inhalte handelt, ist ein Widerruf oder eine Rückerstattung nach erfolgter Freischaltung grundsätzlich ausgeschlossen. Mit dem Kauf erklärst du dich damit einverstanden, dass die Leistung sofort erbracht wird.</p>
+    </div>
+
+    <div class="legal-block">
+      <h2>8. Nutzungsrecht</h2>
+      <p>Der erworbene Zugang ist persönlich und nicht übertragbar. Das Teilen von Zugangsdaten, das Weiterverkaufen oder die Vervielfältigung der Inhalte ist nicht gestattet. Bei Missbrauch kann der Zugang ohne Rückerstattung gesperrt werden.</p>
+    </div>
+
+    <div class="legal-block">
+      <h2>9. Haftungsbeschränkung</h2>
+      <p>Der Betreiber haftet nicht für Schäden, die aus der Nutzung oder Nichtverfügbarkeit der App oder der Inhalte entstehen, soweit gesetzlich zulässig. Insbesondere wird keine Haftung für Lernergebnisse, Prüfungsresultate oder Entscheidungen übernommen, die auf Basis der Inhalte getroffen werden.</p>
+    </div>
+
+    <div class="legal-block">
+      <h2>10. Änderungen der AGB</h2>
+      <p>Der Betreiber behält sich vor, diese AGB jederzeit anzupassen. Massgebend ist die zum Zeitpunkt des Kaufs gültige Fassung.</p>
+    </div>
+
+    <div class="legal-block">
+      <h2>11. Anwendbares Recht</h2>
+      <p>Es gilt ausschliesslich schweizerisches Recht. Gerichtsstand ist, soweit gesetzlich zulässig, der Sitz des Betreibers.</p>
+    </div>
+
+    <div class="legal-block">
+      <p style="font-size:13px; color:#666;">Hinweis: Diese AGB wurden nach bestem Wissen erstellt, stellen aber keine Rechtsberatung dar. Für eine rechtsverbindliche Prüfung wird die Konsultation einer Fachperson empfohlen.</p>
+    </div>
+  </div>
+</div>
+
 <!-- DATENSCHUTZ -->
 <div id="page-datenschutz" class="page">
   <div class="legal-section">
@@ -280,16 +400,17 @@
     <div class="legal-block"><h2>Datenspeicherung</h2><p>Alle Daten werden verschlüsselt bei Google Firebase (Server in Europa) gespeichert. Wir geben keine Daten an Dritte weiter.</p></div>
     <div class="legal-block"><h2>Ihre Rechte</h2><ul><li>Auskunft über gespeicherte Daten</li><li>Berichtigung unrichtiger Daten</li><li>Löschung des Accounts und aller Daten</li></ul><p style="margin-top:12px">Für Anfragen: <a href="mailto:info@lernstrom.ch">info@lernstrom.ch</a></p></div>
     <div class="legal-block"><h2>Cookies</h2><p>Diese Website verwendet keine Cookies.</p></div>
-    <div class="legal-block"><h2>Änderungen</h2><p>Wir behalten uns vor, diese Datenschutzerklärung jederzeit zu ändern. Stand: Mai 2026.</p></div>
+    <div class="legal-block"><h2>Änderungen</h2><p>Wir behalten uns vor, diese Datenschutzerklärung jederzeit zu ändern. Stand: Juni 2026.</p></div>
   </div>
 </div>
 
 <footer>
-  <p>© 2026 LernStrom — ÜK Lernplattform für Elektro-Lehrlinge</p>
+  <p>© 2026 LernStrom — ÜK Lernplattform für Lehrlinge</p>
   <div class="footer-links">
     <a href="mailto:info@lernstrom.ch">info@lernstrom.ch</a>
-    <a href="#" onclick="showPage('impressum')">Impressum</a>
-    <a href="#" onclick="showPage('datenschutz')">Datenschutz</a>
+    <a href="#" onclick="showPage('impressum'); return false;">Impressum</a>
+    <a href="#" onclick="showPage('agb'); return false;">AGB</a>
+    <a href="#" onclick="showPage('datenschutz'); return false;">Datenschutz</a>
     <a href="konto-loeschen.html">Konto löschen</a>
   </div>
 </footer>
@@ -298,14 +419,43 @@
 function showPage(page) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + page).classList.add('active');
+  document.getElementById('dropdown').classList.remove('open');
   window.scrollTo(0, 0);
 }
 function switchTab(tab, btn) {
   document.querySelectorAll('.profession-content').forEach(c => c.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-' + tab).classList.add('active');
-  btn.classList.add('active');
+  if (btn) btn.classList.add('active');
+  else document.getElementById('tabbtn-' + tab).classList.add('active');
 }
+function toggleMenu(e) {
+  e.stopPropagation();
+  document.getElementById('dropdown').classList.toggle('open');
+}
+function scrollToSection(id) {
+  showPage('home');
+  document.getElementById('dropdown').classList.remove('open');
+  setTimeout(function() {
+    document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+  }, 50);
+}
+function goToProfession(tab) {
+  showPage('home');
+  switchTab(tab, null);
+  document.getElementById('dropdown').classList.remove('open');
+  setTimeout(function() {
+    document.getElementById('preise').scrollIntoView({ behavior: 'smooth' });
+  }, 50);
+}
+// Menü schliessen bei Klick ausserhalb
+document.addEventListener('click', function(e) {
+  var dd = document.getElementById('dropdown');
+  var btn = document.querySelector('.menu-btn');
+  if (dd.classList.contains('open') && !dd.contains(e.target) && !btn.contains(e.target)) {
+    dd.classList.remove('open');
+  }
+});
 </script>
 
 </body>
