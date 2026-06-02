@@ -190,6 +190,15 @@
   .faq-a p { padding: 0 22px 20px; color: var(--gray); font-size: 15px; line-height: 1.7; font-weight: 300; }
   .faq-a p a { color: var(--yellow); }
 
+  /* ===== Frag-uns / Kontakt ===== */
+  .ask-section { padding: 20px 24px 100px; max-width: 760px; margin: 0 auto; }
+  .ask-card { background: linear-gradient(135deg, #1a1a00 0%, var(--card) 100%); border: 1px solid rgba(255,214,0,0.25); border-radius: 24px; padding: 44px 32px; text-align: center; }
+  .ask-card .ask-icon { font-size: 40px; margin-bottom: 16px; }
+  .ask-card h3 { font-family:'Unbounded'; font-size: clamp(22px,3vw,30px); font-weight: 800; letter-spacing: -0.5px; margin-bottom: 12px; }
+  .ask-card p { color: var(--gray); font-size: 16px; line-height: 1.6; font-weight: 300; max-width: 460px; margin: 0 auto 28px; }
+  .ask-card .ask-mail { color: var(--gray); font-size: 13px; margin-top: 16px; }
+  .ask-card .ask-mail a { color: var(--yellow); text-decoration: none; }
+
   .page { display: none; }
   .page.active { display: block; }
 
@@ -468,6 +477,16 @@
     <div class="faq-item">
       <div class="faq-q" onclick="toggleFaq(this)">Sind die Inhalte offiziell oder garantieren sie das Bestehen?<span class="plus">+</span></div>
       <div class="faq-a"><p>LernStrom ist ein freiwilliges Übungs- und Lernhilfsmittel und ersetzt nicht den offiziellen Unterricht oder die Lehrmittel. Ein Prüfungserfolg kann nicht garantiert werden — aber die Fragen orientieren sich praxisnah an dem, was im ÜK und QV drankommt.</p></div>
+    </div>
+  </section>
+
+  <section class="ask-section reveal" id="ask">
+    <div class="ask-card">
+      <div class="ask-icon">💬</div>
+      <h3>Noch eine Frage?</h3>
+      <p>Du findest deine Antwort oben nicht? Schreib uns direkt — wir helfen dir gerne weiter, ob bei Fragen zum Kauf, zur App oder bei einem Problem.</p>
+      <a href="mailto:info@lernstrom.ch?subject=Frage%20zu%20LernStrom" class="btn-primary">Frag uns ⚡</a>
+      <div class="ask-mail">Oder direkt an <a href="mailto:info@lernstrom.ch">info@lernstrom.ch</a></div>
     </div>
   </section>
 
