@@ -3,18 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LernStrom – ÜK Lernplattform für Lehrlinge</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Barlow:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+<title>LernStrom – ÜK & QV Lernplattform für Lehrlinge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;800;900&family=Outfit:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
-  :root { --yellow: #FFD600; --black: #0A0A0A; --dark: #111111; --card: #1A1A1A; --gray: #888888; --white: #F5F5F5; }
+  :root { --yellow: #FFD600; --black: #080808; --dark: #0F0F0F; --card: #181818; --card2: #131313; --gray: #8A8A8A; --white: #F5F5F5; --green:#4ADE80; --border: rgba(255,255,255,0.08); }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { scroll-behavior: smooth; }
-  body { background: var(--black); color: var(--white); font-family: 'Barlow', sans-serif; overflow-x: hidden; }
+  body { background: var(--black); color: var(--white); font-family: 'Outfit', sans-serif; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
 
-  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; background: rgba(10,10,10,0.9); backdrop-filter: blur(12px); border-bottom: 1px solid #1f1f1f; }
-  .nav-logo { font-family: 'Space Mono', monospace; font-size: 22px; font-weight: 700; color: var(--yellow); text-decoration: none; }
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: 18px 40px; background: rgba(8,8,8,0.85); backdrop-filter: blur(14px); border-bottom: 1px solid var(--border); }
+  .nav-logo { font-family: 'Unbounded'; font-size: 20px; font-weight: 800; color: var(--yellow); text-decoration: none; letter-spacing: -0.5px; }
   .nav-right { display: flex; align-items: center; gap: 16px; }
-  .nav-cta { background: var(--yellow); color: var(--black); padding: 10px 24px; border-radius: 100px; font-weight: 800; font-size: 14px; text-decoration: none; transition: transform 0.2s, box-shadow 0.2s; }
+  .nav-cta { background: var(--yellow); color: var(--black); padding: 10px 24px; border-radius: 100px; font-weight: 700; font-size: 14px; text-decoration: none; transition: transform 0.2s, box-shadow 0.2s; }
   .nav-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,214,0,0.3); }
 
   .menu-btn { background: none; border: none; cursor: pointer; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
@@ -27,113 +29,128 @@
   .dropdown { position: fixed; z-index: 200; top: 70px; right: 40px; background: var(--card); border: 1px solid #2a2a2a; border-radius: 16px; padding: 8px; min-width: 240px; opacity: 0; visibility: hidden; transform: translateY(-10px); transition: all 0.2s; box-shadow: 0 16px 48px rgba(0,0,0,0.6); }
   .dropdown.open { opacity: 1; visibility: visible; transform: translateY(0); }
   .dropdown-label { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--gray); letter-spacing: 2px; text-transform: uppercase; padding: 12px 14px 6px; }
-  .dropdown a { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 10px; color: var(--white); text-decoration: none; font-size: 15px; font-weight: 600; transition: background 0.15s; cursor: pointer; }
+  .dropdown a { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 10px; color: var(--white); text-decoration: none; font-size: 15px; font-weight: 500; transition: background 0.15s; cursor: pointer; }
   .dropdown a:hover { background: rgba(255,214,0,0.1); color: var(--yellow); }
   .dropdown-divider { height: 1px; background: #2a2a2a; margin: 8px 0; }
 
+  /* ===== HERO (Variante 2 — kinetisch / Strom) ===== */
   .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 120px 24px 80px; position: relative; overflow: hidden; }
-  .hero::before { content: ''; position: absolute; top: -200px; left: 50%; transform: translateX(-50%); width: 600px; height: 600px; background: radial-gradient(circle, rgba(255,214,0,0.12) 0%, transparent 70%); pointer-events: none; }
-  .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,214,0,0.1); border: 1px solid rgba(255,214,0,0.3); color: var(--yellow); padding: 8px 18px; border-radius: 100px; font-size: 13px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 32px; animation: fadeUp 0.6s ease both; }
-  .hero h1 { font-size: clamp(48px, 8vw, 96px); font-weight: 900; line-height: 1; letter-spacing: -2px; margin-bottom: 24px; animation: fadeUp 0.6s ease 0.1s both; }
-  .hero h1 span { color: var(--yellow); }
-  .hero p { font-size: clamp(16px, 2vw, 20px); color: var(--gray); max-width: 560px; line-height: 1.6; margin-bottom: 24px; font-weight: 300; animation: fadeUp 0.6s ease 0.2s both; }
-  .hero-motivation { font-size: clamp(15px, 1.8vw, 18px); color: #BBBBBB; max-width: 600px; line-height: 1.7; margin-bottom: 48px; font-weight: 300; animation: fadeUp 0.6s ease 0.25s both; }
-  .hero-motivation strong { color: var(--white); font-weight: 600; }
-  .hero-buttons { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; animation: fadeUp 0.6s ease 0.3s both; }
-  .btn-primary { background: var(--yellow); color: var(--black); padding: 16px 36px; border-radius: 100px; font-weight: 800; font-size: 16px; text-decoration: none; transition: transform 0.2s, box-shadow 0.2s; }
+  .circuit { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; opacity: .5; pointer-events: none; }
+  .circuit path { fill: none; stroke: var(--yellow); stroke-width: 1.4; stroke-dasharray: 8 240; opacity: .5; animation: flow 3.4s linear infinite; }
+  .circuit path:nth-child(2){ animation-delay: -.9s; opacity:.32;}
+  .circuit path:nth-child(3){ animation-delay: -1.8s; opacity:.42;}
+  .circuit path:nth-child(4){ animation-delay: -2.7s; opacity:.28;}
+  .circuit path:nth-child(5){ animation-delay: -1.3s; opacity:.36;}
+  @keyframes flow { to { stroke-dashoffset: -248; } }
+  .hero-inner { position: relative; z-index: 2; }
+  .hero-kick { font-family:'Space Mono', monospace; font-size: 13px; letter-spacing: 4px; color: var(--yellow); text-transform: uppercase; margin-bottom: 26px; opacity: 0; animation: fadein .8s ease .1s forwards; }
+  .hero h1 { font-family:'Unbounded'; font-weight: 900; font-size: clamp(44px, 8.5vw, 104px); line-height: .9; letter-spacing: -2px; }
+  .hero h1 .line { display: block; overflow: hidden; padding-bottom: 4px; }
+  .hero h1 .line > span { display: inline-block; transform: translateY(110%); animation: rise .95s cubic-bezier(.16,1,.3,1) forwards; }
+  .hero h1 .l2 > span { animation-delay: .12s; }
+  .hero h1 .glow { color: var(--yellow); }
+  @keyframes rise { to { transform: translateY(0); } }
+  @keyframes fadein { to { opacity: 1; } }
+  .hero p { color: var(--gray); font-size: clamp(16px,2vw,19px); margin: 28px auto 0; max-width: 540px; line-height: 1.6; font-weight: 300; opacity: 0; animation: fadein .8s ease .5s forwards; }
+  .hero p strong { color: var(--white); font-weight: 600; }
+  .hero-stats { display: flex; justify-content: center; gap: 14px; margin-top: 42px; flex-wrap: wrap; opacity: 0; animation: fadein .8s ease .7s forwards; }
+  .hstat { border: 1px solid var(--border); border-radius: 16px; padding: 18px 28px; min-width: 132px; background: rgba(20,20,20,0.55); }
+  .hstat b { display: block; font-family:'Unbounded'; font-weight: 800; font-size: 28px; color: var(--yellow); letter-spacing: -1px; }
+  .hstat span { font-size: 12px; color: var(--gray); letter-spacing: .5px; }
+  .hero-buttons { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; margin-top: 42px; opacity: 0; animation: fadein .8s ease .85s forwards; }
+  .btn-primary { background: var(--yellow); color: var(--black); padding: 16px 36px; border-radius: 100px; font-family:'Unbounded'; font-weight: 700; font-size: 15px; text-decoration: none; transition: transform 0.2s, box-shadow 0.2s; }
   .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(255,214,0,0.35); }
-  .btn-secondary { border: 1px solid #333; color: var(--white); padding: 16px 36px; border-radius: 100px; font-weight: 600; font-size: 16px; text-decoration: none; transition: border-color 0.2s; }
+  .btn-secondary { border: 1px solid #333; color: var(--white); padding: 16px 36px; border-radius: 100px; font-weight: 500; font-size: 15px; text-decoration: none; transition: border-color 0.2s; display: inline-flex; align-items: center; }
   .btn-secondary:hover { border-color: var(--yellow); }
-  .hero-bolt { font-size: 120px; margin-bottom: 24px; animation: fadeUp 0.6s ease both, pulse 3s ease-in-out infinite; }
 
   .section { padding: 100px 24px; max-width: 1100px; margin: 0 auto; }
+  .reveal { opacity: 0; transform: translateY(30px); transition: opacity .7s ease, transform .7s ease; }
+  .reveal.in { opacity: 1; transform: translateY(0); }
   .section-label { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--yellow); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 16px; }
-  .section-title { font-size: clamp(32px, 5vw, 56px); font-weight: 900; letter-spacing: -1px; margin-bottom: 60px; line-height: 1.1; }
+  .section-title { font-family:'Unbounded'; font-size: clamp(30px, 5vw, 52px); font-weight: 800; letter-spacing: -1px; margin-bottom: 60px; line-height: 1.05; }
 
   .about-section { padding: 100px 24px; max-width: 800px; margin: 0 auto; text-align: center; }
-  .about-section .quote { font-size: clamp(22px, 3vw, 32px); font-weight: 800; line-height: 1.4; letter-spacing: -0.5px; margin-bottom: 24px; }
+  .about-section .quote { font-family:'Unbounded'; font-size: clamp(22px, 3vw, 32px); font-weight: 700; line-height: 1.35; letter-spacing: -0.5px; margin-bottom: 24px; }
   .about-section .quote span { color: var(--yellow); }
   .about-section p { color: var(--gray); font-size: 16px; line-height: 1.8; font-weight: 300; }
   .about-signature { margin-top: 32px; font-family: 'Space Mono', monospace; color: var(--yellow); font-size: 14px; }
 
   .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-  .feature-card { background: var(--card); border: 1px solid #222; border-radius: 20px; padding: 32px; transition: border-color 0.3s, transform 0.3s; }
-  .feature-card:hover { border-color: rgba(255,214,0,0.3); transform: translateY(-4px); }
-  .feature-icon { font-size: 40px; margin-bottom: 20px; }
-  .feature-card h3 { font-size: 20px; font-weight: 800; margin-bottom: 12px; }
+  .feature-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 32px; transition: border-color 0.3s, transform 0.3s; }
+  .feature-card:hover { border-color: rgba(255,214,0,0.35); transform: translateY(-4px); }
+  .feature-icon { font-size: 38px; margin-bottom: 18px; }
+  .feature-card h3 { font-family:'Outfit'; font-size: 19px; font-weight: 700; margin-bottom: 10px; }
   .feature-card p { color: var(--gray); font-size: 15px; line-height: 1.6; font-weight: 300; }
 
   .pricing-section { padding: 100px 24px; background: var(--dark); }
   .pricing-inner { max-width: 1100px; margin: 0 auto; }
   .profession-tabs { display: flex; gap: 12px; margin-bottom: 40px; flex-wrap: wrap; }
-  .tab-btn { background: var(--card); border: 1px solid #333; color: var(--gray); padding: 12px 24px; border-radius: 100px; font-weight: 600; font-size: 15px; cursor: pointer; transition: all 0.2s; }
-  .tab-btn.active { background: var(--yellow); color: var(--black); border-color: var(--yellow); }
+  .tab-btn { background: var(--card); border: 1px solid #333; color: var(--gray); padding: 12px 24px; border-radius: 100px; font-weight: 500; font-size: 15px; cursor: pointer; transition: all 0.2s; }
+  .tab-btn.active { background: var(--yellow); color: var(--black); border-color: var(--yellow); font-weight: 700; }
   .profession-content { display: none; }
   .profession-content.active { display: block; }
   .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
-  .pricing-card { background: var(--card); border: 1px solid #222; border-radius: 20px; padding: 24px; text-align: center; transition: transform 0.3s; }
-  .pricing-card:hover { transform: translateY(-4px); border-color: rgba(255,214,0,0.3); }
-  .pricing-card h3 { font-size: 16px; font-weight: 800; margin-bottom: 8px; color: var(--white); }
-  .price { font-size: 36px; font-weight: 900; letter-spacing: -1px; margin: 12px 0 4px; }
+  .pricing-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 24px; text-align: center; transition: transform 0.3s, border-color .3s; }
+  .pricing-card:hover { transform: translateY(-4px); border-color: rgba(255,214,0,0.35); }
+  .pricing-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--white); }
+  .price { font-family:'Unbounded'; font-size: 34px; font-weight: 800; letter-spacing: -1px; margin: 12px 0 4px; }
   .price span { font-size: 16px; font-weight: 400; color: var(--gray); }
   .price-note { color: var(--gray); font-size: 12px; margin-bottom: 20px; }
-  .btn-buy { display: block; text-align: center; padding: 12px; border-radius: 10px; font-weight: 800; font-size: 14px; text-decoration: none; transition: all 0.2s; }
+  .btn-buy { display: block; text-align: center; padding: 12px; border-radius: 10px; font-weight: 700; font-size: 14px; text-decoration: none; transition: all 0.2s; }
   .btn-buy.yellow { background: var(--yellow); color: var(--black); }
   .btn-buy.yellow:hover { box-shadow: 0 8px 24px rgba(255,214,0,0.3); transform: translateY(-2px); }
   .btn-buy.outline { border: 1px solid #333; color: var(--white); }
   .btn-buy.outline:hover { border-color: var(--yellow); }
 
   .bundle-card { background: linear-gradient(135deg, #1a1a00 0%, var(--card) 100%); border: 2px solid var(--yellow); border-radius: 20px; padding: 32px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; }
-  .bundle-info h3 { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .bundle-info h3 { font-family:'Unbounded'; font-size: 21px; font-weight: 800; margin-bottom: 8px; }
   .bundle-info p { color: var(--gray); font-size: 14px; }
   .bundle-price { text-align: right; }
-  .bundle-price .price { font-size: 48px; }
+  .bundle-price .price { font-size: 46px; }
   .bundle-price .save { color: var(--yellow); font-size: 13px; font-weight: 700; margin-bottom: 12px; }
 
   .qv-card { background: linear-gradient(135deg, #1a1a00 0%, var(--card) 100%); border: 2px solid var(--yellow); border-radius: 20px; padding: 32px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; margin-bottom: 24px; }
-  .qv-info h3 { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+  .qv-info h3 { font-family:'Unbounded'; font-size: 21px; font-weight: 800; margin-bottom: 8px; }
   .qv-info p { color: var(--gray); font-size: 14px; line-height: 1.6; max-width: 520px; }
   .qv-faecher { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
   .qv-fach { background: rgba(255,214,0,0.08); border: 1px solid rgba(255,214,0,0.2); color: var(--yellow); padding: 4px 12px; border-radius: 100px; font-size: 12px; font-weight: 600; }
   .qv-price { text-align: right; flex-shrink: 0; }
-  .qv-price .price { font-size: 48px; }
+  .qv-price .price { font-size: 46px; }
   .qv-price .price-note { color: var(--gray); font-size: 12px; margin-bottom: 16px; }
 
   .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 32px; margin-top: 60px; }
   .step { text-align: center; }
-  .step-num { font-family: 'Space Mono', monospace; font-size: 48px; font-weight: 700; color: var(--yellow); opacity: 0.3; line-height: 1; margin-bottom: 16px; }
-  .step h3 { font-size: 18px; font-weight: 800; margin-bottom: 8px; }
-  .step p { color: var(--gray); font-size: 14px; line-height: 1.6; }
+  .step-num { font-family: 'Unbounded'; font-size: 44px; font-weight: 800; color: var(--yellow); opacity: 0.25; line-height: 1; margin-bottom: 16px; }
+  .step h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+  .step p { color: var(--gray); font-size: 14px; line-height: 1.6; font-weight: 300; }
 
-  .cta-section { padding: 100px 24px; text-align: center; }
-  .cta-section h2 { font-size: clamp(36px, 6vw, 72px); font-weight: 900; letter-spacing: -2px; margin-bottom: 20px; }
+  .cta-section { padding: 110px 24px; text-align: center; position: relative; overflow: hidden; }
+  .cta-section .circuit { opacity: .35; }
+  .cta-inner { position: relative; z-index: 2; }
+  .cta-section h2 { font-family:'Unbounded'; font-size: clamp(34px, 6vw, 68px); font-weight: 900; letter-spacing: -2px; margin-bottom: 20px; line-height: 1; }
   .cta-section h2 span { color: var(--yellow); }
-  .cta-section p { color: var(--gray); font-size: 18px; max-width: 480px; margin: 0 auto 40px; }
+  .cta-section p { color: var(--gray); font-size: 18px; max-width: 480px; margin: 0 auto 40px; font-weight: 300; }
 
   .legal-section { padding: 120px 24px 80px; max-width: 800px; margin: 0 auto; }
-  .legal-section h1 { font-size: 40px; font-weight: 900; color: var(--white); margin-bottom: 8px; }
+  .legal-section h1 { font-family:'Unbounded'; font-size: 38px; font-weight: 800; color: var(--white); margin-bottom: 8px; }
   .legal-section .subtitle { color: var(--gray); margin-bottom: 48px; font-size: 15px; }
   .legal-block { margin-bottom: 40px; }
-  .legal-block h2 { font-size: 20px; font-weight: 800; color: var(--yellow); margin-bottom: 12px; }
+  .legal-block h2 { font-size: 20px; font-weight: 700; color: var(--yellow); margin-bottom: 12px; }
   .legal-block p, .legal-block li { color: var(--gray); font-size: 15px; line-height: 1.8; }
   .legal-block ul { padding-left: 20px; }
   .legal-block a { color: var(--yellow); }
 
-  footer { border-top: 1px solid #1f1f1f; padding: 40px 24px; text-align: center; color: var(--gray); font-size: 14px; }
+  footer { border-top: 1px solid var(--border); padding: 40px 24px; text-align: center; color: var(--gray); font-size: 14px; }
   footer a { color: var(--yellow); text-decoration: none; }
   .footer-links { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; margin-top: 12px; }
 
   .page { display: none; }
   .page.active { display: block; }
 
-  @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-  @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
-
   @media (max-width: 600px) {
     nav { padding: 16px 20px; }
     .dropdown { right: 20px; left: 20px; min-width: 0; }
     .hero { padding: 100px 20px 60px; }
-    .hero-bolt { font-size: 80px; }
     .section { padding: 60px 20px; }
     .pricing-section { padding: 60px 20px; }
     .about-section { padding: 60px 20px; }
@@ -169,43 +186,56 @@
 <div id="page-home" class="page active">
 
   <section class="hero">
-    <div class="hero-bolt">⚡</div>
-    <div class="hero-badge">🇨🇭 Schweizer ÜK Lernplattform</div>
-    <h1>Lern smarter.<br><span>Nicht mehr.</span></h1>
-    <p>LernStrom ist die App für Lehrlinge in der Schweiz — interaktive ÜK-Quizzes, Lernfortschritt und Gamification für jedes Lehrjahr.</p>
-    <p class="hero-motivation">Schluss mit stundenlangem Pauken aus dicken Ordnern. Hier lernst du <strong>in deinem Tempo</strong>, sammelst XP, forderst Kollegen zum Duell heraus und siehst genau, wo du stehst. <strong>Jede Frage bringt dich näher an dein Ziel</strong> — Schritt für Schritt, ohne Druck.</p>
-    <div class="hero-buttons">
-      <a href="#preise" class="btn-primary">Zugang kaufen</a>
-      <a href="#features" class="btn-secondary">Mehr erfahren</a>
+    <svg class="circuit" viewBox="0 0 1100 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <path d="M0,140 H300 V360 H560 V180 H1100"/>
+      <path d="M0,520 H220 V340 H520 V600 H1100"/>
+      <path d="M0,340 H140 V90 H700 V340 H1100"/>
+      <path d="M0,640 H400 V440 H820 V220 H1100"/>
+      <path d="M0,240 H480 V680 H880 V420 H1100"/>
+    </svg>
+    <div class="hero-inner">
+      <div class="hero-kick">QV · ÜK · Lehrjahre 1–4</div>
+      <h1>
+        <span class="line l1"><span>Wissen, das</span></span>
+        <span class="line l2"><span class="glow">zündet.</span></span>
+      </h1>
+      <p>Die Lern-App für Lehrlinge in der Schweiz. <strong>Spielerisch durch jede Prüfung</strong> — von der ersten Lektion bis zum QV, in deinem Tempo und ohne Druck.</p>
+      <div class="hero-stats">
+        <div class="hstat"><b data-count="12400">0</b><span>geprüfte Fragen</span></div>
+        <div class="hstat"><b data-count="4" data-suffix="+">0</b><span>Berufe</span></div>
+        <div class="hstat"><b data-count="100" data-suffix="%">0</b><span>QV-Fokus</span></div>
+      </div>
+      <div class="hero-buttons">
+        <a href="#preise" class="btn-primary">Zugang kaufen</a>
+        <a href="#features" class="btn-secondary">Mehr erfahren</a>
+      </div>
     </div>
   </section>
 
-  <section class="about-section">
+  <section class="about-section reveal">
     <p class="section-label">Warum LernStrom</p>
     <div class="quote">Ich war selbst Lernender — und wollte ein Tool, das ich mir <span>damals gewünscht hätte.</span></div>
     <p>LernStrom ist aus der Praxis entstanden: keine trockene Theorie, sondern Fragen so wie sie im ÜK und im QV wirklich drankommen. Lernen soll sich nicht wie eine Strafe anfühlen, sondern wie ein Spiel das du gewinnen kannst. Genau dafür wurde diese App gebaut — von jemandem der den Weg selbst gegangen ist.</p>
     <div class="about-signature">— Cataldo, Gründer von LernStrom</div>
   </section>
 
-  <section class="section" id="features">
+  <section class="section reveal" id="features">
     <p class="section-label">Features</p>
     <h2 class="section-title">Alles was du<br>zum Lernen brauchst.</h2>
     <div class="features-grid">
-      <div class="feature-card"><div class="feature-icon">📚</div><h3>ÜK-Quizzes</h3><p>Multiple-Choice-Fragen direkt aus den ÜK-Unterlagen — pro Beruf, pro Lehrjahr, pro Fach.</p></div>
-      <div class="feature-card"><div class="feature-icon">⚡</div><h3>XP & Level</h3><p>Für jede richtige Antwort gibt es XP. Level auf, Badges verdienen und motiviert bleiben.</p></div>
-      <div class="feature-card"><div class="feature-icon">⏱️</div><h3>Quiz-Timer</h3><p>Optionaler Zeitdruck pro Frage — 15, 30, 60 oder 90 Sekunden. Prüfungsvorbereitung pur.</p></div>
+      <div class="feature-card"><div class="feature-icon">📚</div><h3>ÜK- & QV-Quizzes</h3><p>Multiple-Choice-Fragen direkt aus den Unterlagen — pro Beruf, pro Lehrjahr, pro Fach.</p></div>
+      <div class="feature-card"><div class="feature-icon">⚡</div><h3>XP & Level</h3><p>Für jede richtige Antwort gibt es XP. Level auf, Ränge freischalten und motiviert bleiben.</p></div>
+      <div class="feature-card"><div class="feature-icon">⚔️</div><h3>Duell-Modus</h3><p>Fordere Kollegen heraus — teile einen 6-stelligen Code und spielt dasselbe Quiz in Echtzeit gegeneinander.</p></div>
+      <div class="feature-card"><div class="feature-icon">📝</div><h3>Prüfungsmodus</h3><p>Simuliere die echte Prüfung — 30 Fragen, maximal 3 Fehler erlaubt, kein Timer. Bestehst du?</p></div>
+      <div class="feature-card"><div class="feature-icon">🏅</div><h3>Rangliste</h3><p>Miss dich mit anderen Lernenden — globale XP-Rangliste, dein Rang ist immer sichtbar.</p></div>
       <div class="feature-card"><div class="feature-icon">📊</div><h3>Lernfortschritt</h3><p>Sieh genau welche Fragen du falsch hattest und wiederhole gezielt nur diese.</p></div>
-      <div class="feature-card"><div class="feature-icon">🏆</div><h3>Achievements</h3><p>8 verschiedene Badges zum Freischalten — vom ersten Quiz bis zum 10-Tage-Streak.</p></div>
-      <div class="feature-card"><div class="feature-icon">🔒</div><h3>Fingerabdruck-Login</h3><p>Schnell und sicher mit biometrischer Authentifizierung — kein Passwort tippen.</p></div>
-      <div class="feature-card"><div class="feature-icon">⚔️</div><h3>Duell-Modus</h3><p>Fordere Freunde oder Mitlernende heraus — teile einen 6-stelligen Code und spielt dasselbe Quiz gegeneinander in Echtzeit.</p></div>
-      <div class="feature-card"><div class="feature-icon">📝</div><h3>Prüfungsmodus</h3><p>Simuliere die echte Prüfungssituation — 30 Fragen, maximal 3 Fehler erlaubt, kein Timer. Bestehst du?</p></div>
-      <div class="feature-card"><div class="feature-icon">🏅</div><h3>Rangliste</h3><p>Miss dich mit anderen Lernenden — globale XP-Rangliste, dein eigener Rang ist immer sichtbar auch wenn du nicht in den Top 10 bist.</p></div>
-      <div class="feature-card"><div class="feature-icon">📈</div><h3>Quiz-Historie</h3><p>Behalte den Überblick — sieh alle vergangenen Quizzes mit Ergebnis, XP und Datum auf einen Blick.</p></div>
-      <div class="feature-card"><div class="feature-icon">🔁</div><h3>Falsche Fragen wiederholen</h3><p>Nach jedem Quiz kannst du gezielt nur die falsch beantworteten Fragen nochmals üben — effizient und zeitsparend.</p></div>
+      <div class="feature-card"><div class="feature-icon">⏱️</div><h3>Quiz-Timer</h3><p>Optionaler Zeitdruck pro Frage — 15, 30, 60 oder 90 Sekunden. Prüfungsvorbereitung pur.</p></div>
+      <div class="feature-card"><div class="feature-icon">🏆</div><h3>Achievements</h3><p>Verschiedene Badges zum Freischalten — vom ersten Quiz bis zum 10-Tage-Streak.</p></div>
+      <div class="feature-card"><div class="feature-icon">🔒</div><h3>App-Sperre mit Fingerabdruck</h3><p>Schütze deinen Lernfortschritt — optionale Sperre, die die App beim Öffnen per Fingerabdruck entriegelt.</p></div>
     </div>
   </section>
 
-  <section class="section" id="how">
+  <section class="section reveal" id="how">
     <p class="section-label">So funktioniert's</p>
     <h2 class="section-title">In 3 Schritten<br>loslegen.</h2>
     <div class="steps">
@@ -216,7 +246,7 @@
   </section>
 
   <section class="pricing-section" id="preise">
-    <div class="pricing-inner">
+    <div class="pricing-inner reveal">
       <p class="section-label">Preise</p>
       <h2 class="section-title">Wähle deinen<br>Beruf & Lehrjahr.</h2>
 
@@ -319,9 +349,16 @@
   </section>
 
   <section class="cta-section">
-    <h2>Bereit für die<br><span>nächste Prüfung?</span></h2>
-    <p>Starte jetzt und lern mit der App die für Lehrlinge in der Schweiz gemacht wurde.</p>
-    <a href="#preise" class="btn-primary">Zugang kaufen ⚡</a>
+    <svg class="circuit" viewBox="0 0 1100 500" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <path d="M0,120 H300 V300 H560 V160 H1100"/>
+      <path d="M0,380 H260 V200 H620 V420 H1100"/>
+      <path d="M0,260 H160 V60 H720 V300 H1100"/>
+    </svg>
+    <div class="cta-inner">
+      <h2>Bereit für die<br><span>nächste Prüfung?</span></h2>
+      <p>Starte jetzt und lern mit der App die für Lehrlinge in der Schweiz gemacht wurde.</p>
+      <a href="#preise" class="btn-primary">Zugang kaufen ⚡</a>
+    </div>
   </section>
 
 </div>
@@ -418,7 +455,7 @@
 </div>
 
 <footer>
-  <p>© 2026 LernStrom — ÜK Lernplattform für Lehrlinge</p>
+  <p>© 2026 LernStrom — ÜK & QV Lernplattform für Lehrlinge</p>
   <div class="footer-links">
     <a href="mailto:info@lernstrom.ch">info@lernstrom.ch</a>
     <a href="#" onclick="showPage('impressum'); return false;">Impressum</a>
@@ -478,6 +515,25 @@ document.addEventListener('click', function(e) {
   if (dd.contains(e.target)) return;
   if (btn.contains(e.target)) return;
   dd.classList.remove('open');
+});
+
+// Count-up Statistiken im Hero
+function countUp(el){
+  var target=+el.dataset.count, suffix=el.dataset.suffix||"";
+  var cur=0, step=target/60;
+  function fmt(n){ var r=Math.round(n); return r>=1000? r.toLocaleString('de-CH').replace(/,/g,"'"):r; }
+  var t=setInterval(function(){ cur+=step; if(cur>=target){cur=target; clearInterval(t);} el.textContent=fmt(cur)+suffix; }, 16);
+}
+// Scroll-Reveal + Count-up auslösen
+var io=new IntersectionObserver(function(ents){
+  ents.forEach(function(e){
+    if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+  });
+},{threshold:.15});
+document.querySelectorAll('.reveal').forEach(function(r){ io.observe(r); });
+
+window.addEventListener('load', function(){
+  document.querySelectorAll('.hstat b').forEach(function(b){ countUp(b); });
 });
 </script>
 
