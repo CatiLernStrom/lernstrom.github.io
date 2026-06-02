@@ -144,6 +144,52 @@
   footer a { color: var(--yellow); text-decoration: none; }
   .footer-links { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; margin-top: 12px; }
 
+  /* ===== Quiz-Demo Sektion ===== */
+  .demo-section { padding: 100px 24px; max-width: 1100px; margin: 0 auto; }
+  .demo-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
+  .demo-text h2 { font-family:'Unbounded'; font-size: clamp(28px,4vw,44px); font-weight: 800; line-height: 1.05; letter-spacing: -1px; margin-bottom: 18px; }
+  .demo-text h2 span { color: var(--yellow); }
+  .demo-text p { color: var(--gray); font-size: 17px; line-height: 1.6; font-weight: 300; }
+  .demo-live { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: var(--gray); border: 1px solid var(--border); padding: 6px 14px; border-radius: 999px; margin-bottom: 22px; }
+  .demo-live .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: blink 1.6s infinite; }
+  @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:.35;} }
+  .quizcard { background: var(--card); border: 1px solid var(--border); border-radius: 26px; padding: 26px; position: relative; box-shadow: 0 30px 80px rgba(0,0,0,0.5); }
+  .quizcard .qtop { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+  .quizcard .qtag { font-size: 11px; color: var(--yellow); background: rgba(255,214,0,0.10); padding: 5px 12px; border-radius: 999px; font-weight: 700; letter-spacing: .5px; }
+  .quizcard .qnum { font-size: 13px; color: var(--gray); font-weight: 700; }
+  .quizcard .qbar { height: 6px; background: #2a2a2a; border-radius: 99px; overflow: hidden; margin-bottom: 22px; }
+  .quizcard .qbar > i { display: block; height: 100%; background: var(--yellow); border-radius: 99px; width: 15%; transition: width .6s cubic-bezier(.4,0,.2,1); }
+  .quizcard .qtext { font-family:'Outfit'; font-weight: 600; font-size: 19px; line-height: 1.35; min-height: 80px; }
+  .qopts { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
+  .qopt { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border: 1px solid var(--border); border-radius: 14px; font-size: 15px; color: #ddd; background: var(--card2); transition: .35s; }
+  .qopt .k { width: 26px; height: 26px; border-radius: 8px; background: #262626; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: var(--yellow); flex-shrink: 0; }
+  .qopt.correct { border-color: var(--green); background: rgba(74,222,128,0.10); color: #fff; }
+  .qopt.correct .k { background: var(--green); color: #062; }
+  .xpfloat { position: absolute; right: 28px; bottom: 24px; color: var(--green); font-family:'Unbounded'; font-weight: 800; font-size: 20px; opacity: 0; }
+  .xpfloat.go { animation: floatup 1.2s ease forwards; }
+  @keyframes floatup { 0%{opacity:0; transform: translateY(10px);} 20%{opacity:1;} 100%{opacity:0; transform: translateY(-26px);} }
+
+  /* ===== Screenshot Sektion (Platzhalter bis Bilder da sind) ===== */
+  .shots-section { padding: 100px 24px; max-width: 1100px; margin: 0 auto; text-align: center; }
+  .shots-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 28px; margin-top: 50px; }
+  .phone { background: #0c0c0c; border: 1px solid var(--border); border-radius: 32px; padding: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+  .phone-screen { background: var(--card2); border-radius: 22px; aspect-ratio: 9/19; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; overflow: hidden; }
+  .phone-screen img { width: 100%; height: 100%; object-fit: cover; border-radius: 22px; }
+  .phone-screen .ph { color: #444; font-size: 13px; }
+  .phone-screen .ph .pi { font-size: 32px; opacity: .4; }
+  .phone-label { margin-top: 14px; font-size: 13px; color: var(--gray); font-weight: 500; }
+
+  /* ===== FAQ Sektion ===== */
+  .faq-section { padding: 100px 24px; max-width: 760px; margin: 0 auto; }
+  .faq-item { border: 1px solid var(--border); border-radius: 16px; margin-bottom: 12px; overflow: hidden; background: var(--card); transition: border-color .2s; }
+  .faq-item.open { border-color: rgba(255,214,0,0.35); }
+  .faq-q { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 20px 22px; cursor: pointer; font-weight: 600; font-size: 16px; }
+  .faq-q .plus { color: var(--yellow); font-size: 22px; transition: transform .25s; flex-shrink: 0; line-height: 1; }
+  .faq-item.open .plus { transform: rotate(45deg); }
+  .faq-a { max-height: 0; overflow: hidden; transition: max-height .3s ease; }
+  .faq-a p { padding: 0 22px 20px; color: var(--gray); font-size: 15px; line-height: 1.7; font-weight: 300; }
+  .faq-a p a { color: var(--yellow); }
+
   .page { display: none; }
   .page.active { display: block; }
 
@@ -158,6 +204,8 @@
     .bundle-price { text-align: left; }
     .qv-card { flex-direction: column; }
     .qv-price { text-align: left; }
+    .demo-wrap { grid-template-columns: 1fr; gap: 36px; }
+    .demo-section, .shots-section, .faq-section { padding: 60px 20px; }
   }
 </style>
 </head>
@@ -208,6 +256,26 @@
       <div class="hero-buttons">
         <a href="#preise" class="btn-primary">Zugang kaufen</a>
         <a href="#features" class="btn-secondary">Mehr erfahren</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="demo-section reveal" id="demo">
+    <div class="demo-wrap">
+      <div class="demo-text">
+        <div class="demo-live"><span class="dot"></span> So läuft ein Quiz</div>
+        <h2>Üben wie an der <span>echten Prüfung.</span></h2>
+        <p>Geprüfte Fragen, sofortiges Feedback und XP für jede richtige Antwort. Genau das, was im Quiz auf dich wartet — kein langes Pauken aus dicken Ordnern.</p>
+      </div>
+      <div class="quizcard">
+        <div class="qtop">
+          <span class="qtag" id="dq-tag">Elektroinstallateur</span>
+          <span class="qnum" id="dq-num">Frage 3 / 20</span>
+        </div>
+        <div class="qbar"><i id="dq-bar"></i></div>
+        <div class="qtext" id="dq-q">Welcher Leiterquerschnitt ist für einen 16-A-Stromkreis mindestens nötig?</div>
+        <div class="qopts" id="dq-opts"></div>
+        <div class="xpfloat" id="dq-float">+10 XP</div>
       </div>
     </div>
   </section>
@@ -345,6 +413,61 @@
         </div>
       </div>
 
+    </div>
+  </section>
+
+  <section class="shots-section reveal" id="shots">
+    <p class="section-label">Einblick</p>
+    <h2 class="section-title">So sieht's aus.</h2>
+    <div class="shots-grid">
+      <div>
+        <div class="phone"><div class="phone-screen">
+          <span class="ph pi">📱</span><span class="ph">Screenshot folgt</span>
+        </div></div>
+        <div class="phone-label">Startseite</div>
+      </div>
+      <div>
+        <div class="phone"><div class="phone-screen">
+          <span class="ph pi">📱</span><span class="ph">Screenshot folgt</span>
+        </div></div>
+        <div class="phone-label">Quiz</div>
+      </div>
+      <div>
+        <div class="phone"><div class="phone-screen">
+          <span class="ph pi">📱</span><span class="ph">Screenshot folgt</span>
+        </div></div>
+        <div class="phone-label">Profil & Ränge</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="faq-section reveal" id="faq">
+    <p class="section-label">FAQ</p>
+    <h2 class="section-title">Häufige Fragen.</h2>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">Auf welchen Geräten läuft LernStrom?<span class="plus">+</span></div>
+      <div class="faq-a"><p>LernStrom ist aktuell für <strong>Android</strong> im Google Play Store verfügbar. Eine Version für iPhone (iOS) ist geplant, aber noch nicht erhältlich.</p></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">Wie lange habe ich Zugang nach dem Kauf?<span class="plus">+</span></div>
+      <div class="faq-a"><p>Der Kauf ist einmalig — danach hast du <strong>dauerhaft Zugang</strong> zum gekauften Bereich mit deinem Account. Kein Abo, keine wiederkehrenden Kosten.</p></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">Ich habe den falschen Beruf oder das falsche Lehrjahr gekauft — was nun?<span class="plus">+</span></div>
+      <div class="faq-a"><p>Kein Problem. Schreib uns einfach an <a href="mailto:info@lernstrom.ch">info@lernstrom.ch</a> und wir buchen deinen Zugang um. Falls du auf ein teureres Bundle wechselst, wird nur die Differenz verrechnet.</p></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">Wie schalte ich meinen Zugang frei?<span class="plus">+</span></div>
+      <div class="faq-a"><p>Nach dem Kauf über Stripe wird dein Zugang freigeschaltet. Wichtig: Verwende beim Bezahlen <strong>dieselbe E-Mail-Adresse wie für deinen App-Account</strong>, damit der Zugang automatisch deinem Konto zugeordnet wird.</p></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">Sind die Inhalte offiziell oder garantieren sie das Bestehen?<span class="plus">+</span></div>
+      <div class="faq-a"><p>LernStrom ist ein freiwilliges Übungs- und Lernhilfsmittel und ersetzt nicht den offiziellen Unterricht oder die Lehrmittel. Ein Prüfungserfolg kann nicht garantiert werden — aber die Fragen orientieren sich praxisnah an dem, was im ÜK und QV drankommt.</p></div>
     </div>
   </section>
 
@@ -516,6 +639,46 @@ document.addEventListener('click', function(e) {
   if (btn.contains(e.target)) return;
   dd.classList.remove('open');
 });
+
+// FAQ auf-/zuklappen
+function toggleFaq(el){
+  var item = el.parentElement;
+  var ans = item.querySelector('.faq-a');
+  var isOpen = item.classList.contains('open');
+  if(isOpen){ item.classList.remove('open'); ans.style.maxHeight = null; }
+  else { item.classList.add('open'); ans.style.maxHeight = ans.scrollHeight + 'px'; }
+}
+
+// Quiz-Demo Auto-Cycle
+var demoQuestions = [
+  { tag:"Elektroinstallateur", q:"Welcher Leiterquerschnitt ist für einen 16-A-Stromkreis mindestens nötig?", opts:["1.0 mm²","1.5 mm²","2.5 mm²","4.0 mm²"], correct:1, n:3 },
+  { tag:"Montage-Elektriker", q:"Welche Schutzmassnahme verhindert gefährliche Berührungsspannung?", opts:["Überstromschutz","Schutzleiter (PE)","Phasenfolge","Blindleistung"], correct:1, n:4 },
+  { tag:"QV-Vorbereitung", q:"Wofür steht die Abkürzung FI bzw. RCD?", opts:["Fehlerstromschutz","Frequenzregler","Feininstallation","Festwiderstand"], correct:0, n:5 }
+];
+var dqi = 0;
+var dqLetters = ["A","B","C","D"];
+function renderDemo(){
+  var tag=document.getElementById('dq-tag'), num=document.getElementById('dq-num'),
+      q=document.getElementById('dq-q'), opts=document.getElementById('dq-opts'),
+      bar=document.getElementById('dq-bar'), fl=document.getElementById('dq-float');
+  if(!tag) return;
+  var it=demoQuestions[dqi];
+  tag.textContent=it.tag; num.textContent="Frage "+it.n+" / 20";
+  q.textContent=it.q; bar.style.width=(it.n*5)+"%";
+  opts.innerHTML="";
+  it.opts.forEach(function(o,i){
+    var d=document.createElement('div'); d.className='qopt';
+    d.innerHTML='<span class="k">'+dqLetters[i]+'</span>'+o;
+    opts.appendChild(d);
+    if(i===it.correct) d.dataset.correct="1";
+  });
+  setTimeout(function(){
+    var right=opts.querySelector('[data-correct="1"]');
+    if(right){ right.classList.add('correct'); fl.classList.add('go'); }
+  }, 1400);
+  setTimeout(function(){ fl.classList.remove('go'); dqi=(dqi+1)%demoQuestions.length; renderDemo(); }, 4200);
+}
+renderDemo();
 
 // Count-up Statistiken im Hero
 function countUp(el){
