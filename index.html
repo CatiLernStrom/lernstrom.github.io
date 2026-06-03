@@ -166,6 +166,53 @@
   .pl-intro{color:var(--muted);font-size:15px;line-height:1.6;max-width:640px;margin-bottom:22px;}
   .pl-note{color:var(--muted);font-size:13px;margin-top:6px;}
 
+  /* ===== Download / APK ===== */
+  .download{max-width:1200px;margin:130px auto 0;padding:0 40px;}
+  .dl-head{margin-bottom:40px;}
+  .dl-head .kicker{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;}
+  .dl-head h2{font-family:'Fraunces',serif;font-weight:500;font-size:clamp(34px,5vw,68px);letter-spacing:-2px;line-height:1.04;margin-top:18px;}
+  .dl-head p{color:var(--muted);font-size:18px;line-height:1.6;max-width:52ch;margin-top:20px;}
+  .dl-actions{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-top:30px;}
+  .apk-btn{display:inline-flex;align-items:center;gap:14px;border:1px solid var(--ink);background:var(--ink);color:var(--bg);padding:16px 30px;border-radius:100px;text-decoration:none;transition:transform .2s;}
+  .apk-btn:hover{transform:translateY(-2px);}
+  .apk-btn .ai{font-size:24px;line-height:1;}
+  .apk-btn .at small{display:block;font-size:11px;opacity:.8;font-family:'JetBrains Mono',monospace;letter-spacing:.5px;}
+  .apk-btn .at b{display:block;font-weight:500;font-size:16px;}
+  .dl-os{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:.5px;}
+  .dl-os .ios{color:var(--ink);}
+
+  .guide{max-width:760px;margin:64px auto 0;}
+  .guide-warn{border:1px solid var(--line);border-left:3px solid var(--ink);background:var(--card);padding:22px 24px;margin-bottom:36px;}
+  .guide-warn h4{font-size:15px;font-weight:600;margin-bottom:6px;}
+  .guide-warn p{color:var(--muted);font-size:14px;line-height:1.7;}
+  .gsteps{list-style:none;counter-reset:g;}
+  .gsteps li{counter-increment:g;position:relative;padding:18px 0 18px 52px;border-top:1px solid var(--line);}
+  .gsteps li h4{font-size:16px;font-weight:600;margin-bottom:4px;}
+  .gsteps li p{color:var(--muted);font-size:14px;line-height:1.6;}
+  .gsteps li strong{color:var(--ink);font-weight:600;}
+  .gsteps li::before{content:counter(g);position:absolute;left:0;top:18px;width:34px;height:34px;border-radius:50%;background:var(--ink);color:var(--bg);font-family:'Fraunces',serif;font-weight:500;font-size:15px;display:flex;align-items:center;justify-content:center;}
+  .guide-reassure{text-align:center;margin-top:32px;color:var(--muted);font-size:13px;line-height:1.7;}
+  .guide-reassure a{color:var(--ink);}
+
+  /* ===== Quiz-Demo ===== */
+  .demo{max-width:1200px;margin:130px auto 0;padding:0 40px;}
+  .demo-wrap{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;}
+  .demo-text .kicker{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;}
+  .demo-text h2{font-family:'Fraunces',serif;font-weight:500;font-size:clamp(30px,4vw,54px);letter-spacing:-1.5px;line-height:1.05;margin-top:18px;}
+  .demo-text p{color:var(--muted);font-size:17px;line-height:1.7;margin-top:22px;}
+  .qcard{border:1px solid var(--line);border-radius:22px;background:var(--card);padding:28px;}
+  .qcard .qhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+  .qcard .qtag{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:.5px;border:1px solid var(--line);padding:5px 12px;border-radius:100px;}
+  .qcard .qnum{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);}
+  .qbar{height:5px;background:var(--line);border-radius:99px;overflow:hidden;margin-bottom:22px;}
+  .qbar i{display:block;height:100%;background:var(--ink);border-radius:99px;width:15%;transition:width .6s cubic-bezier(.4,0,.2,1);}
+  .qq{font-family:'Fraunces',serif;font-weight:500;font-size:21px;letter-spacing:-.5px;line-height:1.3;min-height:80px;}
+  .qopts{display:flex;flex-direction:column;gap:10px;margin-top:20px;}
+  .qopt{display:flex;align-items:center;gap:12px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;font-size:15px;color:var(--ink);background:var(--bg);transition:.35s;}
+  .qopt .k{width:26px;height:26px;border-radius:7px;background:var(--field);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--muted);font-family:'JetBrains Mono',monospace;flex-shrink:0;}
+  .qopt.correct{border-color:var(--ink);background:var(--field);}
+  .qopt.correct .k{background:var(--ink);color:var(--bg);}
+
   @media(max-width:760px){
     nav{padding:16px 22px;}
     .nav-links a:not(.nav-cta){display:none;}
@@ -173,9 +220,10 @@
     .rule-row{grid-template-columns:repeat(2,1fr);}
     .rule:nth-child(2){border-right:none;}
     .steps{grid-template-columns:1fr;gap:30px;}
-    .feature,.showcase,.closing,.pricing{padding-left:22px;padding-right:22px;}
+    .feature,.showcase,.closing,.pricing,.download,.demo{padding-left:22px;padding-right:22px;}
     .bundle,.qv{flex-direction:column;align-items:flex-start;}
     .bundle .bp,.qv .qp{text-align:left;}
+    .demo-wrap{grid-template-columns:1fr;gap:36px;}
   }
 </style>
 </head>
@@ -219,6 +267,25 @@
   <div class="rule"><span class="num">04</span><b>0</b><span>Abo, keine Werbung</span></div>
 </div>
 
+<section class="demo" id="demo">
+  <div class="demo-wrap">
+    <div class="demo-text reveal">
+      <div class="kicker">So läuft ein Quiz</div>
+      <h2 class="serif">Üben wie an der echten Prüfung.</h2>
+      <p>Geprüfte Fragen, sofortiges Feedback und Punkte für jede richtige Antwort. Genau das, was im Quiz auf dich wartet — kein langes Pauken aus dicken Ordnern.</p>
+    </div>
+    <div class="qcard reveal">
+      <div class="qhead">
+        <span class="qtag" id="dq-tag">Elektroinstallateur</span>
+        <span class="qnum" id="dq-num">Frage 3 / 20</span>
+      </div>
+      <div class="qbar"><i id="dq-bar"></i></div>
+      <div class="qq" id="dq-q">Welcher Leiterquerschnitt ist für einen 16-A-Stromkreis mindestens nötig?</div>
+      <div class="qopts" id="dq-opts"></div>
+    </div>
+  </div>
+</section>
+
 <section class="feature">
   <div class="reveal">
     <div class="kicker">Die Idee</div>
@@ -240,6 +307,36 @@
     <div class="frame-inner">
       <span class="ghost">— App-Screenshot folgt —</span>
     </div>
+  </div>
+</section>
+
+<section class="download" id="download">
+  <div class="dl-head reveal">
+    <div class="kicker">Download</div>
+    <h2 class="serif">App herunterladen.</h2>
+    <p>Lade LernStrom direkt hier herunter und installiere sie auf deinem Android-Handy — mit deinem Account startest du sofort durch.</p>
+    <div class="dl-actions">
+      <!-- MORGEN: href mit dem echten APK-Dateinamen ersetzen, z.B. href="lernstrom.apk" -->
+      <a href="#" class="apk-btn" download id="apk-download-btn">
+        <span class="ai">↓</span>
+        <span class="at"><small>Android · Direkt-Download</small><b>LernStrom.apk laden</b></span>
+      </a>
+      <span class="dl-os">Aktuell nur Android · <span class="ios">iOS in Bearbeitung</span></span>
+    </div>
+  </div>
+
+  <div class="guide reveal">
+    <div class="guide-warn">
+      <h4>Warum zeigt mein Handy eine Warnung?</h4>
+      <p>Android warnt grundsätzlich bei jeder App, die nicht aus dem Play Store kommt — unabhängig davon, ob sie sicher ist. LernStrom ist sicher. Du kannst die Installation bedenkenlos bestätigen.</p>
+    </div>
+    <ol class="gsteps">
+      <li><h4>Datei herunterladen</h4><p>Tippe oben auf <strong>„LernStrom.apk laden"</strong>. Falls eine Meldung erscheint wie „Datei kann dein Gerät schädigen", tippe auf <strong>„Trotzdem herunterladen"</strong>.</p></li>
+      <li><h4>Datei öffnen</h4><p>Öffne die heruntergeladene Datei — über die Download-Benachrichtigung oben oder in deiner <strong>Dateien-App</strong> im Ordner „Downloads".</p></li>
+      <li><h4>Installation erlauben</h4><p>Beim ersten Mal fragt Android, ob es Apps aus dieser Quelle installieren darf. Tippe auf <strong>„Einstellungen"</strong> und aktiviere <strong>„Aus dieser Quelle zulassen"</strong>, dann zurück.</p></li>
+      <li><h4>Installieren & loslegen</h4><p>Tippe auf <strong>„Installieren"</strong>. Nach wenigen Sekunden ist LernStrom auf deinem Handy. Öffne die App, melde dich mit deinem Account an — fertig.</p></li>
+    </ol>
+    <p class="guide-reassure">Deine Daten sind sicher — Login und Lernfortschritt laufen über dieselbe geschützte Anmeldung wie immer.<br>Bei Problemen schreib uns an <a href="mailto:info@lernstrom.ch">info@lernstrom.ch</a>.</p>
   </div>
 </section>
 
@@ -393,6 +490,30 @@ var io=new IntersectionObserver(function(es){
   es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
 },{threshold:.18});
 document.querySelectorAll('.reveal').forEach(function(r){ io.observe(r); });
+
+/* Quiz-Demo Auto-Cycle */
+var demoQ=[
+  {tag:"Elektroinstallateur",q:"Welcher Leiterquerschnitt ist für einen 16-A-Stromkreis mindestens nötig?",opts:["1.0 mm²","1.5 mm²","2.5 mm²","4.0 mm²"],correct:2,n:3},
+  {tag:"Montage-Elektriker",q:"Welche Schutzmassnahme verhindert gefährliche Berührungsspannung?",opts:["Überstromschutz","Schutzleiter (PE)","Phasenfolge","Blindleistung"],correct:1,n:4},
+  {tag:"QV-Vorbereitung",q:"Wofür steht die Abkürzung FI bzw. RCD?",opts:["Fehlerstromschutz","Frequenzregler","Feininstallation","Festwiderstand"],correct:0,n:5}
+];
+var dqi=0, dqL=["A","B","C","D"];
+function renderDemo(){
+  var tag=document.getElementById('dq-tag'),num=document.getElementById('dq-num'),q=document.getElementById('dq-q'),opts=document.getElementById('dq-opts'),bar=document.getElementById('dq-bar');
+  if(!tag) return;
+  var it=demoQ[dqi];
+  tag.textContent=it.tag; num.textContent="Frage "+it.n+" / 20"; q.textContent=it.q; bar.style.width=(it.n*5)+"%";
+  opts.innerHTML="";
+  it.opts.forEach(function(o,i){
+    var d=document.createElement('div'); d.className='qopt';
+    d.innerHTML='<span class="k">'+dqL[i]+'</span>'+o;
+    opts.appendChild(d);
+    if(i===it.correct) d.dataset.correct="1";
+  });
+  setTimeout(function(){ var r=opts.querySelector('[data-correct="1"]'); if(r) r.classList.add('correct'); },1400);
+  setTimeout(function(){ dqi=(dqi+1)%demoQ.length; renderDemo(); },4200);
+}
+renderDemo();
 </script>
 
 </body>
