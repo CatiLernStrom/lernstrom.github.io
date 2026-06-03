@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AGB – LernStrom</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{ --bg:#FBFBF9; --ink:#16150F; --muted:#6B6A62; --line:#E7E5DD; --card:#FFFFFF; }
+  html[data-theme="dark"]{ --bg:#0E0E0C; --ink:#F4F2EA; --muted:#9A988E; --line:#26251F; --card:#161510; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--ink);font-family:'Instrument Sans',sans-serif;-webkit-font-smoothing:antialiased;line-height:1.6;transition:background .4s,color .4s;}
+  nav{display:flex;justify-content:space-between;align-items:center;padding:24px 40px;border-bottom:1px solid var(--line);position:sticky;top:0;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(12px);z-index:50;}
+  .logo{font-family:'Fraunces',serif;font-weight:600;font-size:22px;letter-spacing:-.5px;text-decoration:none;color:var(--ink);}
+  .nav-right{display:flex;align-items:center;gap:18px;}
+  .back{color:var(--muted);text-decoration:none;font-size:14px;}
+  .back:hover{color:var(--ink);}
+  .theme-toggle{width:40px;height:40px;border:1px solid var(--line);border-radius:50%;background:var(--card);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:border-color .2s,transform .3s;color:var(--ink);}
+  .theme-toggle:hover{border-color:var(--ink);transform:rotate(-18deg);}
+  .theme-toggle svg{width:17px;height:17px;}
+  .theme-toggle .ico-moon{display:none;}
+  html[data-theme="dark"] .theme-toggle .ico-sun{display:none;}
+  html[data-theme="dark"] .theme-toggle .ico-moon{display:block;}
+  .wrap{max-width:780px;margin:0 auto;padding:80px 40px;}
+  .kicker{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;}
+  h1{font-family:'Fraunces',serif;font-weight:500;font-size:clamp(36px,6vw,60px);letter-spacing:-2px;line-height:1.02;margin:16px 0 10px;}
+  .sub{color:var(--muted);font-size:14px;margin-bottom:48px;}
+  .block{margin-bottom:34px;}
+  .block h2{font-family:'Fraunces',serif;font-weight:500;font-size:21px;letter-spacing:-.5px;margin-bottom:10px;}
+  .block p{color:var(--muted);font-size:16px;line-height:1.8;}
+  .block a{color:var(--ink);}
+  .disclaimer{font-size:13px;color:var(--muted);opacity:.8;border-top:1px solid var(--line);padding-top:20px;}
+  footer{border-top:1px solid var(--line);padding:32px 40px;max-width:780px;margin:0 auto;display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px;align-items:center;}
+  footer .fnote{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);}
+  .flinks{display:flex;gap:20px;flex-wrap:wrap;}
+  .flinks a{color:var(--muted);text-decoration:none;font-size:13px;}
+  .flinks a:hover{color:var(--ink);}
+  @media(max-width:600px){nav{padding:16px 22px;}.wrap{padding:48px 22px;}footer{padding:24px 22px;}}
+</style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="logo">LernStrom</a>
+  <div class="nav-right">
+    <a href="index.html" class="back">← Startseite</a>
+    <button class="theme-toggle" onclick="tt()" aria-label="Hell/Dunkel"><svg class="ico-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M1.5 12h3M19.5 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg><svg class="ico-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a7 7 0 1 0 10.5 10.5z"/></svg></button>
+  </div>
+</nav>
+<div class="wrap">
+  <div class="kicker">Rechtliches</div>
+  <h1>Allgemeine Geschäftsbedingungen</h1>
+  <p class="sub">Stand: Juni 2026</p>
+  <div class="block"><h2>1. Geltungsbereich</h2><p>Diese AGB gelten für die Nutzung der LernStrom-App und der Website lernstrom.ch sowie für alle darüber abgeschlossenen Käufe. Mit dem Kauf eines Zugangs oder der Nutzung der App akzeptierst du diese Bedingungen.</p></div>
+  <div class="block"><h2>2. Leistung</h2><p>LernStrom stellt digitale Lerninhalte (Quizfragen, Übungen) zur Vorbereitung auf überbetriebliche Kurse (ÜK) und das Qualifikationsverfahren (QV) bereit. Es handelt sich um ein freiwilliges Lern- und Übungsangebot ohne offiziellen oder behördlichen Charakter.</p></div>
+  <div class="block"><h2>3. Keine Gewähr auf Richtigkeit und Vollständigkeit</h2><p>Die Lerninhalte werden teilweise mithilfe von künstlicher Intelligenz (KI) erstellt und manuell aufbereitet. Trotz sorgfältiger Kontrolle kann nicht garantiert werden, dass alle Fragen, Antworten und Erklärungen jederzeit korrekt, vollständig oder aktuell sind. Die Inhalte ersetzen weder den offiziellen Unterricht noch die offiziellen Lehrmittel. Es besteht kein Anspruch auf Vollständigkeit der abgedeckten Themen oder Fächer.</p></div>
+  <div class="block"><h2>4. Verfügbarkeit der Inhalte</h2><p>Nicht alle Inhalte sind zwingend zu jedem Zeitpunkt verfügbar. Der Betreiber behält sich ausdrücklich vor, Fragen, Fächer oder ganze Bereiche jederzeit zu ändern, zu ergänzen, zu reduzieren oder offline zu nehmen — auch nach einem Kauf — ohne dass daraus ein Anspruch auf Rückerstattung, Schadenersatz oder Wiederherstellung entsteht. Ein Anspruch auf eine bestimmte Anzahl Fragen oder einen bestimmten Inhaltsumfang besteht nicht.</p></div>
+  <div class="block"><h2>5. Kein garantierter Prüfungserfolg</h2><p>LernStrom ist ein Hilfsmittel zur Vorbereitung. Es wird kein Bestehen des Qualifikationsverfahrens, einer Prüfung oder ein bestimmter Lernerfolg garantiert oder zugesichert. Die Verantwortung für die Prüfungsvorbereitung liegt allein bei der lernenden Person.</p></div>
+  <div class="block"><h2>6. Preise und Zahlung</h2><p>Alle Preise verstehen sich in Schweizer Franken (CHF). Der Kauf erfolgt einmalig über den Zahlungsdienstleister Stripe. Nach erfolgreicher Zahlung wird der gekaufte Zugang freigeschaltet.</p></div>
+  <div class="block"><h2>7. Kein Widerrufsrecht bei digitalen Inhalten</h2><p>Da es sich um sofort nutzbare digitale Inhalte handelt, ist ein Widerruf oder eine Rückerstattung nach erfolgter Freischaltung grundsätzlich ausgeschlossen. Mit dem Kauf erklärst du dich damit einverstanden, dass die Leistung sofort erbracht wird.</p></div>
+  <div class="block"><h2>8. Nutzungsrecht</h2><p>Der erworbene Zugang ist persönlich und nicht übertragbar. Das Teilen von Zugangsdaten, das Weiterverkaufen oder die Vervielfältigung der Inhalte ist nicht gestattet. Bei Missbrauch kann der Zugang ohne Rückerstattung gesperrt werden.</p></div>
+  <div class="block"><h2>9. Haftungsbeschränkung</h2><p>Der Betreiber haftet nicht für Schäden, die aus der Nutzung oder Nichtverfügbarkeit der App oder der Inhalte entstehen, soweit gesetzlich zulässig. Insbesondere wird keine Haftung für Lernergebnisse, Prüfungsresultate oder Entscheidungen übernommen, die auf Basis der Inhalte getroffen werden.</p></div>
+  <div class="block"><h2>10. Änderungen der AGB</h2><p>Der Betreiber behält sich vor, diese AGB jederzeit anzupassen. Massgebend ist die zum Zeitpunkt des Kaufs gültige Fassung.</p></div>
+  <div class="block"><h2>11. Anwendbares Recht</h2><p>Es gilt ausschliesslich schweizerisches Recht. Gerichtsstand ist, soweit gesetzlich zulässig, der Sitz des Betreibers.</p></div>
+  <p class="disclaimer">Hinweis: Diese AGB wurden nach bestem Wissen erstellt, stellen aber keine Rechtsberatung dar. Für eine rechtsverbindliche Prüfung wird die Konsultation einer Fachperson empfohlen.</p>
+</div>
+<footer>
+  <div class="fnote">© 2026 LernStrom</div>
+  <div class="flinks"><a href="impressum.html">Impressum</a><a href="agb.html">AGB</a><a href="datenschutz.html">Datenschutz</a><a href="konto-loeschen.html">Konto löschen</a></div>
+</footer>
+<script>function tt(){var h=document.documentElement;h.setAttribute('data-theme',h.getAttribute('data-theme')==='dark'?'light':'dark');}</script>
+</body>
+</html>
