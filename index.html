@@ -18,6 +18,7 @@
   }
   *{margin:0;padding:0;box-sizing:border-box;}
   html{scroll-behavior:smooth;}
+  section[id], div[id]{scroll-margin-top:90px;}
   body{background:var(--bg);color:var(--ink);font-family:'Instrument Sans',sans-serif;-webkit-font-smoothing:antialiased;line-height:1.5;transition:background .4s ease,color .4s ease;overflow-x:hidden;}
   .serif{font-family:'Fraunces',serif;}
   .mono{font-family:'JetBrains Mono',monospace;}
@@ -115,6 +116,9 @@
   footer{max-width:1200px;margin:90px auto 0;padding:32px 40px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;}
   footer .logo{font-size:18px;}
   footer .fnote{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:.5px;}
+  footer .flinks{display:flex;gap:20px;flex-wrap:wrap;}
+  footer .flinks a{color:var(--muted);text-decoration:none;font-size:13px;transition:color .2s;}
+  footer .flinks a:hover{color:var(--ink);}
 
   /* ===== Preise ===== */
   .pricing{max-width:1200px;margin:130px auto 0;padding:0 40px;}
@@ -180,7 +184,7 @@
 <nav>
   <div class="logo">LernStrom</div>
   <div class="nav-links">
-    <a href="#berufe">Berufe</a>
+    <a href="#preise">Berufe</a>
     <a href="#how">So funktioniert's</a>
     <a href="#preise">Preise</a>
     <a href="#download" class="nav-cta">App laden</a>
@@ -224,7 +228,7 @@
   </div>
 </section>
 
-<div class="steps">
+<div class="steps" id="how">
   <div class="stepb reveal"><div class="sn serif">01</div><h3>Beruf wählen</h3><p>Such dir deinen Beruf und dein Lehrjahr — oder bereite dich gezielt aufs QV vor.</p></div>
   <div class="stepb reveal"><div class="sn serif">02</div><h3>App laden</h3><p>Lade LernStrom auf dein Handy und melde dich mit deinem Account an.</p></div>
   <div class="stepb reveal"><div class="sn serif">03</div><h3>Üben & bestehen</h3><p>Quiz starten, Fortschritt verfolgen, mit jeder Runde sicherer werden.</p></div>
@@ -354,6 +358,13 @@
 <footer>
   <div class="logo">LernStrom</div>
   <div class="fnote">© 2026 · Lernplattform für die Schweiz</div>
+  <div class="flinks">
+    <a href="mailto:info@lernstrom.ch">info@lernstrom.ch</a>
+    <a href="impressum.html">Impressum</a>
+    <a href="agb.html">AGB</a>
+    <a href="datenschutz.html">Datenschutz</a>
+    <a href="konto-loeschen.html">Konto löschen</a>
+  </div>
 </footer>
 
 <script>
