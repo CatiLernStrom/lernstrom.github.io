@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Impressum – LernStrom</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --yellow:#FFD600; --black:#080808; --card:#181818; --gray:#8A8A8A; --white:#F5F5F5; --border:rgba(255,255,255,0.08); }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'Outfit',sans-serif; -webkit-font-smoothing:antialiased; }
+  nav { display:flex; justify-content:space-between; align-items:center; padding:18px 40px; border-bottom:1px solid var(--border); }
+  .nav-logo { font-family:'Unbounded'; font-size:20px; font-weight:800; color:var(--yellow); text-decoration:none; letter-spacing:-0.5px; }
+  .nav-back { color:var(--gray); text-decoration:none; font-size:14px; }
+  .nav-back:hover { color:var(--yellow); }
+  .legal-section { padding:80px 24px; max-width:800px; margin:0 auto; }
+  .legal-section h1 { font-family:'Unbounded'; font-size:38px; font-weight:800; color:var(--white); margin-bottom:8px; }
+  .legal-section .subtitle { color:var(--gray); margin-bottom:48px; font-size:15px; }
+  .legal-block { margin-bottom:40px; }
+  .legal-block h2 { font-size:20px; font-weight:700; color:var(--yellow); margin-bottom:12px; }
+  .legal-block p { color:var(--gray); font-size:15px; line-height:1.8; }
+  .legal-block a { color:var(--yellow); }
+  footer { border-top:1px solid var(--border); padding:40px 24px; text-align:center; color:var(--gray); font-size:14px; }
+  footer a { color:var(--yellow); text-decoration:none; }
+  .footer-links { display:flex; gap:24px; justify-content:center; flex-wrap:wrap; margin-top:12px; }
+  @media (max-width:600px){ nav{padding:16px 20px;} .legal-section{padding:48px 20px;} }
+</style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="nav-logo">⚡ LernStrom</a>
+  <a href="index.html" class="nav-back">← Zur Startseite</a>
+</nav>
+
+<div class="legal-section">
+  <h1>Impressum</h1>
+  <p class="subtitle">Angaben gemäss Art. 12 ZGB</p>
+
+  <div class="legal-block">
+    <h2>Betreiber</h2>
+    <p>Cataldo Distefano<br>Büelwiesstrasse 4<br>9249 Algetshausen<br>Schweiz</p>
+  </div>
+
+  <div class="legal-block">
+    <h2>Kontakt</h2>
+    <p>E-Mail: <a href="mailto:info@lernstrom.ch">info@lernstrom.ch</a></p>
+  </div>
+
+  <div class="legal-block">
+    <h2>Haftungsausschluss</h2>
+    <p>Die Inhalte dieser Website wurden mit grösster Sorgfalt erstellt. Für die Richtigkeit, Vollständigkeit und Aktualität der Inhalte kann jedoch keine Gewähr übernommen werden.</p>
+  </div>
+
+  <div class="legal-block">
+    <h2>Urheberrecht</h2>
+    <p>Die durch den Betreiber erstellten Inhalte unterliegen dem schweizerischen Urheberrecht. Die Vervielfältigung bedarf der schriftlichen Zustimmung des Erstellers.</p>
+  </div>
+</div>
+
+<footer>
+  <p>© 2026 LernStrom — ÜK & QV Lernplattform für Lehrlinge</p>
+  <div class="footer-links">
+    <a href="mailto:info@lernstrom.ch">info@lernstrom.ch</a>
+    <a href="impressum.html">Impressum</a>
+    <a href="agb.html">AGB</a>
+    <a href="datenschutz.html">Datenschutz</a>
+    <a href="konto-loeschen.html">Konto löschen</a>
+  </div>
+</footer>
+</body>
+</html>
