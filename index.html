@@ -144,6 +144,58 @@
   footer a { color: var(--yellow); text-decoration: none; }
   .footer-links { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; margin-top: 12px; }
 
+  /* ===== Download Sektion ===== */
+  .download-section { padding: 100px 24px; max-width: 900px; margin: 0 auto; }
+  .download-card { background: linear-gradient(135deg, #1a1a00 0%, var(--card) 100%); border: 1px solid rgba(255,214,0,0.25); border-radius: 28px; padding: 56px 40px; text-align: center; position: relative; overflow: hidden; }
+  .download-card h2 { font-family:'Unbounded'; font-size: clamp(28px,4vw,42px); font-weight: 800; letter-spacing: -1px; margin-bottom: 14px; }
+  .download-card > p { color: var(--gray); font-size: 17px; line-height: 1.6; font-weight: 300; max-width: 480px; margin: 0 auto 36px; }
+  .store-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+  .store-btn { display: inline-flex; align-items: center; gap: 12px; padding: 14px 26px; border-radius: 14px; text-decoration: none; transition: transform .2s, box-shadow .2s; }
+  .store-btn.android { background: var(--yellow); color: var(--black); }
+  .store-btn.android:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(255,214,0,0.35); }
+  .store-btn.ios { background: var(--card2); color: var(--gray); border: 1px solid #2a2a2a; cursor: default; }
+  .store-btn .store-ico { font-size: 30px; line-height: 1; }
+  .store-btn .store-txt { text-align: left; }
+  .store-btn .store-txt small { display: block; font-size: 11px; font-weight: 500; opacity: .8; letter-spacing: .3px; }
+  .store-btn .store-txt b { display: block; font-family:'Outfit'; font-size: 17px; font-weight: 700; }
+  .store-note { margin-top: 24px; font-size: 13px; color: var(--gray); }
+  .store-note .ios-tag { color: var(--yellow); font-weight: 600; }
+
+  /* ===== APK Direkt-Download ===== */
+  .apk-divider { display: flex; align-items: center; gap: 16px; max-width: 420px; margin: 32px auto 28px; color: var(--gray); font-size: 12px; letter-spacing: 1px; }
+  .apk-divider::before, .apk-divider::after { content: ''; flex: 1; height: 1px; background: #2a2a2a; }
+  .apk-direct { background: var(--card2); border: 1px solid #2a2a2a; border-radius: 14px; display: inline-flex; align-items: center; gap: 12px; text-decoration: none; transition: transform .2s, box-shadow .2s, border-color .2s; padding: 14px 26px; }
+  .apk-direct:hover { transform: translateY(-3px); border-color: var(--yellow); box-shadow: 0 12px 32px rgba(0,0,0,0.4); }
+  .apk-direct .store-ico { font-size: 28px; }
+  .apk-direct .store-txt { text-align: left; }
+  .apk-direct .store-txt small { display:block; font-size: 11px; color: var(--gray); font-weight: 500; }
+  .apk-direct .store-txt b { display:block; font-family:'Outfit'; font-size: 16px; font-weight: 700; color: var(--white); }
+
+  .apk-guide { max-width: 720px; margin: 56px auto 0; }
+  .apk-guide-head { text-align: center; margin-bottom: 36px; }
+  .apk-guide-head h3 { font-family:'Unbounded'; font-size: clamp(22px,3vw,30px); font-weight: 800; letter-spacing: -0.5px; margin-bottom: 10px; }
+  .apk-guide-head p { color: var(--gray); font-size: 15px; font-weight: 300; max-width: 480px; margin: 0 auto; }
+  .apk-warning { background: rgba(255,214,0,0.06); border: 1px solid rgba(255,214,0,0.3); border-radius: 16px; padding: 22px 24px; margin-bottom: 36px; display: flex; gap: 16px; align-items: flex-start; }
+  .apk-warning .warn-ico { font-size: 26px; flex-shrink: 0; line-height: 1.2; }
+  .apk-warning .warn-body h4 { font-size: 15px; font-weight: 700; color: var(--yellow); margin-bottom: 6px; }
+  .apk-warning .warn-body p { color: #cfcfcf; font-size: 14px; line-height: 1.6; font-weight: 300; }
+  .apk-steps { display: flex; flex-direction: column; gap: 14px; }
+  .apk-step { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px 22px; display: flex; gap: 18px; align-items: flex-start; }
+  .apk-step .step-circle { width: 34px; height: 34px; border-radius: 50%; background: var(--yellow); color: var(--black); font-family:'Unbounded'; font-weight: 800; font-size: 15px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .apk-step .step-content h4 { font-size: 16px; font-weight: 700; margin-bottom: 5px; }
+  .apk-step .step-content p { color: var(--gray); font-size: 14px; line-height: 1.6; font-weight: 300; }
+  .apk-step .step-content strong { color: var(--white); font-weight: 600; }
+  .apk-reassure { text-align: center; margin-top: 32px; color: var(--gray); font-size: 13px; line-height: 1.7; font-weight: 300; }
+  .apk-reassure strong { color: var(--white); }
+
+  @media (max-width: 600px) {
+    .download-section { padding: 60px 20px; }
+    .download-card { padding: 40px 24px; }
+    .store-buttons { flex-direction: column; align-items: stretch; }
+    .store-btn { justify-content: center; }
+    .apk-guide { margin-top: 40px; }
+  }
+
   /* ===== Quiz-Demo Sektion ===== */
   .demo-section { padding: 100px 24px; max-width: 1100px; margin: 0 auto; }
   .demo-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
@@ -239,6 +291,7 @@
   <div class="dropdown-divider"></div>
   <a onclick="scrollToSection('features')">✨ Features</a>
   <a onclick="scrollToSection('how')">📲 So funktioniert's</a>
+  <a onclick="scrollToSection('download')">⬇️ Download</a>
   <a onclick="scrollToSection('preise')">💛 Preise</a>
 </div>
 
@@ -321,6 +374,79 @@
       <div class="step"><div class="step-num">01</div><h3>Zugang kaufen</h3><p>Wähle deinen Beruf und dein Lehrjahr — oder nimm das Bundle für alle Lehrjahre.</p></div>
       <div class="step"><div class="step-num">02</div><h3>App herunterladen</h3><p>LernStrom aus dem Google Play Store laden und mit deinem Account einloggen.</p></div>
       <div class="step"><div class="step-num">03</div><h3>Quiz spielen</h3><p>Fach auswählen, Quiz starten und mit XP, Timer und Achievements motiviert lernen.</p></div>
+    </div>
+  </section>
+
+  <section class="download-section reveal" id="download">
+    <div class="download-card">
+      <svg class="circuit" viewBox="0 0 900 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true" style="opacity:.25;">
+        <path d="M0,100 H260 V260 H520 V140 H900"/>
+        <path d="M0,320 H200 V160 H540 V340 H900"/>
+        <path d="M0,220 H120 V60 H620 V260 H900"/>
+      </svg>
+      <div style="position:relative; z-index:2;">
+        <h2>App herunterladen.</h2>
+        <p>Lade LernStrom direkt hier herunter und installiere sie auf deinem Android-Handy — mit deinem Account startest du sofort durch.</p>
+        <div class="store-buttons">
+          <!-- MORGEN: href mit dem echten APK-Dateinamen ersetzen, z.B. href="lernstrom.apk" -->
+          <a href="#" class="apk-direct" download id="apk-download-btn">
+            <span class="store-ico">⬇️</span>
+            <span class="store-txt"><small>Android · Direkt-Download</small><b>LernStrom.apk laden</b></span>
+          </a>
+        </div>
+        <p class="store-note">Aktuell nur für <strong style="color:var(--white)">Android</strong>. <span class="ios-tag">Eine Version für iPhone (iOS) ist in Bearbeitung.</span></p>
+      </div>
+    </div>
+
+    <div class="apk-guide">
+      <div class="apk-guide-head">
+        <h3>So installierst du die App</h3>
+        <p>Da LernStrom direkt von hier kommt und nicht aus dem Play Store, zeigt dir Android ein paar Sicherheitshinweise. Das ist normal — folge einfach diesen Schritten.</p>
+      </div>
+
+      <div class="apk-warning">
+        <span class="warn-ico">⚠️</span>
+        <div class="warn-body">
+          <h4>Warum zeigt mein Handy eine Warnung?</h4>
+          <p>Android warnt grundsätzlich bei jeder App, die nicht aus dem Play Store kommt — unabhängig davon, ob sie sicher ist. LernStrom ist sicher. Du kannst die Installation bedenkenlos bestätigen.</p>
+        </div>
+      </div>
+
+      <div class="apk-steps">
+        <div class="apk-step">
+          <div class="step-circle">1</div>
+          <div class="step-content">
+            <h4>Datei herunterladen</h4>
+            <p>Tippe oben auf <strong>„LernStrom.apk laden"</strong>. Der Download startet. Falls eine Meldung erscheint wie „Datei kann dein Gerät schädigen", tippe auf <strong>„Trotzdem herunterladen"</strong> oder <strong>„OK"</strong>.</p>
+          </div>
+        </div>
+        <div class="apk-step">
+          <div class="step-circle">2</div>
+          <div class="step-content">
+            <h4>Datei öffnen</h4>
+            <p>Öffne die heruntergeladene Datei — über die Download-Benachrichtigung oben oder in deiner <strong>Dateien-App</strong> im Ordner „Downloads".</p>
+          </div>
+        </div>
+        <div class="apk-step">
+          <div class="step-circle">3</div>
+          <div class="step-content">
+            <h4>Installation erlauben</h4>
+            <p>Beim ersten Mal fragt Android, ob es Apps aus dieser Quelle installieren darf. Tippe auf <strong>„Einstellungen"</strong> und aktiviere <strong>„Aus dieser Quelle zulassen"</strong>. Danach gehst du zurück.</p>
+          </div>
+        </div>
+        <div class="apk-step">
+          <div class="step-circle">4</div>
+          <div class="step-content">
+            <h4>Installieren & loslegen</h4>
+            <p>Tippe auf <strong>„Installieren"</strong>. Nach wenigen Sekunden ist LernStrom auf deinem Handy. Öffne die App, melde dich mit deinem Account an — fertig!</p>
+          </div>
+        </div>
+      </div>
+
+      <p class="apk-reassure">
+        <strong>Deine Daten sind sicher.</strong> Login und Lernfortschritt laufen über dieselbe geschützte Anmeldung wie immer.<br>
+        Bei Problemen mit der Installation schreib uns einfach an <a href="mailto:info@lernstrom.ch" style="color:var(--yellow); text-decoration:none;">info@lernstrom.ch</a> — wir helfen dir durch.
+      </p>
     </div>
   </section>
 
