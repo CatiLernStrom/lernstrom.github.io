@@ -1,0 +1,1 @@
+import{r as n}from"./vendor-F8FsCsBL.js";import{b as a}from"./primar-DAuFGpTr.js";import{c as u}from"./primarContent-IxfYXtZt.js";function p(e){const t=a(e),[s,r]=n.useState(t);return n.useEffect(()=>{if(t){r(t);return}let o=!0;return u(e).then(f=>{o&&f&&r(f)}).catch(()=>{}),()=>{o=!1}},[e,t]),s}export{p as u};
