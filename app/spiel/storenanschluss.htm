@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>LernStrom — Storenanschluss</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    background:radial-gradient(circle at 50% 30%, #1a2230 0%, #0c1018 70%, #06080d 100%);
+    font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:#e8edf2;
+    display:flex;align-items:center;justify-content:center;
+    overflow:hidden;
+    user-select:none;-webkit-user-select:none;
+    touch-action:none;
+  }
+  #stage{
+    position:relative;
+    width:390px;height:844px;
+    max-height:100vh;
+    border-radius:34px;
+    overflow:hidden;
+    box-shadow:0 30px 90px rgba(0,0,0,.7), 0 0 0 10px #0a0d13, 0 0 0 12px #1c232e, inset 0 0 60px rgba(0,0,0,.4);
+    background:
+      radial-gradient(120% 60% at 50% -10%, rgba(45,212,191,.10), transparent 60%),
+      linear-gradient(180deg,#26303d 0%, #1a212c 35%, #141a23 100%);
+  }
+  @media (max-height:860px){ #stage{transform:scale(calc(100vh / 860));} }
+
+  #stage::after{
+    content:"";position:absolute;inset:0;border-radius:34px;pointer-events:none;
+    box-shadow:inset 0 0 120px rgba(0,0,0,.55), inset 0 -40px 80px rgba(0,0,0,.5);
+    background:radial-gradient(140% 90% at 50% 120%, rgba(120,80,30,.10), transparent 55%);
+    z-index:60;
+  }
+
+  canvas#fx{position:absolute;inset:0;z-index:40;pointer-events:none;}
+
+  /* ---------- HUD ---------- */
+  #hud{position:absolute;top:0;left:0;right:0;z-index:50;padding:14px 16px 8px;display:flex;align-items:center;gap:10px;}
+  .badge{
+    display:flex;align-items:center;gap:7px;
+    background:linear-gradient(180deg,#202a37,#161d27);
+    border:1px solid rgba(255,255,255,.07);
+    border-radius:14px;padding:7px 11px;font-size:13px;font-weight:700;
+    box-shadow:0 4px 10px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.05);
+  }
+  .badge .dot{width:9px;height:9px;border-radius:50%;background:#2dd4bf;box-shadow:0 0 8px #2dd4bf;}
+  #xpBadge{color:#ffd166;}
+  #xpBadge .ico{font-weight:900;color:#ffd166;filter:drop-shadow(0 0 5px rgba(255,209,102,.6));}
+  .spacer{flex:1;}
+  #mute{
+    width:38px;height:38px;border-radius:12px;cursor:pointer;
+    background:linear-gradient(180deg,#202a37,#161d27);
+    border:1px solid rgba(255,255,255,.07);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 4px 10px rgba(0,0,0,.4);
+  }
+  #mute:active{transform:scale(.92);}
+  #mute svg{width:20px;height:20px;}
+
+  /* step progress bar */
+  #prog{position:absolute;top:58px;left:16px;right:16px;z-index:50;height:8px;border-radius:6px;
+    background:rgba(0,0,0,.4);overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,.6);}
+  #progFill{height:100%;width:0%;border-radius:6px;
+    background:linear-gradient(90deg,#2dd4bf,#7af0d9);transition:width .5s cubic-bezier(.2,1.3,.4,1);
+    box-shadow:0 0 12px rgba(45,212,191,.7);}
+
+  /* ---------- title / instruction ---------- */
+  #task{position:absolute;top:74px;left:0;right:0;z-index:50;text-align:center;pointer-events:none;padding:0 14px;transition:opacity .6s, transform .6s;}
+  #task.faded{opacity:0;transform:translateY(-8px);}
+  #task h1{font-size:15px;font-weight:800;letter-spacing:.3px;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.6);}
+  #task p{font-size:12px;margin-top:3px;color:#9fb0c0;font-weight:600;line-height:1.4;}
+
+  /* step chips row */
+  #steps{position:absolute;top:38px;left:16px;right:16px;z-index:49;display:flex;gap:3px;justify-content:center;pointer-events:none;}
+  #steps .sc{flex:1;height:4px;border-radius:3px;background:rgba(255,255,255,.08);transition:background .4s, box-shadow .4s;}
+  #steps .sc.done{background:linear-gradient(90deg,#2dd4bf,#7af0d9);box-shadow:0 0 8px rgba(45,212,191,.6);}
+  #steps .sc.cur{background:#ffd166;box-shadow:0 0 10px rgba(255,209,102,.7);}
+
+  /* generic scene container */
+  .prep{position:absolute;inset:0;z-index:30;opacity:0;pointer-events:none;transition:opacity .55s;}
+  .prep.on{opacity:1;pointer-events:auto;}
+  .prep svg{position:absolute;inset:0;width:100%;height:100%;display:block;}
+
+  #wireHint{position:absolute;left:50%;transform:translateX(-50%);bottom:20px;z-index:25;
+    font-size:12px;color:#9fb0c0;font-weight:600;background:rgba(10,14,20,.6);padding:6px 14px;border-radius:20px;
+    border:1px solid rgba(255,255,255,.06);pointer-events:none;text-align:center;max-width:340px;}
+  #wireHint b{color:#fff;}
+
+  /* readout chip */
+  .readout{position:absolute;left:50%;transform:translateX(-50%);bottom:118px;z-index:35;
+    font-size:13px;font-weight:800;color:#fff;background:linear-gradient(180deg,#202a37,#141a23);
+    padding:7px 16px;border-radius:20px;border:1px solid rgba(45,212,191,.3);
+    box-shadow:0 6px 18px rgba(0,0,0,.5);pointer-events:none;text-align:center;min-width:170px;}
+  .readout.bad{border-color:#ff6b6b;color:#ffb3b3;}
+  .readout.good{border-color:#2dd4bf;}
+
+  /* WIN overlay */
+  #win{position:absolute;inset:0;z-index:70;display:none;flex-direction:column;align-items:center;justify-content:center;
+    background:radial-gradient(circle at 50% 40%, rgba(45,212,191,.18), rgba(6,9,14,.86) 60%);
+    backdrop-filter:blur(2px);}
+  #win.show{display:flex;animation:winIn .5s;}
+  @keyframes winIn{from{opacity:0}to{opacity:1}}
+  #win .card{
+    width:300px;padding:26px 22px 24px;border-radius:24px;text-align:center;
+    background:linear-gradient(180deg,#222d3a,#161d27);
+    border:1px solid rgba(45,212,191,.3);
+    box-shadow:0 30px 70px rgba(0,0,0,.7), 0 0 40px rgba(45,212,191,.2), inset 0 1px 0 rgba(255,255,255,.06);
+    transform:scale(.6);animation:pop .6s cubic-bezier(.2,1.6,.4,1) forwards;
+  }
+  @keyframes pop{to{transform:scale(1)}}
+  #win h2{font-size:22px;font-weight:900;color:#fff;letter-spacing:.5px;}
+  #win .sub{font-size:13px;color:#9fb0c0;margin-top:5px;font-weight:600;}
+  #stars{display:flex;gap:8px;justify-content:center;margin:16px 0 6px;}
+  #stars .st{font-size:34px;color:#2a3340;transform:scale(0);}
+  #stars .st.lit{color:#ffd166;text-shadow:0 0 16px rgba(255,209,102,.8);animation:starPop .5s cubic-bezier(.2,1.8,.4,1) forwards;}
+  @keyframes starPop{0%{transform:scale(0) rotate(-40deg)}70%{transform:scale(1.4) rotate(10deg)}100%{transform:scale(1) rotate(0)}}
+  #xpBig{font-size:30px;font-weight:900;color:#ffd166;margin:8px 0 4px;text-shadow:0 0 18px rgba(255,209,102,.5);}
+  #win .ok{margin-top:16px;padding:12px 0;border-radius:14px;cursor:pointer;font-weight:800;font-size:15px;color:#06281f;
+    background:linear-gradient(180deg,#5cf0d6,#2dd4bf);box-shadow:0 8px 20px rgba(45,212,191,.4);}
+  #win .ok:active{transform:scale(.96);}
+
+  .toast{position:absolute;z-index:55;font-weight:900;font-size:15px;pointer-events:none;
+    text-shadow:0 2px 6px rgba(0,0,0,.6);animation:toastUp 1s ease-out forwards;}
+  @keyframes toastUp{0%{opacity:0;transform:translateY(0) scale(.6)}15%{opacity:1;transform:translateY(-6px) scale(1.1)}100%{opacity:0;transform:translateY(-46px) scale(1)}}
+
+  .shake{animation:shakeStage .35s;}
+  @keyframes shakeStage{0%,100%{transform:translate(0,0)}20%{transform:translate(-6px,2px)}40%{transform:translate(6px,-2px)}60%{transform:translate(-4px,1px)}80%{transform:translate(4px,-1px)}}
+
+  /* affordance helpers */
+  .pulseTool{animation:toolPulse 1.1s ease-in-out infinite;}
+  @keyframes toolPulse{0%,100%{filter:drop-shadow(0 0 1px rgba(45,212,191,.3))}50%{filter:drop-shadow(0 0 10px rgba(45,212,191,.95)) drop-shadow(0 0 4px rgba(122,240,217,.9))}}
+  .dragPath{stroke-dasharray:7 7;animation:dashMove 1s linear infinite;}
+  @keyframes dashMove{to{stroke-dashoffset:-28;}}
+  .ghost{pointer-events:none;}
+  .pathArrow{animation:arrowGlow 1.1s ease-in-out infinite;}
+  @keyframes arrowGlow{0%,100%{opacity:.55}50%{opacity:1}}
+  .doHint{position:absolute;left:12px;top:116px;transform:none;z-index:36;max-width:180px;
+    font-size:11.5px;font-weight:800;color:#fff;text-align:left;line-height:1.4;
+    background:linear-gradient(180deg,rgba(32,42,55,.95),rgba(20,26,35,.95));
+    padding:9px 14px;border-radius:16px;border:1px solid rgba(45,212,191,.4);
+    box-shadow:0 8px 22px rgba(0,0,0,.5), 0 0 22px rgba(45,212,191,.18);
+    pointer-events:none;opacity:0;transition:opacity .4s;}
+  .doHint.on{opacity:1;}
+  .doHint b{color:#7af0d9;}
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <canvas id="fx"></canvas>
+
+  <!-- HUD -->
+  <div id="hud">
+    <div class="badge"><span class="dot"></span><span id="phaseLbl">Schritt 1</span></div>
+    <div class="spacer"></div>
+    <div class="badge" id="xpBadge"><span class="ico">XP</span><span id="xpVal">0</span></div>
+    <div id="mute"></div>
+  </div>
+
+  <div id="steps"></div>
+  <div id="prog"><div id="progFill"></div></div>
+
+  <div id="task">
+    <h1 id="taskTitle">Storenanschluss</h1>
+    <p id="taskSub">Wohnzimmer mit 3 Storen</p>
+  </div>
+
+  <!-- STEP 1: Schalter -> Motor verbinden -->
+  <div class="prep" id="pWire">
+    <svg id="svgWire" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"></svg>
+    <div class="doHint" id="hintWire"></div>
+    <div id="wireHint">Ziehe jeden <b>Storenschalter</b> zu seinem <b>Storenmotor</b></div>
+  </div>
+
+  <!-- STEP 2: Motoranschluss / Storenstecker -->
+  <div class="prep" id="pPlug">
+    <svg id="svgPlug" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"></svg>
+    <div class="doHint" id="hintPlug"></div>
+    <div class="readout" id="roPlug">Adern abisolieren, crimpen, anklemmen</div>
+  </div>
+
+  <!-- STEP 3: Funktionstest -->
+  <div class="prep" id="pTest">
+    <svg id="svgTest" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"></svg>
+    <div class="readout" id="roTest">Jede Store mit ihrem Schalter auf- und abfahren</div>
+  </div>
+
+  <!-- WIN -->
+  <div id="win">
+    <div class="card">
+      <h2>STOREN LAUFEN!</h2>
+      <div class="sub">Storenanschluss fachgerecht ausgeführt</div>
+      <div id="stars"><span class="st">&#9733;</span><span class="st">&#9733;</span><span class="st">&#9733;</span></div>
+      <div id="xpBig">+150 XP</div>
+      <div class="sub" id="winNote">3 Storen · Auf/Ab verriegelt · N/PE + Auf/Ab korrekt</div>
+      <div class="ok" id="again">Nochmal spielen</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+"use strict";
+/* ============================================================= *
+ *  LernStrom — Storenanschluss (single-file demo)               *
+ *  CH / MFH: Wohnzimmer mit 3 Storen.                           *
+ *  Schritt 1: Storenschalter -> richtiger Storenmotor           *
+ *  Schritt 2: Motoranschluss (abisolieren / crimpen / klemmen)  *
+ *  Schritt 3: Funktionstest (Auf/Ab verriegelt) -> WIN          *
+ *  Pure SVG + Canvas FX + WebAudio. file:// offline.            *
+ *  Stil/Technik aus abzweigdose-verdrahten.htm uebernommen.     *
+ * ============================================================= */
+
+const STAGE_W = 390, STAGE_H = 844;
+const SVGNS   = "http://www.w3.org/2000/svg";
+const stage   = document.getElementById('stage');
+const fx      = document.getElementById('fx');
+const ctx     = fx.getContext('2d');
+
+/* ---------- coordinate helper: client px -> svg viewbox px ---- */
+function toSvgFor(svg, clientX, clientY){
+  const r = svg.getBoundingClientRect();
+  const vb = svg.viewBox.baseVal;
+  return {
+    x: (clientX - r.left) / r.width  * vb.width,
+    y: (clientY - r.top ) / r.height * vb.height
+  };
+}
+
+/* =============================================================
+ *  AUDIO  (tiny WebAudio synth) — muted default + mute toggle
+ * ============================================================= */
+let audioCtx=null, muted=true;
+function AC(){ if(!audioCtx){ try{audioCtx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){} } return audioCtx; }
+function tone(freq, dur, type, vol, slideTo){
+  if(muted) return; const c=AC(); if(!c) return;
+  const o=c.createOscillator(), g=c.createGain();
+  o.type=type||'sine'; o.frequency.value=freq;
+  if(slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, c.currentTime+dur);
+  g.gain.value=0.0001;
+  g.gain.exponentialRampToValueAtTime(vol||0.2, c.currentTime+0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime+dur);
+  o.connect(g); g.connect(c.destination);
+  o.start(); o.stop(c.currentTime+dur+0.02);
+}
+function sndClick(){ tone(680,0.07,'triangle',0.25,1200); setTimeout(()=>tone(1500,0.05,'sine',0.12),20); }
+function sndSnap(){ tone(440,0.05,'square',0.18,900); setTimeout(()=>tone(1320,0.12,'triangle',0.22),30); }
+function sndBuzz(){ if(muted)return; const c=AC(); if(!c)return;
+  const o=c.createOscillator(),g=c.createGain(); o.type='sawtooth';o.frequency.value=120;
+  g.gain.value=0.0001;g.gain.exponentialRampToValueAtTime(0.22,c.currentTime+0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+0.25);
+  o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+0.27);
+}
+function sndPick(){ tone(520,0.05,'sine',0.14,720); }
+function sndClamp(){ tone(220,0.05,'square',0.22,120); setTimeout(()=>tone(1800,0.04,'square',0.16),55); }
+function sndMotor(dir){ if(muted)return; const c=AC(); if(!c)return;
+  const o=c.createOscillator(),g=c.createGain(); o.type='sawtooth';
+  o.frequency.value=dir>0?70:90; o.frequency.linearRampToValueAtTime(dir>0?95:65,c.currentTime+1.1);
+  g.gain.value=0.0001;g.gain.exponentialRampToValueAtTime(0.10,c.currentTime+0.05);
+  g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+1.15);
+  o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+1.2);
+}
+function sndWin(){ [523,659,784,1047,1319].forEach((f,i)=>setTimeout(()=>tone(f,0.3,'triangle',0.2),i*110)); }
+
+/* mute button (SVG icons, no emoji) */
+const muteBtn=document.getElementById('mute');
+const ICON_MUTE='<svg viewBox="0 0 24 24" fill="none"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="#9fb0c0"/><path d="M16 9l5 6M21 9l-5 6" stroke="#ff6b6b" stroke-width="2" stroke-linecap="round"/></svg>';
+const ICON_SND ='<svg viewBox="0 0 24 24" fill="none"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="#7af0d9"/><path d="M16 8.5a5 5 0 010 7M18.5 6a8.5 8.5 0 010 12" stroke="#7af0d9" stroke-width="2" stroke-linecap="round"/></svg>';
+muteBtn.innerHTML=ICON_MUTE;
+muteBtn.onclick=function(){
+  muted=!muted; muteBtn.innerHTML=muted?ICON_MUTE:ICON_SND;
+  if(!muted){ AC(); tone(880,0.06,'sine',0.15); }
+};
+
+/* =============================================================
+ *  PARTICLE / FX ENGINE  (canvas)
+ * ============================================================= */
+function sizeCanvas(){
+  const r=stage.getBoundingClientRect();
+  const dpr=window.devicePixelRatio||1;
+  fx.width=STAGE_W*dpr; fx.height=STAGE_H*dpr;
+  fx.style.width=r.width+'px'; fx.style.height=r.height+'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+let particles=[];
+function spark(x,y,n,opt){
+  opt=opt||{};
+  for(let i=0;i<n;i++){
+    const a=Math.random()*Math.PI*2, sp=(opt.speed||3)*(0.4+Math.random());
+    particles.push({
+      x,y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp - (opt.up||0),
+      life:1, decay:0.012+Math.random()*0.02,
+      size:(opt.size||2.4)*(0.6+Math.random()),
+      color:opt.color|| (Math.random()<.5?'#ffd166':'#ffae42'),
+      grav:opt.grav!=null?opt.grav:0.06, glow:opt.glow!==false
+    });
+  }
+}
+let confetti=[];
+function burstConfetti(){
+  const cols=['#2dd4bf','#ffd166','#ff6b6b','#7af0d9','#ffffff','#ffae42','#8ab4ff'];
+  for(let i=0;i<140;i++){
+    confetti.push({
+      x:STAGE_W/2+(Math.random()-.5)*60, y:STAGE_H*0.42,
+      vx:(Math.random()-.5)*9, vy:-Math.random()*11-3,
+      g:0.22+Math.random()*0.1, w:5+Math.random()*6, h:8+Math.random()*8,
+      rot:Math.random()*6.28, vr:(Math.random()-.5)*0.4,
+      color:cols[(Math.random()*cols.length)|0], life:1
+    });
+  }
+}
+
+function fxLoop(){
+  ctx.clearRect(0,0,STAGE_W,STAGE_H);
+  // dust
+  for(const d of dust){
+    d.ph+=0.02; d.y+=d.vy; d.x+=d.vx+Math.sin(d.ph)*0.15;
+    if(d.y<-4){d.y=STAGE_H+4;d.x=Math.random()*STAGE_W;}
+    ctx.globalAlpha=d.a*(0.6+0.4*Math.sin(d.ph));
+    ctx.fillStyle='#ffe9c0';ctx.shadowBlur=4;ctx.shadowColor='#ffd9a0';
+    ctx.beginPath();ctx.arc(d.x,d.y,d.r,0,6.28);ctx.fill();
+  }
+  ctx.shadowBlur=0;ctx.globalAlpha=1;
+  // sparks
+  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i];
+    p.vy+=p.grav; p.x+=p.vx; p.y+=p.vy; p.life-=p.decay;
+    if(p.life<=0){particles.splice(i,1);continue;}
+    ctx.globalAlpha=Math.max(0,p.life);
+    if(p.glow){ctx.shadowBlur=10;ctx.shadowColor=p.color;}else ctx.shadowBlur=0;
+    ctx.fillStyle=p.color;
+    ctx.beginPath();ctx.arc(p.x,p.y,p.size*p.life+0.4,0,6.28);ctx.fill();
+  }
+  ctx.shadowBlur=0;
+  // confetti
+  for(let i=confetti.length-1;i>=0;i--){
+    const c=confetti[i];
+    c.vy+=c.g;c.x+=c.vx;c.y+=c.vy;c.rot+=c.vr;c.vx*=0.99;
+    if(c.y>STAGE_H+30){confetti.splice(i,1);continue;}
+    ctx.save();ctx.translate(c.x,c.y);ctx.rotate(c.rot);
+    ctx.globalAlpha=1;ctx.fillStyle=c.color;
+    ctx.fillRect(-c.w/2,-c.h/2,c.w,c.h);
+    ctx.restore();
+  }
+  ctx.shadowBlur=0;ctx.globalAlpha=1;
+  requestAnimationFrame(fxLoop);
+}
+
+/* floating toast text — x,y in stage coords (390x844) */
+function toast(text,color,x,y){
+  const t=document.createElement('div');
+  t.className='toast';t.textContent=text;t.style.color=color||'#7af0d9';
+  const r=stage.getBoundingClientRect();
+  t.style.left=(x/STAGE_W*r.width)+'px';
+  t.style.top =(y/STAGE_H*r.height)+'px';
+  t.style.transform='translate(-50%,0)';
+  stage.appendChild(t);
+  setTimeout(()=>t.remove(),1000);
+}
+function shakeStage(){ stage.classList.add('shake');setTimeout(()=>stage.classList.remove('shake'),360); }
+
+/* =============================================================
+ *  SVG helpers
+ * ============================================================= */
+function el(tag,attrs){
+  const e=document.createElementNS(SVGNS,tag);
+  for(const k in attrs) e.setAttribute(k,attrs[k]);
+  return e;
+}
+const COMMON_DEFS = `
+  <linearGradient id="metal" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#3a4654"/><stop offset="0.5" stop-color="#2b3542"/><stop offset="1" stop-color="#1d2531"/>
+  </linearGradient>
+  <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#2c3a49"/><stop offset="1" stop-color="#1c2733"/>
+  </linearGradient>
+  <linearGradient id="slat" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#e8edf2"/><stop offset="0.5" stop-color="#c4ccd4"/><stop offset="1" stop-color="#9aa3ad"/>
+  </linearGradient>
+  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#9fd0ff"/><stop offset="1" stop-color="#d9efff"/>
+  </linearGradient>
+  <linearGradient id="copper" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#ffd9a0"/><stop offset="0.5" stop-color="#e08e3c"/><stop offset="1" stop-color="#9c5a18"/>
+  </linearGradient>
+  <linearGradient id="plug" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#fafbfc"/><stop offset="0.5" stop-color="#e6eaef"/><stop offset="1" stop-color="#b9c0c8"/>
+  </linearGradient>
+  <radialGradient id="lampOn" cx="0.5" cy="0.42" r="0.62">
+    <stop offset="0" stop-color="#fffef0"/><stop offset="0.35" stop-color="#fff1a8"/><stop offset="1" stop-color="#c98b18"/>
+  </radialGradient>
+  <filter id="ds" x="-30%" y="-30%" width="160%" height="160%">
+    <feDropShadow dx="0" dy="5" stdDeviation="5" flood-color="#000" flood-opacity="0.5"/>
+  </filter>`;
+function addDefs(svg){ const d=el('defs',{}); d.innerHTML=COMMON_DEFS; svg.appendChild(d); }
+
+/* Dekorativer Raum-Kontext: Wand-Verlauf, Fussleiste, Boden, weiches
+ * Bodenschattenband. Rein optisch (keine Logik / keine Hitboxen). */
+function addRoom(svg, opt){
+  opt=opt||{};
+  const wallTop = opt.wallTop!=null ? opt.wallTop : 120;
+  const floorY  = opt.floorY!=null  ? opt.floorY  : 760;
+  // Wand
+  svg.appendChild(el('rect',{x:0,y:wallTop,width:390,height:844-wallTop,fill:'url(#wall)'}));
+  // dezente vertikale Wandfugen (Plattenstoss)
+  [98,292].forEach(fx=>{
+    svg.appendChild(el('line',{x1:fx,y1:wallTop,x2:fx,y2:floorY,stroke:'#0e151d','stroke-width':1,opacity:0.25}));
+  });
+  // Boden (etwas heller, perspektivisch flach)
+  svg.appendChild(el('rect',{x:0,y:floorY,width:390,height:844-floorY,fill:'#10161e'}));
+  svg.appendChild(el('rect',{x:0,y:floorY,width:390,height:(844-floorY)*0.5,fill:'#161e28',opacity:0.6}));
+  // Fussleiste / Sockel
+  svg.appendChild(el('rect',{x:0,y:floorY-12,width:390,height:12,fill:'#202a37',stroke:'#0e151d','stroke-width':1}));
+  svg.appendChild(el('rect',{x:0,y:floorY-12,width:390,height:3,fill:'#2c3a49',opacity:0.8}));
+}
+/* Weiches Bodenschatten-Oval unter einem Geraet (rein optisch) */
+function addGroundShadow(svg, cx, cy, rx, ry){
+  svg.appendChild(el('ellipse',{cx,cy,rx,ry,fill:'#000',opacity:0.28}));
+}
+
+/* =============================================================
+ *  AFFORDANCE HELPERS
+ * ============================================================= */
+const _seenSteps = {};
+function firstVisit(step){ if(_seenSteps[step]) return false; _seenSteps[step]=true; return true; }
+
+function addDragPath(svg,x1,y1,x2,y2,col){
+  col = col || '#7af0d9';
+  const g=el('g',{class:'ghost'});
+  g.appendChild(el('line',{x1,y1,x2,y2,stroke:col,'stroke-width':3,'stroke-linecap':'round',opacity:0.85,class:'dragPath'}));
+  const ang=Math.atan2(y2-y1,x2-x1), L=13, w=7;
+  const ax=x2-Math.cos(ang)*2, ay=y2-Math.sin(ang)*2;
+  const p1x=ax-Math.cos(ang)*L+Math.cos(ang+Math.PI/2)*w, p1y=ay-Math.sin(ang)*L+Math.sin(ang+Math.PI/2)*w;
+  const p2x=ax-Math.cos(ang)*L+Math.cos(ang-Math.PI/2)*w, p2y=ay-Math.sin(ang)*L+Math.sin(ang-Math.PI/2)*w;
+  g.appendChild(el('path',{d:`M ${ax} ${ay} L ${p1x} ${p1y} L ${p2x} ${p2y} Z`,fill:col,class:'pathArrow'}));
+  svg.appendChild(g);
+  return g;
+}
+
+/* ghost hand demo */
+function ghostDemo(svg,x1,y1,x2,y2,opt){
+  opt=opt||{};
+  const reps=opt.reps||1, dur=opt.dur||1100, hold=opt.hold||260;
+  const hand=el('g',{class:'ghost'});
+  hand.appendChild(el('circle',{cx:0,cy:0,r:17,fill:'rgba(255,255,255,.14)',stroke:'#fff','stroke-width':1.4,opacity:0.7}));
+  hand.appendChild(el('path',{d:'M -3 -2 q 0 -12 4 -12 q 4 0 4 12 l 0 6 q 6 -1 8 3 q 3 5 -1 12 q -4 6 -12 5 q -7 -1 -9 -8 l -2 -9 q 0 -4 4 -3 l 5 1 Z',
+    fill:'#f4f7fa',stroke:'#10151c','stroke-width':1,transform:'translate(2,4) scale(.9)'}));
+  svg.appendChild(hand);
+  let rep=0;
+  function run(){
+    const t0=performance.now();
+    (function a(t){
+      let k=Math.min(1,(t-t0)/dur);
+      const e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+      const hx=x1+(x2-x1)*e, hy=y1+(y2-y1)*e;
+      hand.setAttribute('transform','translate('+hx+','+hy+')');
+      hand.setAttribute('opacity', k<0.12?(k/0.12):(k>0.92?(1-(k-0.92)/0.08):1));
+      if(opt.onStep) opt.onStep(e);
+      if(k<1){ requestAnimationFrame(a); }
+      else {
+        rep++;
+        if(rep<reps){ setTimeout(run,hold); }
+        else { hand.remove(); if(opt.done) opt.done(); }
+      }
+    })(performance.now());
+  }
+  run();
+  return hand;
+}
+
+function showDoHint(id,html,ms){
+  const e=document.getElementById(id); if(!e) return;
+  e.innerHTML=html; e.classList.add('on');
+  if(ms){ setTimeout(()=>e.classList.remove('on'),ms); }
+}
+function hideDoHint(id){ const e=document.getElementById(id); if(e) e.classList.remove('on'); }
+
+/* =============================================================
+ *  GAME STATE / XP
+ * ============================================================= */
+let xp=0;
+const xpVal=document.getElementById('xpVal');
+function addXp(n){
+  n=Math.round((Number(n)||0)*0.5); // XP global -50% (Roadmap)
+  const start=xp,end=xp+n,t0=performance.now();
+  (function anim(t){
+    const k=Math.min(1,(t-t0)/600);
+    xp=Math.round(start+(end-start)*(1-Math.pow(1-k,3)));
+    xpVal.textContent=xp;
+    if(k<1)requestAnimationFrame(anim);
+  })(performance.now());
+}
+
+/* =============================================================
+ *  STEP ORCHESTRATION
+ * ============================================================= */
+const STEP_LIST = ['wire','plug','test'];
+const STEP_TITLES = {
+  wire: ['Schalter den Storen zuordnen','Zieh jeden Storenschalter zu seinem Motor'],
+  plug: ['Motoranschluss anschliessen','Kabel abmanteln, abisolieren, crimpen, N/PE + Auf/Ab klemmen'],
+  test: ['Funktionstest','Jede Store mit ihrem Schalter auf- und abfahren']
+};
+let stepIdx=0;
+const stepsBar=document.getElementById('steps');
+function buildStepsBar(){
+  stepsBar.innerHTML='';
+  STEP_LIST.forEach(()=>{ const d=document.createElement('div'); d.className='sc'; stepsBar.appendChild(d); });
+}
+function setHud(step){
+  const chips=stepsBar.children;
+  for(let i=0;i<chips.length;i++){
+    chips[i].className='sc'+(i<stepIdx?' done':i===stepIdx?' cur':'');
+  }
+  document.getElementById('phaseLbl').textContent='Schritt '+(stepIdx+1)+'/'+STEP_LIST.length;
+  const t=STEP_TITLES[step];
+  document.getElementById('taskTitle').textContent=t[0];
+  document.getElementById('taskSub').textContent=t[1];
+  document.getElementById('progFill').style.width=(stepIdx/(STEP_LIST.length-1)*100)+'%';
+}
+
+const SCENE_OF = { wire:'pWire', plug:'pPlug', test:'pTest' };
+function showScene(step){
+  Object.values(SCENE_OF).forEach(id=>{
+    const e=document.getElementById(id); e.classList.remove('on');
+  });
+  const tk=document.getElementById('task');
+  tk.style.display=''; tk.style.opacity='';
+  tk.classList.remove('faded');
+  clearTimeout(window.__taskFadeT);
+  window.__taskFadeT=setTimeout(()=>tk.classList.add('faded'),3500);
+  const cur=document.getElementById(SCENE_OF[step]);
+  setTimeout(()=>cur.classList.add('on'),60);
+}
+function gotoStep(name){
+  stepIdx=STEP_LIST.indexOf(name);
+  setHud(name);
+  showScene(name);
+  BUILDERS[name]();
+}
+function nextStep(){
+  const ni=stepIdx+1;
+  if(ni>=STEP_LIST.length) return;
+  gotoStep(STEP_LIST[ni]);
+}
+// Dev-Sprungleiste (nur mit ?dev)
+if(typeof location!=='undefined' && /dev/.test(location.search) && document.body){
+  const bar=document.createElement('div');
+  bar.style.cssText='position:fixed;bottom:4px;left:4px;right:4px;z-index:99999;display:flex;flex-wrap:wrap;gap:3px;justify-content:center;';
+  STEP_LIST.forEach((s,i)=>{ const b=document.createElement('button'); b.textContent=(i+1)+'.'+s;
+    b.style.cssText='font-size:10px;font-weight:700;padding:4px 7px;background:#11202c;color:#7af0d9;border:1px solid #2dd4bf;border-radius:7px;cursor:pointer;';
+    b.onclick=()=>gotoStep(s); bar.appendChild(b); });
+  document.body.appendChild(bar);
+}
+
+/* =============================================================
+ *  RANDOM: Reihenfolge der 3 Storen (Zuordnung Schalter<->Motor)
+ *  Die Schalter werden vertikal links angeordnet; jeder Schalter
+ *  gehoert per random-Permutation zu einem Motor (rechts).
+ * ============================================================= */
+const STORE_COL = ['#3aa6ff','#ffb24d','#7af0d9']; // Akzentfarbe pro Store (nur Deko)
+let storeMap = [0,1,2]; // schalterIndex -> motorIndex
+function shuffleMap(){
+  storeMap=[0,1,2];
+  for(let i=storeMap.length-1;i>0;i--){const j=(Math.random()*(i+1))|0;[storeMap[i],storeMap[j]]=[storeMap[j],storeMap[i]];}
+}
+
+/* =============================================================
+ *  STEP 1 — Storenschalter -> Storenmotor verbinden
+ *  3 Schalter (links), 3 Motoren in Storenkasten (rechts/oben).
+ *  Ziehe Schalter auf den richtig nummerierten Motor.
+ * ============================================================= */
+const svgWire=document.getElementById('svgWire');
+let wireConnected=0, wireActive=false;
+let wireCleanup=[];
+
+/* Motor-Ankerpunkte (Storenkasten oben) und Schalter-Heimpositionen */
+const MOTOR_POS = [ {x:120,y:300}, {x:200,y:300}, {x:280,y:300} ];
+const SW_HOME   = [ {x:70,y:600}, {x:195,y:690}, {x:320,y:600} ];
+
+function buildWire(){
+  wireActive=true; wireConnected=0;
+  wireCleanup.forEach(fn=>{try{fn();}catch(_){}}); wireCleanup=[];
+  shuffleMap();
+  svgWire.innerHTML=''; addDefs(svgWire);
+
+  // Wand-Hintergrund + Boden + Fussleiste
+  addRoom(svgWire,{wallTop:120,floorY:768});
+  // Leerrohre / Kabelkanal von jedem Motor nach unten zur Schalter-Heimzone (Deko)
+  for(let i=0;i<3;i++){
+    const mx=MOTOR_POS[i].x;
+    svgWire.appendChild(el('line',{x1:mx,y1:320,x2:mx,y2:520,stroke:'#0e151d','stroke-width':9,'stroke-linecap':'round',opacity:0.45}));
+    svgWire.appendChild(el('line',{x1:mx,y1:320,x2:mx,y2:520,stroke:'#2c3a49','stroke-width':5,'stroke-linecap':'round',opacity:0.5}));
+  }
+  // Bodenschatten unter den Schalter-Heimpositionen
+  SW_HOME.forEach(h=>addGroundShadow(svgWire,h.x,h.y+38,32,8));
+  // Fensterband mit 3 Storen (oben)
+  for(let i=0;i<3;i++){
+    const fx0=60+i*100, fy0=150, fw=80, fh=170;
+    // Himmel / Fensterglas
+    svgWire.appendChild(el('rect',{x:fx0,y:fy0,width:fw,height:fh,rx:6,fill:'url(#sky)',stroke:'#10151c','stroke-width':2}));
+    // Storenkasten oben
+    svgWire.appendChild(el('rect',{x:fx0-4,y:fy0-22,width:fw+8,height:24,rx:5,fill:'url(#metal)',stroke:'#10151c','stroke-width':1.5}));
+    // ein paar Storenlamellen (teilweise heruntergelassen)
+    for(let s=0;s<3;s++){
+      svgWire.appendChild(el('rect',{x:fx0+3,y:fy0+4+s*8,width:fw-6,height:6,rx:2,fill:'url(#slat)',opacity:0.95}));
+    }
+    // Motor-Anschlusspunkt (am Sturz)
+    const m=MOTOR_POS[i];
+    svgWire.appendChild(el('circle',{cx:m.x,cy:m.y,r:15,fill:'url(#metal)',stroke:'#10151c','stroke-width':2}));
+    svgWire.appendChild(el('circle',{cx:m.x,cy:m.y,r:6,fill:'#0c1117'}));
+    const ml=el('text',{x:m.x,y:m.y-22,'text-anchor':'middle','font-size':'12','font-weight':'900',fill:STORE_COL[i]});
+    ml.textContent='Motor '+(i+1); svgWire.appendChild(ml);
+    const mr=el('circle',{cx:m.x,cy:m.y,r:20,fill:'none',stroke:STORE_COL[i],'stroke-width':2,opacity:0});
+    svgWire.appendChild(mr); m.ring=mr;
+  }
+
+  const layerWires=el('g',{}); svgWire.appendChild(layerWires);
+  const layerSw=el('g',{});   svgWire.appendChild(layerSw);
+
+  // Schalter erzeugen
+  const switches=[];
+  for(let i=0;i<3;i++){
+    const home=SW_HOME[i];
+    const tgt=storeMap[i]; // dieser Schalter gehoert zu Motor[tgt]
+    const sw=makeSwitch(i,tgt,home,layerSw,layerWires);
+    switches.push(sw);
+  }
+
+  document.getElementById('wireHint').innerHTML=
+    'Jeder <b>Schalter</b> ist mit einer Store-Nummer beschriftet. Zieh ihn zum <b>passenden Motor</b>.';
+  if(firstVisit('wire')){
+    showDoHint('hintWire','Verbinde <b>Schalter</b> und <b>Motor</b> mit gleicher Nummer. Falsche Zuordnung = Store reagiert nicht.',6500);
+    const s0=switches[0];
+    const m=MOTOR_POS[s0.tgt];
+    addDragPath(svgWire,s0.home.x,s0.home.y,m.x,m.y);
+    ghostDemo(svgWire,s0.home.x,s0.home.y,m.x,m.y,{dur:1300});
+  } else { hideDoHint('hintWire'); }
+}
+
+function makeSwitch(idx,tgt,home,layerSw,layerWires){
+  const sw={idx,tgt,home,placed:false};
+  const g=el('g',{cursor:'grab'});
+  // Schaltergehaeuse
+  g.appendChild(el('rect',{x:-26,y:-30,width:52,height:60,rx:9,fill:'#f3f5f7',stroke:'#9aa3ad','stroke-width':2,filter:'url(#ds)'}));
+  // Wippe Auf (oben) / Ab (unten)
+  g.appendChild(el('rect',{x:-18,y:-23,width:36,height:18,rx:4,fill:'#dfe4ea',stroke:'#aab4bf','stroke-width':1}));
+  g.appendChild(el('rect',{x:-18,y:5,width:36,height:18,rx:4,fill:'#dfe4ea',stroke:'#aab4bf','stroke-width':1}));
+  // Pfeil hoch
+  g.appendChild(el('path',{d:'M 0 -19 l 7 8 l -14 0 Z',fill:'#5a626b'}));
+  // Pfeil runter
+  g.appendChild(el('path',{d:'M 0 19 l 7 -8 l -14 0 Z',fill:'#5a626b'}));
+  // Nummer
+  const lab=el('text',{x:0,y:3,'text-anchor':'middle','font-size':'11','font-weight':'900',fill:STORE_COL[idx]});
+  // Hinweis: Schalter zeigt seine Ziel-Store-Nummer (tgt+1), nicht idx
+  lab.textContent='Store '+(tgt+1); g.appendChild(lab);
+  const hit=el('rect',{x:-30,y:-34,width:60,height:68,fill:'transparent'}); g.appendChild(hit);
+  g.setAttribute('transform',`translate(${home.x},${home.y})`);
+  g.classList.add('pulseTool');
+  layerSw.appendChild(g);
+
+  // dauerhafte Verbindungslinie nach dem Andocken
+  let wire=null;
+
+  let dragging=false, px=home.x, py=home.y;
+  const m=MOTOR_POS[tgt];
+  function down(e){ if(sw.placed)return; e.preventDefault(); AC(); dragging=true; g.classList.remove('pulseTool'); sndPick();
+    layerSw.appendChild(g); try{hit.setPointerCapture(e.pointerId);}catch(_){}}
+  function move(e){ if(!dragging)return; const p=toSvgFor(svgWire,e.clientX,e.clientY); px=p.x; py=p.y;
+    g.setAttribute('transform',`translate(${px},${py})`);
+    // alle Motoren prüfen, nur der richtige zeigt Glow wenn nah
+    MOTOR_POS.forEach((mm,mi)=>{
+      const near=Math.hypot(px-mm.x,py-mm.y)<46;
+      mm.ring.setAttribute('opacity', (near && mi===tgt)?'0.95':'0');
+    });
+  }
+  function up(){ if(!dragging)return; dragging=false;
+    MOTOR_POS.forEach(mm=>mm.ring.setAttribute('opacity','0'));
+    if(Math.hypot(px-m.x,py-m.y)<52){
+      seat();
+    } else {
+      // falscher Ort -> zurueck
+      g.setAttribute('transform',`translate(${home.x},${home.y})`);
+      px=home.x; py=home.y; sndBuzz(); shakeStage();
+      // pruefen ob auf falschen Motor abgelegt
+      MOTOR_POS.forEach((mm,mi)=>{ if(mi!==tgt && Math.hypot(px-mm.x,py-mm.y)<60){} });
+    }
+  }
+  function seat(){
+    sw.placed=true; dragging=false;
+    // Schalter rastet unter seinem Motor ein (etwas tiefer)
+    const seatX=m.x, seatY=m.y+150;
+    g.setAttribute('transform',`translate(${seatX},${seatY})`);
+    px=seatX; py=seatY;
+    // Verbindungsader Schalter->Motor zeichnen
+    wire=el('path',{d:`M ${seatX} ${seatY-30} C ${seatX} ${seatY-90}, ${m.x} ${m.y+70}, ${m.x} ${m.y+15}`,
+      fill:'none',stroke:STORE_COL[idx],'stroke-width':4,'stroke-linecap':'round',opacity:0.9});
+    layerWires.appendChild(wire);
+    sndClamp();
+    spark(m.x,m.y,16,{color:STORE_COL[idx],speed:3,up:0.6});
+    toast('verbunden','#7af0d9',m.x,m.y-40);
+    hit.setAttribute('pointer-events','none');
+    wireConnected++; addXp(10);
+    if(wireConnected===3){
+      wireActive=false;
+      document.getElementById('wireHint').innerHTML='Alle Schalter zugeordnet — weiter zum <b>Motoranschluss</b>';
+      setTimeout(()=>gotoStep('plug'),800);
+    }
+  }
+  hit.addEventListener('pointerdown',down);
+  window.addEventListener('pointermove',move);
+  window.addEventListener('pointerup',up);
+  wireCleanup.push(()=>{ window.removeEventListener('pointermove',move); window.removeEventListener('pointerup',up); });
+  return sw;
+}
+
+/* =============================================================
+ *  STEP 2 — Motoranschluss / Storenstecker
+ *  Abfolge: zuerst KABEL ABMANTELN (äusserer Mantel ab, einmal
+ *  für alle Adern), dann pro Ader: abisolieren -> Aderendhülse
+ *  crimpen -> in richtige Klemme stecken. Danach Zugentlastung.
+ *  Storenmotor braucht KEIN L: 4 Adern.
+ *  N(blau), PE(grün-gelb), Auf(schwarz), Ab(braun).
+ *  Die geschalteten Auf/Ab-Leiter kommen vom Schalter.
+ *  Wir nutzen feste richtige Klemmen.
+ * ============================================================= */
+const svgPlug=document.getElementById('svgPlug');
+const roPlug=document.getElementById('roPlug');
+
+const PLUG_WIRES = [
+  {id:'PE', color:'#3aa635', stripe:true,  label:'PE', clampY:0},
+  {id:'N',  color:'#2f6fd1', stripe:false, label:'N',  clampY:1},
+  {id:'AUF',color:'#1c2027', stripe:false, label:'Auf',clampY:2},
+  {id:'AB', color:'#7a4a1e', stripe:false, label:'Ab', clampY:3}
+];
+// Klemmenreihenfolge im Stecker (random-isiert die vertikale Position der Klemmen)
+let clampOrder = [0,1,2,3];
+
+let cableStripped=false;   // äusserer Kabelmantel entfernt?
+let plugStage=0;           // welche Ader ist gerade dran (Sequenz)
+let plugDone=0;            // wie viele Adern fertig angeklemmt
+let plugSub='strip';       // strip -> crimp -> seat (pro Ader)
+let zugDone=false;
+
+function buildPlug(){
+  cableStripped=false; plugDone=0; plugStage=0; plugSub='strip'; zugDone=false;
+  // Klemmenpositionen im Stecker mischen (Variation), aber jede Ader hat IHRE Klemme
+  clampOrder=[0,1,2,3];
+  for(let i=clampOrder.length-1;i>0;i--){const j=(Math.random()*(i+1))|0;[clampOrder[i],clampOrder[j]]=[clampOrder[j],clampOrder[i]];}
+  renderPlug();
+  document.getElementById('roPlug').classList.remove('good','bad');
+  roPlug.innerHTML='1) <b>Kabel abmanteln</b> &nbsp; 2) je Ader <b>abisolieren</b> &nbsp; 3) <b>crimpen</b> &nbsp; 4) <b>Klemme</b>';
+  if(firstVisit('plug')){
+    showDoHint('hintPlug','Zuerst den <b>äusseren Kabelmantel</b> entfernen &rarr; dann pro Ader: <b>abisolieren</b> &rarr; <b>crimpen</b> &rarr; in die <b>passende Klemme</b> (N/PE + Auf/Ab). Zum Schluss <b>Zugentlastung</b> anziehen.',8000);
+  } else { hideDoHint('hintPlug'); }
+}
+
+/* Geometrie */
+const CABLE_X=70;           // wo das Kabel reinkommt (links)
+const TIP_X=170;            // wo die Aderenden liegen (Arbeitsbereich)
+const CLAMP_X=300;          // Klemmenleiste rechts
+const PLUG_TOP=250, PLUG_ROW=82;
+function rowY(slot){ return PLUG_TOP + slot*PLUG_ROW; }
+const N_WIRES = 4;                      // Storenmotor: N, PE, Auf, Ab (kein L)
+const CABLE_Y = rowY((N_WIRES-1)/2);    // Kabeleintritt mittig zu den Adern
+
+let plugRefs={};
+function renderPlug(){
+  svgPlug.innerHTML=''; addDefs(svgPlug);
+  plugRefs={cores:[], clamps:[]};
+
+  // Raum-/Montagewand-Hintergrund + Boden (Stecker wirkt montiert statt schwebend)
+  addRoom(svgPlug,{wallTop:120,floorY:760});
+  // Montageplatte hinter dem Anschlussbereich
+  svgPlug.appendChild(el('rect',{x:30,y:200,width:330,height:340,rx:18,fill:'#1a222d',stroke:'#0e151d','stroke-width':2,opacity:0.85}));
+  svgPlug.appendChild(el('text',{x:195,y:188,'text-anchor':'middle','font-size':'12','font-weight':'800',fill:'#9fb0c0'})).textContent='Storenstecker — Motoranschluss';
+  // Werkbank-/Sockelschatten unter Montageplatte
+  addGroundShadow(svgPlug,195,556,150,12);
+
+  // Steckergehaeuse (Storenstecker / Motoranschlussdose)
+  const plugH=N_WIRES*PLUG_ROW+30;
+  svgPlug.appendChild(el('rect',{x:250,y:PLUG_TOP-20,width:110,height:plugH,rx:14,fill:'url(#plug)',stroke:'#10151c','stroke-width':2,filter:'url(#ds)'}));
+  svgPlug.appendChild(el('text',{x:305,y:PLUG_TOP-30,'text-anchor':'middle','font-size':'11','font-weight':'800',fill:'#9fb0c0'})).textContent='Motoranschluss';
+
+  // Kabelmantel links + Zugentlastung
+  const sheath=el('rect',{x:0,y:CABLE_Y-26,width:CABLE_X,height:52,rx:14,fill:'#2b3542',stroke:'#10151c','stroke-width':2});
+  svgPlug.appendChild(sheath); plugRefs.sheath=sheath;
+  // Zugentlastung (Bügel)
+  const zug=el('g',{cursor:'pointer'});
+  const zugBar=el('rect',{x:CABLE_X-8,y:CABLE_Y-30,width:16,height:60,rx:5,fill: zugDone?'#2dd4bf':'#5a626b',stroke:'#10151c','stroke-width':2});
+  zug.appendChild(zugBar);
+  svgPlug.appendChild(zug); plugRefs.zug=zug; plugRefs.zugBar=zugBar;
+
+  // Klemmen rechts (in random Reihenfolge)
+  PLUG_WIRES.forEach((w,wi)=>{
+    const slot=clampOrder[wi];
+    const cy=rowY(slot);
+    const cg=el('g',{});
+    cg.appendChild(el('rect',{x:CLAMP_X-22,y:cy-16,width:50,height:32,rx:6,fill:'#1d2531',stroke:'#3a4654','stroke-width':1.5}));
+    // Klemmenmaul
+    cg.appendChild(el('rect',{x:CLAMP_X-20,y:cy-7,width:14,height:14,rx:2,fill:'#0c1117'}));
+    // Klemmenbeschriftung mit Farbpunkt
+    cg.appendChild(el('circle',{cx:CLAMP_X+12,cy:cy,r:8,fill:w.color,stroke:'#10151c','stroke-width':1.5}));
+    if(w.stripe){ for(let s=0;s<3;s++) cg.appendChild(el('rect',{x:CLAMP_X+4,y:cy-7+s*5,width:16,height:2.4,fill:'#ffd23a'})); }
+    const cl=el('text',{x:CLAMP_X-14,y:cy-20,'text-anchor':'middle','font-size':'10','font-weight':'900',fill:'#cfd6dd'});
+    cl.textContent=w.label; cg.appendChild(cl);
+    const ring=el('circle',{cx:CLAMP_X-13,cy:cy,r:13,fill:'none',stroke:'#7af0d9','stroke-width':2,opacity:0});
+    cg.appendChild(ring);
+    svgPlug.appendChild(cg);
+    plugRefs.clamps[wi]={x:CLAMP_X-13,y:cy,ring,w};
+  });
+
+  // Adern (links, im Arbeitsbereich gefaechert)
+  PLUG_WIRES.forEach((w,wi)=>{
+    const restY=rowY(wi);   // Startposition gefaechert (eigene Reihe, NICHT = Klemmenslot)
+    const core={id:w.id,w,wi,stripped:false,crimped:false,seated:false,x:TIP_X,y:restY};
+    drawCore(core);
+    plugRefs.cores.push(core);
+  });
+
+  layoutPlugState();
+}
+
+function drawCore(core){
+  // Gruppe fuer jede Ader (Mantel-Stub -> Isolierung -> Tip)
+  if(core.g) core.g.remove();
+  // Vor dem Abmanteln des Kabels sind die Adern noch im Mantel verborgen
+  if(!cableStripped){ core.g=null; core.tip=null; return; }
+  const g=el('g',{});
+  const w=core.w;
+  const y=core.y;
+  // Ader vom Kabelmantel zum Arbeitspunkt
+  const insLen = core.stripped? 60 : 88;
+  g.appendChild(el('path',{d:`M ${CABLE_X} ${CABLE_Y} C 50 ${y}, 60 ${y}, ${TIP_X-insLen} ${y}`,
+    fill:'none',stroke:w.color,'stroke-width':8,'stroke-linecap':'round',opacity:0.5}));
+  // Isolierung (farbig)
+  g.appendChild(el('rect',{x:TIP_X-insLen,y:y-5,width:insLen-(core.stripped?26:0),height:10,rx:4,fill:w.color}));
+  if(w.stripe){ g.appendChild(el('rect',{x:TIP_X-insLen,y:y-5,width:insLen-(core.stripped?26:0),height:3,fill:'#ffd23a'})); }
+  // blanker Kupferdraht (wenn abisoliert)
+  if(core.stripped && !core.crimped){
+    g.appendChild(el('rect',{x:TIP_X-26,y:y-3,width:26,height:6,rx:2,fill:'url(#copper)',stroke:'#7a4a14','stroke-width':1}));
+  }
+  // Aderendhülse (wenn gecrimpt)
+  if(core.crimped){
+    g.appendChild(el('rect',{x:TIP_X-28,y:y-5,width:10,height:10,rx:2,fill:w.color,opacity:0.9}));  // Kragen farbig
+    g.appendChild(el('rect',{x:TIP_X-18,y:y-4,width:18,height:8,rx:2,fill:'#cdd4db',stroke:'#8a929b','stroke-width':1}));// Hülse metall
+  }
+  // Tip-Markierung
+  const tip=el('circle',{cx:TIP_X,cy:y,r:9,fill:'transparent',stroke: core.seated?'none':'#7af0d9','stroke-width': core.seated?0:1.5,opacity: core.seated?0:0.6});
+  g.appendChild(tip);
+  // Label
+  const lab=el('text',{x:TIP_X-insLen-2,y:y-9,'text-anchor':'end','font-size':'9','font-weight':'800',fill:'#9fb0c0'});
+  lab.textContent=w.label; g.appendChild(lab);
+  svgPlug.appendChild(g);
+  core.g=g; core.tip=tip;
+}
+
+/* Tool-Button (abmanteln / abisolieren / crimpen) als grosse SVG-Taste unten */
+function layoutPlugState(){
+  // entfernt evtl. alten Action-Button
+  if(plugRefs.actBtn){ plugRefs.actBtn.remove(); plugRefs.actBtn=null; }
+
+  // SCHRITT 0: zuerst den äusseren Kabelmantel abmanteln (einmal für alle Adern)
+  if(!cableStripped){
+    const focus=el('circle',{cx:CABLE_X-4,cy:CABLE_Y,r:24,fill:'none',stroke:'#ffd166','stroke-width':2.5,opacity:0.9,class:'ghost'});
+    svgPlug.appendChild(focus); plugRefs.actBtn=makeActBtn(null,focus);
+    return;
+  }
+
+  if(plugDone>=PLUG_WIRES.length){
+    // alle Adern angeklemmt -> Zugentlastung
+    if(!zugDone){
+      roPlug.innerHTML='Alle Adern geklemmt &mdash; jetzt <b>Zugentlastung</b> anziehen';
+      enableZug();
+    }
+    return;
+  }
+
+  const core=plugRefs.cores[plugStage];
+  // Aktueller Schritt-Highlight
+  const focus=el('circle',{cx:TIP_X,cy:core.y,r:18,fill:'none',stroke:'#ffd166','stroke-width':2.5,opacity:0.9,class:'ghost'});
+  svgPlug.appendChild(focus); plugRefs.actBtn=makeActBtn(core,focus);
+}
+
+function makeActBtn(core,focus){
+  // container group fuer Button + focus (gemeinsam entfernbar)
+  const cont=el('g',{});
+  cont.appendChild(focus);
+  const bg=el('g',{cursor:'pointer'});
+  let txt, col;
+  if(!cableStripped){ txt='Kabel abmanteln'; col='#ff9e5c'; }
+  else if(plugSub==='strip'){ txt='Ader abisolieren'; col='#5cf0d6'; }
+  else if(plugSub==='crimp'){ txt='Aderendhülse crimpen'; col='#ffd166'; }
+  else { txt='In Klemme '+core.w.label+' stecken'; col='#8ab4ff'; }
+  const br=el('rect',{x:60,y:630,width:270,height:54,rx:16,fill:'#202a37',stroke:col,'stroke-width':2});
+  bg.appendChild(br);
+  const bt=el('text',{x:195,y:663,'text-anchor':'middle','font-size':'15','font-weight':'900',fill:col});
+  bt.textContent=txt; bg.appendChild(bt);
+  const bhit=el('rect',{x:55,y:625,width:280,height:64,rx:18,fill:'transparent'}); bg.appendChild(bhit);
+  cont.appendChild(bg);
+  svgPlug.appendChild(cont);
+
+  bhit.addEventListener('pointerdown',()=>doPlugAction(core));
+  cont.classList.add('pulseTool');
+
+  if(firstVisit('plug_act')){
+    const sx = cableStripped ? TIP_X : (CABLE_X-4);
+    const sy = cableStripped ? core.y : CABLE_Y;
+    ghostDemo(svgPlug,sx,sy,195,657,{dur:1100,reps:1});
+  }
+  return cont;
+}
+
+function doPlugAction(core){
+  AC();
+  if(!cableStripped){
+    // äusseren Kabelmantel entfernen -> Adern werden sichtbar/gefaechert
+    cableStripped=true; sndClick(); spark(CABLE_X,CABLE_Y,18,{color:'#2b3542',speed:3});
+    toast('Kabel abgemantelt','#7af0d9',CABLE_X+18,CABLE_Y-30); addXp(5);
+    // Mantel optisch kürzen (Adern liegen frei)
+    if(plugRefs.sheath){ plugRefs.sheath.setAttribute('width', Math.max(28,CABLE_X-26)); }
+    plugRefs.cores.forEach(c=>drawCore(c));
+    plugSub='strip';
+    layoutPlugState();
+    return;
+  }
+  if(plugSub==='strip'){
+    core.stripped=true; sndClick(); spark(TIP_X,core.y,12,{color:'#cdd4db',speed:2.5});
+    toast('abisoliert','#7af0d9',TIP_X,core.y-26);
+    drawCore(core); plugSub='crimp'; addXp(4);
+    layoutPlugState();
+  } else if(plugSub==='crimp'){
+    core.crimped=true; sndClamp(); spark(TIP_X,core.y,14,{color:'#ffd166',speed:3});
+    toast('gecrimpt','#ffd166',TIP_X,core.y-26);
+    drawCore(core); plugSub='seat'; addXp(5);
+    layoutPlugState();
+  } else {
+    // in Klemme stecken -> Ader wandert zur richtigen Klemme (gleiche w)
+    const target=plugRefs.clamps.find(c=>c.w.id===core.id);
+    seatCore(core,target);
+  }
+}
+
+function seatCore(core,target){
+  const x0=core.x, y0=core.y, t0=performance.now();
+  // Ziel: Ader-Tip schwenkt zur Klemme
+  const tx=target.x, ty=target.y;
+  target.ring.setAttribute('opacity','0.95');
+  (function a(t){
+    const k=Math.min(1,(t-t0)/450);
+    const e=1-Math.pow(1-k,3);
+    core.y=y0+(ty-y0)*e;
+    // beim Andocken: Ader verbindet mit Klemme -> wir verschieben den Tip optisch
+    drawCore(core);
+    // gerade Verbindung Tip->Klemme zeichnen
+    if(core.link) core.link.remove();
+    core.link=el('path',{d:`M ${TIP_X} ${core.y} L ${tx} ${ty}`,fill:'none',stroke:core.w.color,'stroke-width':6,'stroke-linecap':'round'});
+    if(core.w.stripe) core.link.setAttribute('stroke-dasharray','6 6');
+    svgPlug.appendChild(core.link);
+    if(k<1) requestAnimationFrame(a);
+    else {
+      core.seated=true;
+      target.ring.setAttribute('opacity','0');
+      sndClamp(); spark(tx,ty,16,{color:core.w.color,speed:3,up:0.4});
+      toast(core.w.label+' geklemmt','#7af0d9',tx,ty-22);
+      plugDone++; addXp(8);
+      // naechste Ader
+      plugSub='strip';
+      plugStage++;
+      // Plug-Fortschritt
+      document.getElementById('progFill').style.width=((1/(STEP_LIST.length-1))*100 + (plugDone/ (PLUG_WIRES.length+1))*(1/(STEP_LIST.length-1))*100 *0)+'%';
+      layoutPlugState();
+    }
+  })(performance.now());
+}
+
+function enableZug(){
+  const zug=plugRefs.zug, zugBar=plugRefs.zugBar;
+  if(!zug) return;
+  zug.setAttribute('cursor','pointer');
+  zug.classList.add('pulseTool');
+  // pulsierender Hinweisring
+  const ring=el('circle',{cx:CABLE_X,cy:CABLE_Y,r:22,fill:'none',stroke:'#ffd166','stroke-width':2.5,opacity:0.9,class:'ghost'});
+  svgPlug.appendChild(ring);
+  const hit=el('rect',{x:CABLE_X-22,y:CABLE_Y-36,width:44,height:72,fill:'transparent',cursor:'pointer'});
+  svgPlug.appendChild(hit);
+  hit.addEventListener('pointerdown',()=>{
+    if(zugDone) return; zugDone=true; AC();
+    zugBar.setAttribute('fill','#2dd4bf');
+    ring.remove(); zug.classList.remove('pulseTool');
+    sndClamp(); spark(CABLE_X,CABLE_Y,20,{color:'#2dd4bf',speed:3,up:0.5});
+    toast('Zugentlastung fest','#7af0d9',CABLE_X+10,CABLE_Y-30); addXp(8);
+    roPlug.classList.add('good');
+    roPlug.innerHTML='Stecker fachgerecht angeschlossen &mdash; weiter zum <b>Funktionstest</b>';
+    setTimeout(()=>gotoStep('test'),850);
+  });
+}
+
+/* =============================================================
+ *  STEP 3 — Funktionstest
+ *  3 Storen mit je einem Auf/Ab-Schalter (gegenseitig verriegelt).
+ *  Jede Store muss EINMAL hoch UND EINMAL runter gefahren werden.
+ *  Wenn alle 3 oben+unten getestet -> WIN.
+ * ============================================================= */
+const svgTest=document.getElementById('svgTest');
+const roTest=document.getElementById('roTest');
+
+let testStores=[]; // {pos:0..1 (1=runter), didUp,didDown, slats...}
+let testActive=false;
+
+const TEST_WIN_X=[60,160,260]; // linke Kante der 3 Fenster
+const TEST_W=70, TEST_TOP=158, TEST_H=300;
+
+function buildTest(){
+  testActive=true;
+  svgTest.innerHTML=''; addDefs(svgTest);
+  testStores=[];
+
+  addRoom(svgTest,{wallTop:120,floorY:680});
+  svgTest.appendChild(el('text',{x:195,y:148,'text-anchor':'middle','font-size':'12','font-weight':'800',fill:'#9fb0c0'})).textContent='Wohnzimmer — 3 Storen';
+  // Bodenschatten unter den 3 Fenster-/Schalterbereichen
+  for(let i=0;i<3;i++){ addGroundShadow(svgTest, TEST_WIN_X[i]+TEST_W/2, 686, 46, 9); }
+
+  for(let i=0;i<3;i++){
+    const fx0=TEST_WIN_X[i];
+    // Glas / Himmel
+    svgTest.appendChild(el('rect',{x:fx0,y:TEST_TOP,width:TEST_W,height:TEST_H,rx:6,fill:'url(#sky)',stroke:'#10151c','stroke-width':2}));
+    // Storenkasten
+    svgTest.appendChild(el('rect',{x:fx0-4,y:TEST_TOP-22,width:TEST_W+8,height:24,rx:5,fill:'url(#metal)',stroke:'#10151c','stroke-width':1.5}));
+    // Lamellenvorhang (animierbar) — clip
+    const clipId='clip'+i;
+    const defs=svgTest.querySelector('defs');
+    const cp=el('clipPath',{id:clipId});
+    cp.appendChild(el('rect',{x:fx0,y:TEST_TOP,width:TEST_W,height:TEST_H}));
+    defs.appendChild(cp);
+    const blindG=el('g',{'clip-path':`url(#${clipId})`});
+    // Lamellenpaket: startet oben (pos=0 -> nur kleines Stück sichtbar)
+    const slats=el('g',{});
+    const nSlat=22;
+    for(let s=0;s<nSlat;s++){
+      slats.appendChild(el('rect',{x:fx0+2,y:TEST_TOP+s*9.6,width:TEST_W-4,height:8,rx:2,fill:'url(#slat)',stroke:'#aab4bf','stroke-width':0.5}));
+    }
+    blindG.appendChild(slats);
+    svgTest.appendChild(blindG);
+
+    // Fensterrahmen oben drueber
+    svgTest.appendChild(el('rect',{x:fx0,y:TEST_TOP,width:TEST_W,height:TEST_H,rx:6,fill:'none',stroke:'#10151c','stroke-width':2}));
+
+    const store={i,pos:0,didUp:false,didDown:false,slats,moving:false,fx0};
+    // Position 0 = ganz oben (offen). Wir setzen initial halb runter, damit hoch UND runter testbar.
+    store.pos=0.5; applyBlind(store);
+    testStores.push(store);
+
+    // Status-Punkte (Auf erledigt / Ab erledigt)
+    const sy=TEST_TOP+TEST_H+14;
+    store.dotUp  =el('circle',{cx:fx0+24,cy:sy,r:5,fill:'#2a3340',stroke:'#5a626b','stroke-width':1});
+    store.dotDown=el('circle',{cx:fx0+46,cy:sy,r:5,fill:'#2a3340',stroke:'#5a626b','stroke-width':1});
+    svgTest.appendChild(store.dotUp); svgTest.appendChild(store.dotDown);
+
+    // Schalter (Auf/Ab Wippe) unter dem Fenster
+    makeTestSwitch(store, fx0+TEST_W/2, TEST_TOP+TEST_H+70);
+  }
+
+  document.getElementById('roTest').classList.remove('good','bad');
+  roTest.innerHTML='Fahre jede Store <b>einmal hoch</b> und <b>einmal runter</b> (Auf/Ab verriegelt)';
+  updateTestProgress();
+  if(firstVisit('test')){
+    // Demo: erste Store Auf druecken
+    const s0=testStores[0];
+    ghostDemo(svgTest,s0.fx0+TEST_W/2,TEST_TOP+TEST_H+58,s0.fx0+TEST_W/2,TEST_TOP+TEST_H+58,{dur:900,reps:2});
+  }
+}
+
+function applyBlind(store){
+  // pos 0..1 -> Lamellen schieben nach unten (translateY)
+  const travel = TEST_H - 14;
+  store.slats.setAttribute('transform',`translate(0, ${(store.pos-1)*travel})`);
+}
+
+function makeTestSwitch(store, cx, cy){
+  const g=el('g',{});
+  g.appendChild(el('rect',{x:cx-24,y:cy-26,width:48,height:54,rx:8,fill:'#f3f5f7',stroke:'#9aa3ad','stroke-width':2,filter:'url(#ds)'}));
+  // AUF Wippe
+  const upBtn=el('g',{cursor:'pointer'});
+  const upRect=el('rect',{x:cx-17,y:cy-20,width:34,height:18,rx:4,fill:'#dfe4ea',stroke:'#aab4bf','stroke-width':1});
+  upBtn.appendChild(upRect);
+  upBtn.appendChild(el('path',{d:`M ${cx} ${cy-16} l 7 8 l -14 0 Z`,fill:'#5a626b'}));
+  const upHit=el('rect',{x:cx-20,y:cy-22,width:40,height:21,fill:'transparent'}); upBtn.appendChild(upHit);
+  // AB Wippe
+  const dnBtn=el('g',{cursor:'pointer'});
+  const dnRect=el('rect',{x:cx-17,y:cy+2,width:34,height:18,rx:4,fill:'#dfe4ea',stroke:'#aab4bf','stroke-width':1});
+  dnBtn.appendChild(dnRect);
+  dnBtn.appendChild(el('path',{d:`M ${cx} ${cy+16} l 7 -8 l -14 0 Z`,fill:'#5a626b'}));
+  const dnHit=el('rect',{x:cx-20,y:cy+1,width:40,height:21,fill:'transparent'}); dnBtn.appendChild(dnHit);
+  g.appendChild(upBtn); g.appendChild(dnBtn);
+  // Nummer
+  g.appendChild(el('text',{x:cx,y:cy+40,'text-anchor':'middle','font-size':'10','font-weight':'900',fill:STORE_COL[store.i]})).textContent='Store '+(store.i+1);
+  svgTest.appendChild(g);
+
+  store.upRect=upRect; store.dnRect=dnRect;
+
+  upHit.addEventListener('pointerdown',()=>driveStore(store,-1,upRect));
+  dnHit.addEventListener('pointerdown',()=>driveStore(store,+1,dnRect));
+}
+
+function driveStore(store,dir,rect){
+  if(store.moving || !testActive) return;
+  // Verriegelung: nicht gleichzeitig auf+ab (durch moving-Flag garantiert)
+  const targetPos = dir>0 ? 1 : 0; // runter=1, hoch=0
+  if(Math.abs(store.pos-targetPos)<0.02){
+    // schon ganz dort
+    sndBuzz(); toast(dir>0?'schon unten':'schon oben','#ffb3b3',store.fx0+TEST_W/2,TEST_TOP+TEST_H+50);
+    return;
+  }
+  store.moving=true; AC(); sndMotor(dir);
+  rect.setAttribute('fill','#7af0d9');
+  const p0=store.pos, t0=performance.now(), dur=1100;
+  (function a(t){
+    const k=Math.min(1,(t-t0)/dur);
+    const e=1-Math.pow(1-k,2);
+    store.pos=p0+(targetPos-p0)*e;
+    applyBlind(store);
+    if(k<1) requestAnimationFrame(a);
+    else {
+      store.pos=targetPos; applyBlind(store);
+      store.moving=false; rect.setAttribute('fill','#dfe4ea');
+      spark(store.fx0+TEST_W/2, dir>0?TEST_TOP+TEST_H-10:TEST_TOP+10, 12,{color:STORE_COL[store.i],speed:2.5});
+      if(dir<0){ store.didUp=true;  store.dotUp.setAttribute('fill','#2dd4bf'); }
+      else     { store.didDown=true;store.dotDown.setAttribute('fill','#2dd4bf'); }
+      sndSnap();
+      updateTestProgress();
+      checkTestWin();
+    }
+  })(performance.now());
+}
+
+function updateTestProgress(){
+  let done=0;
+  testStores.forEach(s=>{ if(s.didUp)done++; if(s.didDown)done++; });
+  document.getElementById('progFill').style.width=(66 + done/6*34)+'%';
+}
+
+function checkTestWin(){
+  const all=testStores.every(s=>s.didUp && s.didDown);
+  if(all){
+    testActive=false;
+    roTest.classList.add('good');
+    roTest.innerHTML='Alle Storen fahren korrekt auf und ab!';
+    setTimeout(()=>triggerWin(),650);
+  }
+}
+
+/* =============================================================
+ *  WIN
+ * ============================================================= */
+function triggerWin(){
+  document.getElementById('progFill').style.width='100%';
+  sndWin(); burstConfetti();
+  spark(STAGE_W/2,STAGE_H*0.4,40,{color:'#ffd166',speed:6,up:2});
+  setTimeout(()=>{
+    const win=document.getElementById('win');win.classList.add('show');
+    addXp(50);
+    const sts=document.querySelectorAll('#stars .st');
+    sts.forEach((s,i)=>setTimeout(()=>{s.classList.add('lit');sndSnap();},300+i*260));
+    const xb=document.getElementById('xpBig');let v=0;const tt=performance.now();
+    (function cc(t){const k=Math.min(1,(t-tt)/900);v=Math.round(150*(1-Math.pow(1-k,3)));xb.textContent='+'+v+' XP';if(k<1)requestAnimationFrame(cc);})(performance.now());
+  },650);
+}
+document.getElementById('again').onclick=()=>location.reload();
+
+/* =============================================================
+ *  BUILDERS registry + boot
+ * ============================================================= */
+const BUILDERS = {
+  wire: buildWire,
+  plug: buildPlug,
+  test: buildTest
+};
+
+/* =============================================================
+ *  MAIN LOOP + dust
+ * ============================================================= */
+let dust=[];
+function initDust(){
+  for(let i=0;i<22;i++) dust.push({
+    x:Math.random()*STAGE_W,y:Math.random()*STAGE_H,
+    vy:-(0.1+Math.random()*0.25),vx:(Math.random()-.5)*0.2,
+    r:0.5+Math.random()*1.4,a:0.05+Math.random()*0.18,ph:Math.random()*6.28
+  });
+}
+
+function boot(){
+  sizeCanvas();
+  initDust();
+  buildStepsBar();
+  fxLoop();
+  gotoStep('wire');
+}
+window.addEventListener('resize',sizeCanvas);
+boot();
+
+})();
+</script>
+</body>
+</html>

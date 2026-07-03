@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>StromLab — Interaktive Elektro-Lernmodule</title>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;min-height:100vh;
+    background:radial-gradient(120% 90% at 50% -5%,#16242f 0%,#0c1219 55%,#080c12 100%);
+    color:#e8edf2;font-family:'Segoe UI',system-ui,sans-serif;padding:26px 16px 56px}
+  .wrap{max-width:1080px;margin:0 auto}
+
+  /* ---- Header ---- */
+  .top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  .brand{display:inline-flex;align-items:center;gap:7px;font-size:10.5px;font-weight:800;
+    letter-spacing:1.3px;text-transform:uppercase;color:#7af0d9;
+    background:rgba(45,212,191,.10);border:1px solid rgba(45,212,191,.30);
+    padding:5px 13px;border-radius:20px}
+  .brand .dot{width:7px;height:7px;border-radius:50%;background:#2dd4bf;
+    box-shadow:0 0 10px #2dd4bf,0 0 4px #2dd4bf}
+  header h1{font-size:46px;font-weight:900;margin:14px 0 0;letter-spacing:.5px;line-height:1;
+    background:linear-gradient(180deg,#eafffb,#7af0d9);-webkit-background-clip:text;background-clip:text;color:transparent}
+  header .sub{font-size:14.5px;color:#90a3b6;font-weight:600;margin-top:8px}
+  .hint{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;
+    color:#8aa0b2;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+    padding:6px 11px;border-radius:14px;margin-top:6px}
+
+  /* ---- Gruppen ---- */
+  .group{margin-top:38px}
+  .glabel{display:flex;align-items:center;gap:11px;margin:0 2px 16px;
+    font-size:12px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:#9fb3c4}
+  .glabel::after{content:"";flex:1;height:1px;
+    background:linear-gradient(90deg,rgba(45,212,191,.30),transparent)}
+  .glabel .gi{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:8px;
+    color:#2dd4bf;background:rgba(45,212,191,.10);border:1px solid rgba(45,212,191,.22)}
+  .glabel .cnt{font-size:10.5px;font-weight:800;letter-spacing:.5px;color:#6f8093;
+    background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+    padding:2px 8px;border-radius:10px}
+
+  /* ---- Kompaktes Kachel-Raster ---- */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:12px}
+  .tile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:11px;
+    text-align:center;text-decoration:none;min-height:124px;padding:16px 10px;
+    background:linear-gradient(180deg,#16212e,#0f1722);
+    border:1px solid rgba(255,255,255,.07);border-radius:16px;
+    box-shadow:0 8px 22px rgba(0,0,0,.32);
+    transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease;
+    position:relative;overflow:hidden}
+  .tile::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:16px;
+    background:radial-gradient(120% 80% at 50% 0%,rgba(45,212,191,.14),transparent 65%);
+    opacity:0;transition:opacity .16s ease}
+  .tile:hover{transform:translateY(-4px);border-color:rgba(45,212,191,.50);
+    box-shadow:0 14px 34px rgba(0,0,0,.5),0 0 22px rgba(45,212,191,.20)}
+  .tile:hover::after{opacity:1}
+  .tile:hover .ico{transform:scale(1.14)}
+  .ico{position:relative;z-index:1;width:54px;height:54px;display:grid;place-items:center;
+    font-size:28px;line-height:1;border-radius:14px;color:#7af0d9;
+    background:radial-gradient(80% 80% at 50% 30%,rgba(45,212,191,.16),rgba(45,212,191,.04));
+    border:1px solid rgba(45,212,191,.22);
+    transition:transform .16s ease;filter:drop-shadow(0 3px 8px rgba(0,0,0,.4))}
+  .ico svg{width:28px;height:28px;display:block}
+  .gi svg,.hint svg{width:1em;height:1em;display:inline-block;vertical-align:-0.15em}
+  .ttl{position:relative;z-index:1;font-size:13px;font-weight:700;color:#dfe7ef;line-height:1.25}
+  .sb{position:relative;z-index:1;font-size:9.5px;font-weight:600;color:#7c8da0;line-height:1.2;margin-top:-5px}
+
+  .foot{margin-top:44px;padding-top:18px;border-top:1px solid rgba(255,255,255,.06);
+    font-size:11px;color:#6f8093;text-align:center;line-height:1.6}
+
+  @media(max-width:520px){
+    header h1{font-size:38px}
+    .grid{grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:10px}
+    .tile{min-height:110px}
+    .ico{width:48px;height:48px;font-size:25px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <div>
+      <header>
+        <h1>StromLab</h1>
+        <div class="sub">Interaktive Elektro-Lernmodule</div>
+      </header>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+      <span class="brand"><span class="dot"></span>LernStrom</span>
+      <span class="hint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.5.4.8.9.9 1.5l.1.7h5.2l.1-.7c.1-.6.4-1.1.9-1.5A6 6 0 0 0 12 3z"/></svg> am besten auf Laptop / Tablet</span>
+    </div>
+  </div>
+
+  <!-- Gruppe 1 -->
+  <section class="group">
+    <div class="glabel"><span class="gi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 7.6-7 9-4-1.4-7-4.5-7-9V6l7-3z"/></svg></span>Schutz &amp; Sicherheit<span class="cnt">7</span></div>
+    <nav class="grid">
+      <a class="tile" href="koerperstrom.htm"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4.5 13.5H11L9 22l9-12.5h-6.5L13 2z"/></svg></div><div class="ttl">Körperstrom</div><div class="sb">IEC 60479</div></a>
+      <a class="tile" href="fi-rcd.htm"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 0 0-14-4.5L4 8"/><path d="M4 4v4h4"/><path d="M4 13a8 8 0 0 0 14 4.5L20 16"/><path d="M20 20v-4h-4"/></svg></div><div class="ttl">FI / RCD</div><div class="sb">Auslösung</div></a>
+      <a class="tile" href="rcd-typen.htm"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12c2-5 4-5 6 0s4 5 6 0 4-5 6 0"/></svg></div><div class="ttl">RCD-Typen</div><div class="sb">AC · A · F · B</div></a>
+      <a class="tile" href="ueberstromschutz.htm"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 7.6-7 9-4-1.4-7-4.5-7-9V6l7-3z"/></svg></div><div class="ttl">Überstromschutz</div><div class="sb">I-t-Kennlinie</div></a>
+      <a class="tile" href="selektivitaet.htm"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5v14h16"/><path d="M19 8l-6 6-3-3-4 4"/></svg></div><div class="ttl">Selektivität</div><div class="sb">Staffelung</div></a>
+      <a class="tile" href="psa.htm"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c1.5 3-1.5 4.5-1.5 7A2 2 0 0 0 13 11c.5 2.5-1 3-1 3 3 0 5-2.5 5-5.5C17 5 14 3.5 12 3z"/><path d="M8.5 13C7 14 6 15.7 6 17.5A6 6 0 0 0 18 17.5c0-1.5-.7-3-1.8-4"/></svg></div><div class="ttl">PSA</div><div class="sb">Kurzschluss</div></a>
+      <a class="tile" href="psa-dc.htm"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="16" height="9" rx="2"/><path d="M22 11v3"/><path d="M7 11v3M11 11v3"/></svg></div><div class="ttl">PSA in DC</div><div class="sb">Lichtbogen</div></a>
+    </nav>
+  </section>
+
+  <!-- Gruppe 2 -->
+  <section class="group">
+    <div class="glabel"><span class="gi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span>Leistung &amp; Messung<span class="cnt">3</span></div>
+    <nav class="grid">
+      <a class="tile" href="energiemessung.htm"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></div><div class="ttl">Energiemessung</div><div class="sb">3-Phasen</div></a>
+      <a class="tile" href="leistungsdreieck.htm"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19h14L5 6v13z"/><path d="M5 14a5 5 0 0 0 5-5"/></svg></div><div class="ttl">Leistungsdreieck</div><div class="sb">P · Q · S</div></a>
+      <a class="tile" href="messpraktikum.htm"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v6.5L4.5 18A2 2 0 0 0 6.3 21h11.4a2 2 0 0 0 1.8-3L15 9.5V3"/><path d="M8 3h8"/><path d="M7.5 14h9"/></svg></div><div class="ttl">Messpraktikum</div><div class="sb">Fehlersuche</div></a>
+    </nav>
+  </section>
+
+  <!-- Gruppe 3 -->
+  <section class="group">
+    <div class="glabel"><span class="gi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v4M15 3v4"/><path d="M7 7h10v4a5 5 0 0 1-10 0V7z"/><path d="M12 16v5"/></svg></span>Installation<span class="cnt">2</span></div>
+    <nav class="grid">
+      <a class="tile" href="strombelastbarkeit.htm"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v4M15 3v4"/><path d="M7 7h10v4a5 5 0 0 1-10 0V7z"/><path d="M12 16v5"/></svg></div><div class="ttl">Strombelastbarkeit</div><div class="sb">Iz · NIN</div></a>
+      <a class="tile" href="lademanagement.htm"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13l2-5a2 2 0 0 1 1.9-1.3h8.2A2 2 0 0 1 17 8l2 5"/><path d="M3 13h18v4H3z"/><circle cx="7" cy="17.5" r="1.5"/><circle cx="17" cy="17.5" r="1.5"/></svg></div><div class="ttl">Lademanagement</div><div class="sb">E-Mobilität</div></a>
+    </nav>
+  </section>
+
+  <div class="foot">LernStrom · StromLab — 12 interaktive Lernmodule</div>
+</div>
+</body>
+</html>

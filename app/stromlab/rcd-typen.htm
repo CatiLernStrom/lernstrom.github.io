@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>StromLab — RCD-Typen</title>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;min-height:100vh;background:radial-gradient(130% 100% at 50% 0%,#15222e 0%,#0b1017 70%);
+    color:#e8edf2;font-family:'Segoe UI',system-ui,sans-serif;padding:18px 14px 40px}
+  .wrap{max-width:620px;margin:0 auto}
+  .backlink{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:#8aa0b2;
+    text-decoration:none;margin-bottom:10px;padding:5px 11px;border-radius:20px;
+    border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);transition:.15s}
+  .backlink:hover{color:#7af0d9;border-color:rgba(45,212,191,.35);background:rgba(45,212,191,.08)}
+  .backlink svg{width:13px;height:13px;display:block}
+  header h1{font-size:24px;font-weight:900;margin:0;letter-spacing:.3px}
+  header h1 .lab{color:#7af0d9}
+  header .sub{font-size:12.5px;color:#8da0b2;font-weight:600;margin-top:3px}
+  header .tag{display:inline-block;margin-top:8px;font-size:10.5px;font-weight:800;letter-spacing:.5px;
+    text-transform:uppercase;color:#7af0d9;background:rgba(45,212,191,.12);border:1px solid rgba(45,212,191,.3);
+    padding:4px 10px;border-radius:20px}
+  .card{background:linear-gradient(180deg,#172230,#101824);border:1px solid rgba(255,255,255,.07);
+    border-radius:18px;padding:16px;margin-top:14px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+  .grp{margin-top:16px}.grp:first-child{margin-top:0}
+  .grp .h{font-size:11px;font-weight:800;color:#8da0b2;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;display:flex;justify-content:space-between}
+  .grp .h .v{color:#7af0d9}
+  .pills{display:flex;flex-wrap:wrap;gap:6px}
+  .pill{padding:8px 12px;border-radius:11px;border:1px solid rgba(255,255,255,.1);background:#1b2735;
+    color:#cdd8e2;font-weight:800;font-size:13px;cursor:pointer;transition:.15s}
+  .pill small{display:block;font-size:9.5px;color:#8093a4;font-weight:600;margin-top:1px}
+  .pill:hover{transform:translateY(-2px)}
+  .pill.on{background:linear-gradient(180deg,#2dd4bf,#14b8a6);color:#06281f;border-color:#2dd4bf;box-shadow:0 0 16px rgba(45,212,191,.4)}
+  .pill.on small{color:#06403a}
+  svg{width:100%;height:auto;display:block;border-radius:12px;background:radial-gradient(120% 120% at 50% 0%,#13202c,#0c131c)}
+  .res2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+  .rb{background:linear-gradient(180deg,#10302a,#0e1c1a);border:1px solid rgba(45,212,191,.28);border-radius:13px;padding:11px}
+  .rb .lbl{font-size:10px;color:#9fb0c0;font-weight:800;text-transform:uppercase}
+  .rb .big{font-size:23px;font-weight:900;color:#7af0d9;margin-top:3px;font-variant-numeric:tabular-nums}
+  .rb .unit{font-size:13px;color:#9fe9da;font-weight:800}
+  /* type matrix */
+  .types{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:6px}
+  .tc{border-radius:13px;padding:11px 8px;text-align:center;border:1px solid rgba(255,255,255,.08);background:#16242f;transition:.18s}
+  .tc .n{font-weight:900;font-size:15px;color:#cdd8e2}
+  .tc .d{font-size:9px;color:#8093a4;margin-top:3px;font-weight:600;line-height:1.3}
+  .tc .st{margin-top:7px;font-size:10px;font-weight:900;letter-spacing:.3px}
+  .tc.ok{background:linear-gradient(180deg,#10342b,#0e1c1a);border-color:rgba(45,212,191,.5);box-shadow:0 0 18px rgba(45,212,191,.18)}
+  .tc.ok .n{color:#7af0d9}.tc.ok .st{color:#7af0d9}
+  .tc.no{opacity:.55}.tc.no .st{color:#fca5a5}
+  .verdict{margin-top:14px;border-radius:14px;padding:12px 14px;font-weight:800;font-size:13px;text-align:center;
+    background:rgba(45,212,191,.1);border:1px solid rgba(45,212,191,.35);color:#7af0d9;line-height:1.4}
+  .note{font-size:11px;color:#6f8093;margin-top:12px;line-height:1.5}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-size:10px;color:#9fb0c0;font-weight:600}
+  .legend i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:5px;vertical-align:middle}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="backlink" href="index.htm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>StromLab</a>
+  <header>
+    <h1><span class="lab">StromLab</span> · RCD-Typen</h1>
+    <div class="sub">Welcher Typ erfasst welchen Fehlerstrom? Kurve I<sub>F</sub>(t)</div>
+    <div class="tag">IEC 61008/62423 · Typ AC · A · A-EV · F · B</div>
+  </header>
+
+  <div class="card">
+    <div class="grp"><div class="h"><span>Fehlerstrom-Verlauf I<sub>F</sub>(t)</span><span class="v" id="cState">–</span></div></div>
+    <svg id="wave" viewBox="0 0 600 220"></svg>
+    <div class="legend">
+      <span><i style="background:#7af0d9"></i>I<sub>F</sub> Fehlerstrom</span>
+      <span><i style="background:#fcd34d"></i>DC-Anteil (Mittelwert)</span>
+      <span><i style="background:#5b6e80"></i>Nulllinie</span>
+    </div>
+    <div class="res2">
+      <div class="rb"><div class="lbl">I<sub>F,eff</sub></div><div><span class="big" id="vEff">–</span> <span class="unit">mA</span></div></div>
+      <div class="rb"><div class="lbl">I<sub>F,DC</sub> (Gleichanteil)</div><div><span class="big" id="vDC">–</span> <span class="unit">mA</span></div></div>
+      <div class="rb"><div class="lbl">I<sub>F,ACeff</sub></div><div><span class="big" id="vAC">–</span> <span class="unit">mA</span></div></div>
+      <div class="rb"><div class="lbl">f<sub>F,AC</sub> Frequenz</div><div><span class="big" id="vF">–</span> <span class="unit">Hz</span></div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="grp"><div class="h"><span>Welcher RCD-Typ erfasst diesen Fehlerstrom?</span></div></div>
+    <div class="types" id="typeRow"></div>
+    <div class="verdict" id="verdict">–</div>
+  </div>
+
+  <div class="card">
+    <div class="grp"><div class="h"><span>Verbraucher / Gleichrichter</span><span class="v" id="vLoad">–</span></div><div class="pills" id="loadRow"></div></div>
+    <div class="grp"><div class="h"><span>Fehlerstrom-Amplitude</span><span class="v" id="vAmp">30 mA</span></div>
+      <input type="range" id="sAmp" min="5" max="300" step="5" value="30" /></div>
+  </div>
+
+  <div class="card"><div class="note" id="footnote"></div></div>
+</div>
+
+<script>
+/* ===== Lehrkern aus rcd-typen.json =====
+   Typ A   = AC + pulsierend DC
+   Typ A-EV= A + glatter DC bis 6 mA (E-Mobility)
+   Typ F   = A + Mischfrequenzen (Frequenzumrichter)
+   Typ B   = F + glatter DC (allstromsensitiv)
+*/
+const TYPES=[
+  {n:'AC',  d:'reiner Sinus-AC', caps:['ac']},
+  {n:'A',   d:'AC + puls. DC',   caps:['ac','pdc']},
+  {n:'A-EV',d:'A + DC ≤6 mA',    caps:['ac','pdc','sdc6']},
+  {n:'F',   d:'A + Mischfreq.',  caps:['ac','pdc','mix','sdc6']},
+  {n:'B',   d:'allstrom inkl. glatter DC', caps:['ac','pdc','mix','sdc6','sdc']}
+];
+/* Fehlerstrom-Profile (Gleichrichter-Schaltungen) */
+const LOADS=[
+  {k:'ac',  t:'reine AC-Last',       s:'Heizung/Motor', kind:'ac'},
+  {k:'pdc', t:'1-Puls-Gleichrichter',s:'Halbwelle, puls. DC', kind:'pdc'},
+  {k:'mix', t:'Frequenzumrichter',   s:'Mischfrequenz', kind:'mix'},
+  {k:'sdc', t:'PFC / B6-Brücke',     s:'glatter DC', kind:'sdc'},
+  {k:'sdc6',t:'EV-Ladegerät',        s:'AC + glatter DC ≤6 mA', kind:'sdc6'}
+];
+let st={load:'pdc', amp:30};
+const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e};
+
+/* waveform sample over 2 periods (t in 0..40ms @50Hz) */
+function sample(kind, ph){
+  const w=2*Math.PI*ph; // ph in periods
+  const s=Math.sin(w);
+  switch(kind){
+    case 'ac':   return s;
+    case 'pdc':  return s>0? s : 0;                 // pulsierend DC (Halbwelle)
+    case 'mix':  return 0.6*s + 0.4*Math.sin(w*7+0.6); // Mischfrequenz
+    case 'sdc':  return 0.85 + 0.08*Math.sin(w*6);  // glatter DC mit Restwelligkeit
+    case 'sdc6': return 0.55*s + 0.45;              // AC + DC-Offset (EV)
+  }
+  return 0;
+}
+function analyse(kind,amp){
+  const N=400; let sum=0,sq=0, acsq=0;
+  const vals=[]; for(let i=0;i<N;i++){ const v=sample(kind,i/N*2); vals.push(v); sum+=v; sq+=v*v; }
+  const mean=sum/N;                       // DC component (normalized)
+  for(const v of vals) acsq+=(v-mean)*(v-mean);
+  const eff=Math.sqrt(sq/N), acEff=Math.sqrt(acsq/N);
+  // scale so peak ~ amp scale: use amp as effective overall
+  const k=amp/(eff||1);
+  let freq = (kind==='mix')?'50+350':(kind==='sdc')?'0 (DC)':(kind==='ac'||kind==='pdc'||kind==='sdc6')?'50':'50';
+  return { eff:amp, dc:Math.abs(mean*k), acEff:acEff*k, vals, mean, freq };
+}
+/* which capability does this load require */
+function reqCap(kind){
+  return ({ac:'ac', pdc:'pdc', mix:'mix', sdc:'sdc', sdc6:'sdc6'})[kind];
+}
+
+let rafW=0, t0=performance.now();
+function drawWave(an){
+  const s=document.getElementById('wave');
+  const W=600,H=220, mid=H/2, ax=44;
+  let path='', g=''; const N=200;
+  for(let i=0;i<=N;i++){ const x=ax+(W-ax-12)*(i/N); const v=sample((LOADS.find(l=>l.k===st.load)).kind, i/N*2);
+    const y=mid - v*70; path+=(i===0?'M':'L')+x.toFixed(1)+','+y.toFixed(1)+' '; }
+  const dcY=mid - an.mean*70;
+  s.innerHTML=`
+    <line x1="${ax}" y1="${mid}" x2="${W-12}" y2="${mid}" stroke="#5b6e80" stroke-width="1.5" stroke-dasharray="4 4"/>
+    <line x1="${ax}" y1="20" x2="${ax}" y2="${H-20}" stroke="#3a4a5a" stroke-width="1.5"/>
+    <text x="8" y="${mid+4}" fill="#7c8da0" font-size="9">0</text>
+    <text x="8" y="58" fill="#7c8da0" font-size="9">+I</text>
+    <text x="8" y="${H-26}" fill="#7c8da0" font-size="9">−I</text>
+    <text x="${W-60}" y="${H-6}" fill="#7c8da0" font-size="9">t [ms]</text>
+    <line x1="${ax}" y1="${dcY}" x2="${W-12}" y2="${dcY}" stroke="#fcd34d" stroke-width="1.5" stroke-dasharray="6 5" opacity="0.8"/>
+    <path d="${path}" stroke="#7af0d9" stroke-width="2.6" fill="none" stroke-linejoin="round"/>
+    <circle id="bead" r="5" fill="#fff" />
+  `;
+}
+function animWave(){
+  const ph=((performance.now()-t0)/2000)%1; // 2s per 2 periods
+  const s=document.getElementById('wave'); if(s){ const b=s.querySelector('#bead');
+    if(b){ const ax=44,W=600,mid=110; const x=ax+(W-ax-12)*ph; const v=sample((LOADS.find(l=>l.k===st.load)).kind, ph*2);
+      b.setAttribute('cx',x); b.setAttribute('cy', mid - v*70); } }
+  rafW=requestAnimationFrame(animWave);
+}
+
+function buildTypes(reqK){
+  const tr=document.getElementById('typeRow'); tr.innerHTML='';
+  TYPES.forEach(ty=>{ const ok=ty.caps.includes(reqK);
+    const c=el('div','tc '+(ok?'ok':'no'));
+    const icoOk='<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.1em;margin-right:3px"><path d="M5 13l4 4L19 7"/></svg>';
+    const icoNo='<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.1em;margin-right:3px"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+    c.innerHTML='<div class="n">'+ty.n+'</div><div class="d">'+ty.d+'</div><div class="st">'+(ok?icoOk+'erfasst':icoNo+'blind')+'</div>';
+    tr.appendChild(c); });
+}
+
+function buildPills(){
+  const lr=document.getElementById('loadRow'); lr.innerHTML='';
+  LOADS.forEach(l=>{ const p=el('button','pill'+(l.k===st.load?' on':''),l.t+'<small>'+l.s+'</small>');
+    p.onclick=()=>{st.load=l.k; render();}; lr.appendChild(p); });
+}
+
+function render(){
+  buildPills();
+  st.amp=+document.getElementById('sAmp').value;
+  const load=LOADS.find(l=>l.k===st.load);
+  document.getElementById('vLoad').textContent=load.t;
+  document.getElementById('vAmp').textContent=st.amp+' mA';
+
+  const an=analyse(load.kind, st.amp);
+  document.getElementById('vEff').textContent=an.eff.toFixed(0);
+  document.getElementById('vDC').textContent=an.dc.toFixed(0);
+  document.getElementById('vAC').textContent=an.acEff.toFixed(0);
+  document.getElementById('vF').textContent=an.freq;
+  document.getElementById('cState').textContent=load.s;
+
+  const reqK=reqCap(load.kind);
+  buildTypes(reqK);
+  // smallest sufficient type
+  const sufficient=TYPES.filter(t=>t.caps.includes(reqK));
+  const min=sufficient.length? sufficient[0].n : '–';
+  const v=document.getElementById('verdict');
+  const desc={ac:'reiner Sinus-Wechselfehlerstrom', pdc:'pulsierender Gleichfehlerstrom (Halbwelle)',
+    mix:'Mischfrequenz-Fehlerstrom (Frequenzumrichter)', sdc:'glatter Gleichfehlerstrom',
+    sdc6:'Wechselstrom mit glattem DC-Anteil (E-Mobility)'}[load.kind];
+  v.innerHTML='Dieser Verbraucher erzeugt einen <b>'+desc+'</b>.<br>Mindestens erforderlich: <b>RCD Typ '+min+'</b> — kleinere Typen erkennen ihn nicht und lösen nicht aus.';
+
+  drawWave(an);
+  document.getElementById('footnote').innerHTML=
+    'Erfassungsbereiche (IEC 62423): <b>Typ AC</b> nur sinusförmiger AC. <b>Typ A</b> = AC + pulsierender DC. '+
+    '<b>Typ A-EV</b> = A + glatter DC ≤6 mA. <b>Typ F</b> = A + Mischfrequenzen (z.B. 1-phasige FU). '+
+    '<b>Typ B</b> = allstromsensitiv inkl. glatter DC (3-phasige FU, PFC, DC-Quellen). '+
+    'Datensatz-Kennwerte: I_F,eff, I_F,DC, I_F,ACeff, f_F,AC — ein glatter DC-Anteil sättigt den Wandler von Typ A/F und macht ihn blind, nur Typ B erfasst ihn.';
+}
+
+['sAmp'].forEach(id=>document.getElementById(id).addEventListener('input',render));
+render(); animWave();
+</script>
+</body>
+</html>

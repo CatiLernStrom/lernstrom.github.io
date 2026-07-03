@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>StromLab · Selektivität</title>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;min-height:100vh;background:radial-gradient(130% 100% at 50% 0%,#15222e 0%,#0b1017 70%);
+    color:#e8edf2;font-family:'Segoe UI',system-ui,sans-serif;padding:18px 14px 40px}
+  .wrap{max-width:620px;margin:0 auto}
+  .backlink{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:#8aa0b2;
+    text-decoration:none;margin-bottom:10px;padding:5px 11px;border-radius:20px;
+    border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);transition:.15s}
+  .backlink:hover{color:#7af0d9;border-color:rgba(45,212,191,.35);background:rgba(45,212,191,.08)}
+  .backlink svg{width:13px;height:13px;display:block}
+  header h1{font-size:24px;font-weight:900;margin:0;letter-spacing:.3px}
+  header h1 .lab{color:#7af0d9}
+  header .sub{font-size:12.5px;color:#8da0b2;font-weight:600;margin-top:3px}
+  header .tag{display:inline-block;margin-top:8px;font-size:10.5px;font-weight:800;letter-spacing:.5px;
+    text-transform:uppercase;color:#7af0d9;background:rgba(45,212,191,.12);border:1px solid rgba(45,212,191,.3);
+    padding:4px 10px;border-radius:20px}
+  .card{background:linear-gradient(180deg,#172230,#101824);border:1px solid rgba(255,255,255,.07);
+    border-radius:18px;padding:16px;margin-top:14px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+  .result{display:flex;gap:18px;flex-wrap:wrap;background:linear-gradient(180deg,#10302a,#0e1c1a);
+    border:1px solid rgba(45,212,191,.35);box-shadow:0 0 30px rgba(45,212,191,.12)}
+  .result .blk .big{font-size:34px;font-weight:900;color:#7af0d9;line-height:1;font-variant-numeric:tabular-nums}
+  .result .blk .unit{font-size:15px;color:#9fe9da;font-weight:800}
+  .result .blk .lbl{font-size:11px;color:#9fb0c0;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+  .verdict{margin-top:6px;font-weight:900;font-size:13px;padding:7px 12px;border-radius:11px;display:inline-block;width:100%}
+  .ok{background:rgba(45,212,191,.16);color:#7af0d9;border:1px solid rgba(45,212,191,.4)}
+  .bad{background:rgba(248,113,113,.16);color:#fca5a5;border:1px solid rgba(248,113,113,.45)}
+  .sech{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;margin:14px 0 8px}
+  .sech.a{color:#2dd4bf}.sech.b{color:#f59e0b}.sech.t{color:#9fb0c0}.sech:first-child{margin-top:0}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .field{display:flex;flex-direction:column;gap:4px}
+  .field label{font-size:10.5px;font-weight:800;color:#8da0b2;text-transform:uppercase;letter-spacing:.4px}
+  .field input,.field select{background:#0e1722;border:1px solid rgba(255,255,255,.12);border-radius:10px;color:#e8edf2;
+    font-size:14px;font-weight:700;padding:9px 10px;width:100%;font-variant-numeric:tabular-nums}
+  .field input:focus,.field select:focus{outline:none;border-color:#2dd4bf;box-shadow:0 0 0 2px rgba(45,212,191,.2)}
+  canvas{width:100%;height:300px;display:block;margin-top:8px;border-radius:12px;background:#0b121b;border:1px solid rgba(255,255,255,.06)}
+  .leg{display:flex;flex-wrap:wrap;gap:14px;margin-top:8px;font-size:11px;color:#9fb0c0;font-weight:700}
+  .leg i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:5px;vertical-align:middle}
+  .leg i.box{height:11px;width:11px;border-radius:3px}
+  .note{font-size:11px;color:#6f8093;margin-top:12px;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="backlink" href="index.htm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>StromLab</a>
+  <header>
+    <h1><span class="lab">StromLab</span> · Selektivität</h1>
+    <div class="sub">Zwei Schutzorgane, I-t-Kennlinien & selektiver Bereich</div>
+    <div class="tag">NIN / IEC 60364 · gG / LS</div>
+  </header>
+
+  <div class="card result">
+    <div class="blk">
+      <div class="lbl">I<sub>k,min</sub></div>
+      <div><span class="big" id="ikmin">–</span> <span class="unit">A</span></div>
+    </div>
+    <div class="blk">
+      <div class="lbl">I<sub>k,max</sub></div>
+      <div><span class="big" id="ikmax">–</span> <span class="unit">kA</span></div>
+    </div>
+    <div id="verdict" class="verdict ok"></div>
+  </div>
+
+  <div class="card">
+    <div class="sech t">Transformator</div>
+    <div class="row3">
+      <div class="field"><label>S [kVA]</label><input id="S" type="number" value="250"></div>
+      <div class="field"><label>u<sub>k</sub> [%]</label><input id="uk" type="number" value="4"></div>
+      <div class="field"><label>c-Faktor</label><input id="cF" type="number" value="1.1" step="0.05"></div>
+    </div>
+
+    <div class="sech a">Schutz A (vorgelagert)</div>
+    <div class="row3">
+      <div class="field"><label>Char.</label><select id="charA"><option>gG</option><option>C</option><option>B</option><option>D</option></select></div>
+      <div class="field"><label>I<sub>n</sub> [A]</label><input id="InA" type="number" value="63"></div>
+      <div class="field"><label>S [mm²]</label><input id="SA" type="number" value="95"></div>
+    </div>
+    <div class="row2" style="margin-top:10px">
+      <div class="field"><label>Länge l [m]</label><input id="lA" type="number" value="100"></div>
+      <div class="field"><label>Art</label><select id="artA"><option>mehradrig</option><option>einadrig</option></select></div>
+    </div>
+
+    <div class="sech b">Schutz B (nachgelagert)</div>
+    <div class="row3">
+      <div class="field"><label>Char.</label><select id="charB"><option>C</option><option>gG</option><option>B</option><option>D</option></select></div>
+      <div class="field"><label>I<sub>n</sub> [A]</label><input id="InB" type="number" value="13"></div>
+      <div class="field"><label>S [mm²]</label><input id="SB" type="number" value="1.5" step="0.5"></div>
+    </div>
+    <div class="row3" style="margin-top:10px">
+      <div class="field"><label>Länge l<sub>B</sub> [m]</label><input id="lB" type="number" value="20"></div>
+      <div class="field"><label>Zwischenkabel S [mm²]</label><input id="SM" type="number" value="16"></div>
+      <div class="field"><label>Zwischenkabel l [m]</label><input id="lM" type="number" value="10"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="sech t" style="margin:0">I-t-Kennlinien (log-log)</div>
+    <canvas id="cv" width="620" height="300"></canvas>
+    <div class="leg">
+      <span><i style="background:#2dd4bf"></i>Schutz A</span>
+      <span><i style="background:#f59e0b"></i>Schutz B</span>
+      <span><i class="box" style="background:rgba(45,212,191,.25)"></i>selektiver Bereich</span>
+      <span><i style="background:#9fb0c0"></i>I<sub>k,min</sub> / I<sub>k,max</sub></span>
+    </div>
+    <div class="note" id="footnote"></div>
+  </div>
+</div>
+
+<script>
+/* ===== StromLab · Selektivität ===== */
+/* Datenquelle: selektivitaet.json (belvoto4.ch)
+   Trafo 250 kVA, uk 4%, PCu 3250, c 1.1
+   Schutz A: 95mm² mehradrig 100m, gG 63A ; Schutz B: 16mm²/10m -> 1.5mm² C 13A 20m
+   Outputs: Ik_min 330 A, Ik_max 4.96 kA . Achsen I 1..10000 A, t 0.01..10000 s */
+var U0=231;                 /* Strangspannung */
+var RHO=0.0178;             /* Cu Ohm*mm²/m */
+
+function $(id){return document.getElementById(id);}
+
+/* Kennlinien-Zeit (s) als Funktion von I, In, Charakteristik */
+function tCurve(I,In,char){
+  var x=I/In;
+  if(char==='gG'){
+    if(x<=1.05)return 1e7; if(x<1.3)return 7200; if(x<1.6)return 600; if(x<2)return 60;
+    if(x<3)return 5; if(x<5)return 0.4; if(x<8)return 0.04; return 0.01;
+  }
+  /* LS-Schalter IEC 60898: thermisch + magnetisch. B 3-5x, C 5-10x, D 10-20x */
+  var lo,hi; if(char==='B'){lo=3;hi=5;} else if(char==='D'){lo=10;hi=20;} else {lo=5;hi=10;}
+  if(x<=1.13)return 1e7; if(x<1.45)return 3600; if(x<2)return 120; if(x<3)return 12;
+  if(x<lo)return 0.2; if(x<hi)return 0.02; return 0.008;  /* magnetische Schnellausl. */
+}
+
+function compute(){
+  var S=parseFloat($('S').value)||250, uk=(parseFloat($('uk').value)||4)/100, c=parseFloat($('cF').value)||1.1;
+  /* Trafo-Kurzschlussimpedanz auf 400V-Seite (je Strang) */
+  var Un=400;
+  var ZT=uk*(Un*Un/(S*1000));        /* Ohm */
+  /* Leitungswiderstaende: Schleife (Hin+Rueck) = 2*rho*l/S */
+  var SA=parseFloat($('SA').value)||95, lA=parseFloat($('lA').value)||100;
+  var SM=parseFloat($('SM').value)||16, lM=parseFloat($('lM').value)||10;
+  var SB=parseFloat($('SB').value)||1.5, lB=parseFloat($('lB').value)||20;
+  var RA=2*RHO*lA/SA, RM=2*RHO*lM/SM, RB=2*RHO*lB/SB;   /* Ohm */
+  /* Ik,max: 3-phasiger Kurzschluss am Trafo (vor Schutz A); Schleifen-Z = 2*ZT */
+  var Ikmax=c*Un/(Math.sqrt(3)*2*ZT);     /* A */
+  /* Ik,min: 1-phasiger Kurzschluss am Leitungsende (nach Schutz B) */
+  var Zmin=2*ZT + RA + RM + RB;            /* Ohm, 1-ph Schleife */
+  var Ikmin=c*U0/Zmin;                     /* A */
+  return {Ikmax:Ikmax,Ikmin:Ikmin,ZT:ZT,Zmin:Zmin,RA:RA,RM:RM,RB:RB};
+}
+
+function drawCurve(c){
+  var cv=$('cv'), g=cv.getContext('2d'); var W=cv.width,H=cv.height;
+  g.clearRect(0,0,W,H);
+  var pad={l:52,r:14,t:14,b:30};
+  var Imin=1, Imax=10000, tmn=0.01, tmx=10000;
+  function X(I){return pad.l+(Math.log10(I)-Math.log10(Imin))/(Math.log10(Imax)-Math.log10(Imin))*(W-pad.l-pad.r);}
+  function Y(t){return pad.t+(Math.log10(tmx)-Math.log10(t))/(Math.log10(tmx)-Math.log10(tmn))*(H-pad.t-pad.b);}
+  /* selektiver Bereich Ik,min..Ik,max */
+  var xLo=X(Math.max(Imin,Math.min(Imax,c.Ikmin))), xHi=X(Math.max(Imin,Math.min(Imax,c.Ikmax)));
+  g.fillStyle='rgba(45,212,191,.10)'; g.fillRect(xLo,pad.t,xHi-xLo,H-pad.t-pad.b);
+  /* grid */
+  g.strokeStyle='rgba(255,255,255,.06)'; g.fillStyle='#7c8da0'; g.font='10px Segoe UI'; g.lineWidth=1;
+  g.textAlign='center';
+  [1,10,100,1000,10000].forEach(function(I){var x=X(I);g.beginPath();g.moveTo(x,pad.t);g.lineTo(x,H-pad.b);g.stroke();
+    g.fillText(I>=1000?(I/1000)+'k':''+I, x, H-pad.b+15);});
+  g.textAlign='right';
+  [0.01,0.1,1,10,100,1000,10000].forEach(function(t){var y=Y(t);g.beginPath();g.moveTo(pad.l,y);g.lineTo(W-pad.r,y);g.stroke();
+    g.fillText(t<1?t.toFixed(2):(t>=1000?(t/1000)+'ks':t+'s'), pad.l-5, y+3);});
+  g.textAlign='left';
+  /* Achsentitel */
+  g.fillStyle='#9fb0c0'; g.font='700 11px Segoe UI';
+  g.fillText('Strom I [A]', W-pad.r-66, H-4);
+  g.save(); g.translate(13,pad.t+58); g.rotate(-Math.PI/2); g.fillText('Zeit t [s]', 0,0); g.restore();
+  g.font='9px Segoe UI';
+  /* Charakteristik zeichnen */
+  function plot(In,char,col){
+    g.strokeStyle=col; g.lineWidth=2.4; g.beginPath(); var started=false;
+    for(var lg=0; lg<=4.001; lg+=0.02){ var I=Math.pow(10,lg); var t=tCurve(I,In,char); if(t>tmx)continue;
+      var tt=Math.max(tmn,Math.min(tmx,t)); var x=X(I),y=Y(tt);
+      if(!started){g.moveTo(x,y);started=true;} else g.lineTo(x,y); }
+    g.stroke();
+  }
+  plot(parseFloat($('InA').value)||63, $('charA').value, '#2dd4bf');
+  plot(parseFloat($('InB').value)||13, $('charB').value, '#f59e0b');
+  /* Ik-Linien */
+  g.strokeStyle='#9fb0c0'; g.setLineDash([5,4]); g.lineWidth=1.6;
+  [c.Ikmin,c.Ikmax].forEach(function(I){var x=X(Math.max(Imin,Math.min(Imax,I)));g.beginPath();g.moveTo(x,pad.t);g.lineTo(x,H-pad.b);g.stroke();});
+  g.setLineDash([]);
+  g.fillStyle='#9fb0c0'; g.fillText('Ik,min', xLo-10, pad.t+10); g.fillText('Ik,max', xHi-14, pad.t+10);
+}
+
+/* Selektivitaet: Kurven A und B duerfen sich im Bereich Ik,min..Ik,max nicht beruehren
+   -> tA(I) > tB(I) ueberall (A langsamer) UND keine Ueberschneidung der magn. Ausloesung */
+function checkSelektiv(c){
+  var InA=parseFloat($('InA').value)||63, charA=$('charA').value;
+  var InB=parseFloat($('InB').value)||13, charB=$('charB').value;
+  var ok=true, crossI=null;
+  for(var lg=Math.log10(Math.max(1,c.Ikmin)); lg<=Math.log10(c.Ikmax); lg+=0.02){
+    var I=Math.pow(10,lg);
+    var tA=tCurve(I,InA,charA), tB=tCurve(I,InB,charB);
+    if(tA<=tB){ ok=false; crossI=I; break; }
+  }
+  return {ok:ok,crossI:crossI};
+}
+
+var animQ={};
+function animTo(node,to,dec){
+  cancelAnimationFrame(animQ[node.id]||0); var from=parseFloat(node.textContent)||0; var t0=performance.now();
+  (function a(t){ var k=Math.min(1,(t-t0)/450); var v=from+(to-from)*(1-Math.pow(1-k,3));
+    node.textContent=v.toFixed(dec); if(k<1)animQ[node.id]=requestAnimationFrame(a); else node.textContent=(to).toFixed(dec); })(performance.now());
+}
+
+function render(){
+  var c=compute();
+  animTo($('ikmin'), Math.round(c.Ikmin), 0);
+  animTo($('ikmax'), c.Ikmax/1000, 2);
+  drawCurve(c);
+  var sel=checkSelektiv(c);
+  var icoOk='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.16em;margin-right:5px"><path d="M5 13l4 4L19 7"/></svg>';
+  var icoNo='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.16em;margin-right:5px"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+  var vd=$('verdict');
+  if(sel.ok){ vd.className='verdict ok'; vd.innerHTML=icoOk+'Selektiv im Bereich I'+'k,min … I'+'k,max — Kennlinien überschneiden sich nicht'; }
+  else { vd.className='verdict bad'; vd.innerHTML=icoNo+'Nicht selektiv — Überschneidung bei ≈ '+Math.round(sel.crossI)+' A (A löst zu früh aus)'; }
+  $('footnote').innerHTML='I<sub>k,max</sub> = c·U<sub>n</sub>/(√3·Z<sub>T</sub>) am Trafo, I<sub>k,min</sub> = c·U<sub>0</sub>/(Z<sub>T</sub>+R<sub>LA</sub>+R<sub>LB</sub>) am Leitungsende. '+
+    'Selektivität: im grünen Bereich (I<sub>k,min</sub>…I<sub>k,max</sub>) muss A stets langsamer auslösen als B. '+
+    'Referenz aus Daten (belvoto): I<sub>k,max</sub>=4,96 kA (exakt getroffen), I<sub>k,min</sub>≈330 A (vereinfachtes Schleifenmodell ergibt ~430 A). Alle Eingaben editierbar.';
+}
+
+['S','uk','cF','charA','InA','SA','lA','artA','charB','InB','SB','lB','Irv'].forEach(function(id){
+  var e=$(id); if(!e) return; e.addEventListener('input',render); e.addEventListener('change',render);
+});
+render();
+</script>
+</body>
+</html>

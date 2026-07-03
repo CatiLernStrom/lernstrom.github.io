@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>StromLab · Strombelastbarkeit</title>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;min-height:100vh;background:radial-gradient(130% 100% at 50% 0%,#15222e 0%,#0b1017 70%);
+    color:#e8edf2;font-family:'Segoe UI',system-ui,sans-serif;padding:18px 14px 40px}
+  .wrap{max-width:620px;margin:0 auto}
+  .backlink{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:#8aa0b2;
+    text-decoration:none;margin-bottom:10px;padding:5px 11px;border-radius:20px;
+    border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);transition:.15s}
+  .backlink:hover{color:#7af0d9;border-color:rgba(45,212,191,.35);background:rgba(45,212,191,.08)}
+  .backlink svg{width:13px;height:13px;display:block}
+  header h1{font-size:24px;font-weight:900;margin:0;letter-spacing:.3px}
+  header h1 .lab{color:#7af0d9}
+  header .sub{font-size:12.5px;color:#8da0b2;font-weight:600;margin-top:3px}
+  header .tag{display:inline-block;margin-top:8px;font-size:10.5px;font-weight:800;letter-spacing:.5px;
+    text-transform:uppercase;color:#7af0d9;background:rgba(45,212,191,.12);border:1px solid rgba(45,212,191,.3);
+    padding:4px 10px;border-radius:20px}
+  .card{background:linear-gradient(180deg,#172230,#101824);border:1px solid rgba(255,255,255,.07);
+    border-radius:18px;padding:16px;margin-top:14px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+  .result{display:flex;align-items:center;gap:16px;background:linear-gradient(180deg,#10302a,#0e1c1a);
+    border:1px solid rgba(45,212,191,.35);box-shadow:0 0 30px rgba(45,212,191,.12)}
+  .result .big{font-size:46px;font-weight:900;color:#7af0d9;line-height:1;font-variant-numeric:tabular-nums}
+  .result .unit{font-size:20px;color:#9fe9da;font-weight:800}
+  .result .lbl{font-size:12px;color:#9fb0c0;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+  .result .calc{font-size:11.5px;color:#8da0b2;margin-top:6px;font-weight:600}
+  .result .calc b{color:#cfe}
+  .grp{margin-top:16px}
+  .grp:first-child{margin-top:0}
+  .grp .h{font-size:11px;font-weight:800;color:#8da0b2;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;display:flex;justify-content:space-between;gap:8px}
+  .grp .h .v{color:#7af0d9;text-align:right}
+  .pills{display:flex;flex-wrap:wrap;gap:6px}
+  .pill{padding:8px 12px;border-radius:11px;border:1px solid rgba(255,255,255,.1);background:#1b2735;
+    color:#cdd8e2;font-weight:800;font-size:13px;cursor:pointer;transition:.15s}
+  .pill small{display:block;font-size:9.5px;color:#8093a4;font-weight:600;margin-top:1px}
+  .pill:hover{transform:translateY(-2px)}
+  .pill.on{background:linear-gradient(180deg,#2dd4bf,#14b8a6);color:#06281f;border-color:#2dd4bf;box-shadow:0 0 16px rgba(45,212,191,.4)}
+  .pill.on small{color:#06403a}
+  input[type=range]{width:100%;accent-color:#2dd4bf}
+  .tblwrap{max-height:320px;overflow:auto;margin-top:6px;border-radius:10px}
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  th,td{padding:6px 4px;text-align:center;border-bottom:1px solid rgba(255,255,255,.05)}
+  th{color:#8da0b2;font-size:10.5px;font-weight:800;text-transform:uppercase;position:sticky;top:0;background:#101824}
+  td.mm{color:#cdd8e2;font-weight:800;text-align:left;padding-left:8px}
+  td.val{color:#9fb0c0;font-variant-numeric:tabular-nums}
+  tr.rowon td{background:rgba(45,212,191,.06)}
+  td.cellon{background:linear-gradient(180deg,#2dd4bf,#14b8a6)!important;color:#06281f!important;font-weight:900;border-radius:8px}
+  th.colon{color:#7af0d9}
+  .note{font-size:11px;color:#6f8093;margin-top:12px;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="backlink" href="index.htm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>StromLab</a>
+  <header>
+    <h1><span class="lab">StromLab</span> · Strombelastbarkeit</h1>
+    <div class="sub">Zulässiger Dauerstrom I<sub>z</sub> einer Leitung — live</div>
+    <div class="tag">NIN / IEC 60364-5-52 · Cu</div>
+  </header>
+
+  <div class="card result">
+    <div>
+      <div class="lbl">Strombelastbarkeit I<sub>z</sub></div>
+      <div><span class="big" id="rVal">–</span> <span class="unit">A</span></div>
+      <div class="calc" id="rCalc"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="grp">
+      <div class="h"><span>Querschnitt</span><span class="v" id="qV"></span></div>
+      <div class="pills" id="qRow"></div>
+    </div>
+
+    <div class="grp">
+      <div class="h"><span>Verlegeart</span><span class="v" id="mV"></span></div>
+      <div class="pills" id="mRow"></div>
+    </div>
+
+    <div class="grp">
+      <div class="h"><span>Leitertemperatur / Isolation</span><span class="v" id="ltV"></span></div>
+      <div class="pills" id="ltRow"></div>
+    </div>
+
+    <div class="grp">
+      <div class="h"><span>Aderzahl</span><span class="v" id="caV"></span></div>
+      <div class="pills" id="caRow"></div>
+    </div>
+
+    <div class="grp">
+      <div class="h"><span>Belastete Leiter</span><span class="v" id="blV"></span></div>
+      <div class="pills" id="blRow"></div>
+    </div>
+
+    <div class="grp">
+      <div class="h"><span>Umgebungstemperatur</span><span class="v" id="tV"></span></div>
+      <input type="range" id="tSlider" min="0" max="10" step="1" value="4" />
+    </div>
+
+    <div class="grp">
+      <div class="h"><span>Häufung (Stromkreise gebündelt)</span><span class="v" id="hV"></span></div>
+      <div class="pills" id="hRow"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="grp"><div class="h"><span>Basistabelle (A) <span id="tblCtx"></span></span><span class="v">markiert: aktuelle Wahl</span></div></div>
+    <div class="tblwrap"><table id="tbl"></table></div>
+    <div class="note" id="footnote"></div>
+  </div>
+</div>
+
+<script>
+/* ===== StromLab · Strombelastbarkeit ===== */
+/* Datenquelle: strombelastbarkeit.json (belvoto4.ch / NIN-IEC 60364-5-52) */
+/* Basistabelle 70 C, 2 belastete Adern, Kupfer  -> EXAKT aus JSON */
+var METHODS=['A2','B2','C','D','E'];
+var METHOD_LBL={A2:'in wärmegedämmter Wand',B2:'Rohr auf Holzwand',C:'auf der Wand',D:'im Erdreich',E:'frei in Luft'};
+var QS=[1.5,2.5,4,6,10,16,25,35,50,70,95,120,150,185,240,300];
+/* Basis 70 C / 2 belastete Leiter  (JSON _spalten A2,B2,C,D,E) */
+var BASE70_2={
+ '1.5':[13,15,17.5,18,18.5], '2.5':[17.5,20,24,24,25], '4':[23,27,32,30,34],
+ '6':[29,34,41,38,43], '10':[39,46,57,50,60], '16':[52,62,76,64,80], '25':[68,80,96,82,101],
+ '35':[83,99,119,98,126], '50':[99,118,144,116,153], '70':[125,149,184,143,196],
+ '95':[150,179,223,169,238], '120':[172,206,259,192,276], '150':[196,225,299,217,319],
+ '185':[223,255,341,243,364], '240':[261,297,403,280,430], '300':[298,339,464,316,497]
+};
+/* IEC 60364-5-52: XLPE/EPR (90 C) zu PVC (70 C) Verhaeltnis ~1.27 (3-Leiter), Anhaltswert.
+   3 belastete Leiter ~0.89 x 2-Leiter-Wert (Tab.-Verhaeltnis). Diese Faktoren als Lernhinweis. */
+var K_90=1.27;     /* 70 C -> 90 C Isolation */
+var K_3LEITER=0.89;/* 2 -> 3 belastete Leiter */
+/* Temperatur-Korrekturfaktoren (IEC 60364-5-52 Tab. B.52.14, PVC 70 C, Luft) */
+var TEMPS=[10,15,20,25,30,35,40,45,50,55,60];
+var KTEMP_PVC={10:1.22,15:1.17,20:1.12,25:1.06,30:1.00,35:0.94,40:0.87,45:0.79,50:0.71,55:0.61,60:0.50};
+/* XLPE/EPR (90 C) Tab. B.52.14 */
+var KTEMP_XLPE={10:1.15,15:1.12,20:1.08,25:1.04,30:1.00,35:0.96,40:0.91,45:0.87,50:0.82,55:0.76,60:0.71};
+/* Haeufungsfaktoren (IEC Tab. B.52.17, gebuendelt) */
+var KGROUP={1:1.00,2:0.80,3:0.70,4:0.65,5:0.60,6:0.57};
+
+var st={ q:6, m:'B2', tIdx:4, h:1, lt:70, ca:'mehradrig', bl:2 };
+
+function el(t,c,h){var e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;}
+function qk(q){return (''+q).indexOf('.')<0?(''+q):(''+q);}
+
+/* Basiswert fuer aktuelle Wahl (Isolation + belastete Leiter angewandt) */
+function baseFor(q,mi){
+  var v=BASE70_2[(''+q)][mi];
+  if(st.lt===90) v=v*K_90;
+  if(st.bl===3) v=v*K_3LEITER;
+  return v;
+}
+
+function buildPills(){
+  var qr=document.getElementById('qRow'); qr.innerHTML='';
+  QS.forEach(function(q){ var p=el('button','pill'+(q===st.q?' on':''),(''+q).replace('.',',')+' mm²'); p.onclick=function(){st.q=q;render();}; qr.appendChild(p); });
+  var mr=document.getElementById('mRow'); mr.innerHTML='';
+  METHODS.forEach(function(m){ var p=el('button','pill'+(m===st.m?' on':''),m+'<small>'+METHOD_LBL[m]+'</small>'); p.onclick=function(){st.m=m;render();}; mr.appendChild(p); });
+  var lr=document.getElementById('ltRow'); lr.innerHTML='';
+  [[70,'PVC'],[90,'XLPE/EPR']].forEach(function(o){ var p=el('button','pill'+(o[0]===st.lt?' on':''),o[0]+' °C<small>'+o[1]+'</small>'); p.onclick=function(){st.lt=o[0];render();}; lr.appendChild(p); });
+  var cr=document.getElementById('caRow'); cr.innerHTML='';
+  ['einadrig','mehradrig'].forEach(function(c){ var p=el('button','pill'+(c===st.ca?' on':''),c); p.onclick=function(){st.ca=c;render();}; cr.appendChild(p); });
+  var br=document.getElementById('blRow'); br.innerHTML='';
+  [2,3].forEach(function(n){ var p=el('button','pill'+(n===st.bl?' on':''),n+' Leiter'); p.onclick=function(){st.bl=n;render();}; br.appendChild(p); });
+  var hr=document.getElementById('hRow'); hr.innerHTML='';
+  [1,2,3,4,5,6].forEach(function(n){ var p=el('button','pill'+(n===st.h?' on':''),n+'<small>×'+KGROUP[n].toFixed(2)+'</small>'); p.onclick=function(){st.h=n;render();}; hr.appendChild(p); });
+}
+
+function buildTable(){
+  var t=document.getElementById('tbl'); t.innerHTML='';
+  var hr=el('tr'); hr.appendChild(el('th',null,'mm²'));
+  METHODS.forEach(function(m){ hr.appendChild(el('th',(m===st.m?'colon':null),m)); }); t.appendChild(hr);
+  QS.forEach(function(q){ var tr=el('tr',(q===st.q?'rowon':null)); tr.appendChild(el('td','mm',(''+q).replace('.',',')));
+    METHODS.forEach(function(m,i){ var on=(q===st.q&&m===st.m); var v=baseFor(q,i); var disp=(v<100)?Math.round(v*10)/10:Math.round(v);
+      tr.appendChild(el('td',(on?'cellon':'val'),disp)); });
+    t.appendChild(tr); });
+}
+
+var animRaf=0;
+function animTo(node,to){
+  cancelAnimationFrame(animRaf); var from=parseFloat(node.textContent)||0; var t0=performance.now();
+  (function a(t){ var k=Math.min(1,(t-t0)/450); var v=from+(to-from)*(1-Math.pow(1-k,3));
+    node.textContent=v.toFixed(v<100?1:0); if(k<1)animRaf=requestAnimationFrame(a); else node.textContent=(Math.round(to*10)/10).toString(); })(performance.now());
+}
+
+function render(){
+  buildPills(); buildTable();
+  var temp=TEMPS[st.tIdx];
+  var base=baseFor(st.q,METHODS.indexOf(st.m));
+  var kt=(st.lt===90?KTEMP_XLPE:KTEMP_PVC)[temp], kg=KGROUP[st.h];
+  var iz=base*kt*kg;
+  document.getElementById('qV').textContent=(''+st.q).replace('.',',')+' mm²';
+  document.getElementById('mV').textContent=st.m+' — '+METHOD_LBL[st.m];
+  document.getElementById('ltV').textContent=st.lt+' °C ('+(st.lt===90?'XLPE/EPR':'PVC')+')';
+  document.getElementById('caV').textContent=st.ca;
+  document.getElementById('blV').textContent=st.bl+' belastet';
+  document.getElementById('tV').textContent=temp+' °C (×'+kt.toFixed(2)+')';
+  document.getElementById('hV').textContent=st.h+(st.h>1?' (×'+kg.toFixed(2)+')':'');
+  document.getElementById('tblCtx').textContent='· '+st.lt+'°C · '+st.bl+' belastet';
+  document.getElementById('rCalc').innerHTML='Basis <b>'+(Math.round(base*10)/10)+' A</b> × Temp <b>'+kt.toFixed(2)+'</b> × Häufung <b>'+kg.toFixed(2)+'</b>';
+  animTo(document.getElementById('rVal'), iz);
+  document.getElementById('footnote').innerHTML='Basiswerte: Kupfer, 70 °C/PVC, 2 belastete Adern (EXAKT aus NIN/IEC 60364-5-52). '+
+    'I<sub>z</sub> = Basis × Temperaturfaktor × Häufungsfaktor. XLPE/EPR (90 °C) ≈ ×'+K_90+', 3 belastete Leiter ≈ ×'+K_3LEITER+' (Anhaltswerte). '+
+    'Verlegearten: A2 wärmegedämmte Wand, B2 Rohr auf Holzwand, C auf der Wand, D im Erdreich, E frei in Luft.';
+}
+document.getElementById('tSlider').addEventListener('input',function(e){ st.tIdx=+e.target.value; render(); });
+render();
+</script>
+</body>
+</html>

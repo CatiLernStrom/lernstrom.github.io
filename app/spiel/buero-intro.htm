@@ -1,0 +1,1968 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>LernStrom — Büro-Intro: Der Auftrag</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    background:radial-gradient(circle at 50% 30%, #1a2230 0%, #0c1018 70%, #06080d 100%);
+    font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:#e8edf2;
+    display:flex;align-items:center;justify-content:center;
+    overflow:hidden;
+    user-select:none;-webkit-user-select:none;
+    touch-action:none;
+  }
+  /* phone stage */
+  #stage{
+    position:relative;
+    width:390px;height:844px;
+    max-height:100vh;
+    border-radius:34px;
+    overflow:hidden;
+    box-shadow:0 30px 90px rgba(0,0,0,.7), 0 0 0 10px #0a0d13, 0 0 0 12px #1c232e, inset 0 0 60px rgba(0,0,0,.4);
+    background:
+      radial-gradient(120% 60% at 50% -10%, rgba(45,212,191,.10), transparent 60%),
+      linear-gradient(180deg,#26303d 0%, #1a212c 35%, #141a23 100%);
+  }
+  @media (max-height:860px){ #stage{transform:scale(calc(100vh / 860));} }
+
+  #stage::after{
+    content:"";position:absolute;inset:0;border-radius:34px;pointer-events:none;
+    box-shadow:inset 0 0 120px rgba(0,0,0,.55), inset 0 -40px 80px rgba(0,0,0,.5);
+    background:radial-gradient(140% 90% at 50% 120%, rgba(120,80,30,.12), transparent 55%);
+    z-index:60;
+  }
+
+  canvas#fx{position:absolute;inset:0;z-index:40;pointer-events:none;}
+
+  /* ---------- HUD ---------- */
+  #hud{position:absolute;top:0;left:0;right:0;z-index:50;padding:14px 16px 8px;display:flex;align-items:center;gap:10px;}
+  .badge{
+    display:flex;align-items:center;gap:7px;
+    background:linear-gradient(180deg,#202a37,#161d27);
+    border:1px solid rgba(255,255,255,.07);
+    border-radius:14px;padding:7px 11px;font-size:13px;font-weight:700;
+    box-shadow:0 4px 10px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.05);
+  }
+  .badge .dot{width:9px;height:9px;border-radius:50%;background:#2dd4bf;box-shadow:0 0 8px #2dd4bf;}
+  #xpBadge{color:#ffd166;}
+  #xpBadge .ico{filter:drop-shadow(0 0 5px rgba(255,209,102,.6));}
+  .spacer{flex:1;}
+  #mute{
+    width:38px;height:38px;border-radius:12px;cursor:pointer;
+    background:linear-gradient(180deg,#202a37,#161d27);
+    border:1px solid rgba(255,255,255,.07);
+    display:flex;align-items:center;justify-content:center;font-size:17px;
+    box-shadow:0 4px 10px rgba(0,0,0,.4);
+  }
+  #mute:active{transform:scale(.92);}
+
+  /* step chips row — SAUBER UNTER der HUD-Leiste (vorher dahinter / "leicht hinter dem Schritt-Fenster") */
+  #steps{position:absolute;top:62px;left:16px;right:16px;z-index:48;display:flex;gap:3px;justify-content:center;pointer-events:none;}
+
+  /* step progress bar */
+  #prog{position:absolute;top:72px;left:16px;right:16px;z-index:48;height:8px;border-radius:6px;
+    background:rgba(0,0,0,.4);overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,.6);}
+  #progFill{height:100%;width:0%;border-radius:6px;
+    background:linear-gradient(90deg,#2dd4bf,#7af0d9);transition:width .5s cubic-bezier(.2,1.3,.4,1);
+    box-shadow:0 0 12px rgba(45,212,191,.7);}
+
+  /* title / instruction */
+  #task{position:absolute;top:90px;left:0;right:0;z-index:47;text-align:center;pointer-events:none;padding:0 14px;transition:opacity .6s, transform .6s;}
+  #task.faded{opacity:0;transform:translateY(-8px);}
+  #task h1{font-size:15px;font-weight:800;letter-spacing:.3px;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.6);}
+  #task p{font-size:12px;margin-top:3px;color:#9fb0c0;font-weight:600;line-height:1.4;}
+
+  /* step chips visuals */
+  #steps .sc{flex:1;height:4px;border-radius:3px;background:rgba(255,255,255,.08);transition:background .4s, box-shadow .4s;}
+  #steps .sc.done{background:linear-gradient(90deg,#2dd4bf,#7af0d9);box-shadow:0 0 8px rgba(45,212,191,.6);}
+  #steps .sc.cur{background:#ffd166;box-shadow:0 0 10px rgba(255,209,102,.7);}
+
+  /* generic scene container */
+  .scn{position:absolute;inset:0;z-index:30;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .55s, visibility 0s .55s;}
+  .scn.on{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .55s, visibility 0s 0s;}
+  .scn svg{position:absolute;inset:0;width:100%;height:100%;display:block;}
+
+  /* readout chip */
+  .readout{position:absolute;left:50%;transform:translateX(-50%);bottom:120px;z-index:35;
+    font-size:13px;font-weight:800;color:#fff;background:linear-gradient(180deg,#202a37,#141a23);
+    padding:7px 16px;border-radius:20px;border:1px solid rgba(45,212,191,.3);
+    box-shadow:0 6px 18px rgba(0,0,0,.5);pointer-events:none;text-align:center;min-width:160px;max-width:340px;}
+  .readout .big{color:#7af0d9;font-size:16px;}
+  .readout.bad{border-color:#ff6b6b;color:#ffb3b3;}
+  .readout.good{border-color:#2dd4bf;}
+
+  /* big floating "do this" hint banner — SCHMAL, links, verdeckt nichts */
+  .doHint{position:absolute;left:12px;top:116px;transform:none;z-index:36;max-width:168px;
+    font-size:11.5px;font-weight:800;color:#fff;text-align:left;line-height:1.4;
+    background:linear-gradient(180deg,rgba(32,42,55,.95),rgba(20,26,35,.95));
+    padding:9px 14px;border-radius:16px;border:1px solid rgba(45,212,191,.4);
+    box-shadow:0 8px 22px rgba(0,0,0,.5), 0 0 22px rgba(45,212,191,.18);
+    pointer-events:none;opacity:0;transition:opacity .4s;}
+  .doHint.on{opacity:1;}
+  .doHint b{color:#7af0d9;}
+
+  /* "tippen für weiter" pulse hint */
+  .tapHint{position:absolute;left:50%;bottom:58px;transform:translateX(-50%);z-index:38;
+    font-size:12px;font-weight:800;color:#7af0d9;text-align:center;pointer-events:none;
+    background:rgba(10,14,20,.55);padding:7px 18px;border-radius:20px;border:1px solid rgba(45,212,191,.3);
+    animation:tapPulse 1.4s ease-in-out infinite;}
+  @keyframes tapPulse{0%,100%{opacity:.55;transform:translateX(-50%) scale(1)}50%{opacity:1;transform:translateX(-50%) scale(1.05)}}
+
+  /* visual-novel speech bubble */
+  .vnBubble{position:absolute;left:18px;right:18px;bottom:120px;z-index:37;
+    background:linear-gradient(180deg,rgba(34,45,58,.97),rgba(22,28,37,.97));
+    border:1px solid rgba(45,212,191,.35);border-radius:18px;padding:14px 16px 16px;
+    box-shadow:0 14px 40px rgba(0,0,0,.6), 0 0 30px rgba(45,212,191,.12);
+    opacity:0;transform:translateY(14px);transition:opacity .4s, transform .4s;pointer-events:none;}
+  .vnBubble.on{opacity:1;transform:translateY(0);}
+  .vnBubble .who{font-size:12px;font-weight:900;letter-spacing:.4px;margin-bottom:5px;}
+  .vnBubble .who.chef{color:#ffd166;}
+  .vnBubble .who.lehrling{color:#7af0d9;}
+  .vnBubble .txt{font-size:13.5px;line-height:1.45;font-weight:600;color:#e8edf2;min-height:42px;}
+  .vnChoices{position:absolute;left:18px;right:18px;bottom:120px;z-index:39;display:flex;flex-direction:column;gap:9px;
+    opacity:0;pointer-events:none;transition:opacity .35s;}
+  .vnChoices.on{opacity:1;pointer-events:auto;}
+  .vnChoice{background:linear-gradient(180deg,#243443,#18222e);border:1px solid rgba(45,212,191,.4);
+    border-radius:14px;padding:12px 14px;font-size:13px;font-weight:800;color:#e8edf2;cursor:pointer;text-align:left;
+    box-shadow:0 6px 16px rgba(0,0,0,.4);transition:transform .12s;}
+  .vnChoice:active{transform:scale(.97);}
+  .vnChoice .em{color:#7af0d9;}
+
+  /* big primary action button (Annehmen / Öffnen) */
+  .bigBtn{position:absolute;left:50%;bottom:96px;transform:translateX(-50%);z-index:39;
+    padding:14px 30px;border-radius:18px;cursor:pointer;font-weight:900;font-size:16px;color:#06281f;
+    background:linear-gradient(180deg,#5cf0d6,#2dd4bf);box-shadow:0 10px 26px rgba(45,212,191,.45);
+    animation:btnBob 1.6s ease-in-out infinite;border:none;}
+  .bigBtn:active{transform:translateX(-50%) scale(.95);}
+  @keyframes btnBob{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-4px)}}
+
+  /* offer options */
+  .offerWrap{position:absolute;left:14px;right:14px;bottom:120px;z-index:38;display:flex;flex-direction:column;gap:10px;}
+  .offerOpt{display:flex;align-items:center;gap:12px;background:linear-gradient(180deg,#243443,#18222e);
+    border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:12px 14px;cursor:pointer;
+    box-shadow:0 6px 16px rgba(0,0,0,.4);transition:transform .12s, border-color .25s;}
+  .offerOpt:active{transform:scale(.98);}
+  .offerOpt .price{font-size:18px;font-weight:900;color:#fff;min-width:74px;}
+  .offerOpt .meta{flex:1;}
+  .offerOpt .meta .nm{font-size:13px;font-weight:800;color:#e8edf2;}
+  .offerOpt .meta .ds{font-size:11px;font-weight:600;color:#9fb0c0;margin-top:2px;}
+  .offerOpt .risk{font-size:10px;font-weight:800;padding:3px 8px;border-radius:10px;}
+  .risk.lo{background:rgba(45,212,191,.18);color:#7af0d9;}
+  .risk.mid{background:rgba(255,209,102,.18);color:#ffd166;}
+  .risk.hi{background:rgba(255,107,107,.18);color:#ff9b9b;}
+  .offerOpt.dead{opacity:.4;pointer-events:none;}
+
+  /* material checklist */
+  .matWrap{position:absolute;left:12px;right:12px;top:150px;bottom:150px;z-index:38;overflow-y:auto;
+    display:flex;flex-direction:column;gap:7px;padding:2px;}
+  .matWrap::-webkit-scrollbar{width:0;}
+  .matRow{display:flex;align-items:center;gap:11px;background:linear-gradient(180deg,#202a37,#161d27);
+    border:1px solid rgba(255,255,255,.07);border-radius:13px;padding:9px 12px;cursor:pointer;transition:border-color .2s, background .2s;}
+  .matRow .cb{width:24px;height:24px;border-radius:7px;border:2px solid #4a5663;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;color:#06281f;transition:background .2s, border-color .2s;}
+  .matRow.on{border-color:rgba(45,212,191,.55);background:linear-gradient(180deg,#1d3540,#15252e);}
+  .matRow.on .cb{background:linear-gradient(180deg,#5cf0d6,#2dd4bf);border-color:#2dd4bf;}
+  .matRow .ic{font-size:20px;width:26px;text-align:center;flex-shrink:0;}
+  .matRow .nm{font-size:12.5px;font-weight:700;color:#e8edf2;flex:1;line-height:1.3;}
+  .matRow .sub{font-size:10px;color:#8493a3;font-weight:600;}
+  .matConfirm{position:absolute;left:14px;right:14px;bottom:78px;z-index:39;padding:13px 0;border-radius:15px;
+    text-align:center;font-weight:900;font-size:15px;color:#06281f;cursor:pointer;
+    background:linear-gradient(180deg,#5cf0d6,#2dd4bf);box-shadow:0 8px 22px rgba(45,212,191,.4);}
+  .matConfirm:active{transform:scale(.98);}
+  .matConfirm.dim{background:linear-gradient(180deg,#3a4654,#2b3542);color:#9fb0c0;box-shadow:none;}
+
+  /* collect counter chip */
+  .collChip{position:absolute;left:50%;top:150px;transform:translateX(-50%);z-index:38;
+    font-size:12px;font-weight:800;color:#e8edf2;background:rgba(10,14,20,.6);padding:6px 16px;border-radius:18px;
+    border:1px solid rgba(45,212,191,.3);pointer-events:none;text-align:center;}
+  .collChip b{color:#7af0d9;}
+
+  /* WIN / done overlay */
+  #win{position:absolute;inset:0;z-index:70;display:none;flex-direction:column;align-items:center;justify-content:center;
+    background:radial-gradient(circle at 50% 40%, rgba(45,212,191,.18), rgba(6,9,14,.86) 60%);backdrop-filter:blur(2px);}
+  #win.show{display:flex;animation:winIn .5s;}
+  @keyframes winIn{from{opacity:0}to{opacity:1}}
+  #win .card{width:300px;padding:26px 22px 24px;border-radius:24px;text-align:center;
+    background:linear-gradient(180deg,#222d3a,#161d27);border:1px solid rgba(45,212,191,.3);
+    box-shadow:0 30px 70px rgba(0,0,0,.7), 0 0 40px rgba(45,212,191,.2), inset 0 1px 0 rgba(255,255,255,.06);
+    transform:scale(.6);animation:pop .6s cubic-bezier(.2,1.6,.4,1) forwards;}
+  @keyframes pop{to{transform:scale(1)}}
+  #win h2{font-size:21px;font-weight:900;color:#fff;letter-spacing:.5px;}
+  #win .sub{font-size:13px;color:#9fb0c0;margin-top:5px;font-weight:600;}
+  #stars{display:flex;gap:8px;justify-content:center;margin:16px 0 6px;}
+  #stars .st{font-size:34px;color:#2a3340;transform:scale(0);}
+  #stars .st.lit{color:#ffd166;text-shadow:0 0 16px rgba(255,209,102,.8);animation:starPop .5s cubic-bezier(.2,1.8,.4,1) forwards;}
+  @keyframes starPop{0%{transform:scale(0) rotate(-40deg)}70%{transform:scale(1.4) rotate(10deg)}100%{transform:scale(1) rotate(0)}}
+  #xpBig{font-size:28px;font-weight:900;color:#ffd166;margin:8px 0 4px;text-shadow:0 0 18px rgba(255,209,102,.5);}
+  #win .ok{margin-top:16px;padding:12px 0;border-radius:14px;cursor:pointer;font-weight:800;font-size:15px;color:#06281f;
+    background:linear-gradient(180deg,#5cf0d6,#2dd4bf);box-shadow:0 8px 20px rgba(45,212,191,.4);}
+  #win .ok:active{transform:scale(.96);}
+
+  .toast{position:absolute;z-index:55;font-weight:900;font-size:15px;pointer-events:none;
+    text-shadow:0 2px 6px rgba(0,0,0,.6);animation:toastUp 1s ease-out forwards;}
+  @keyframes toastUp{0%{opacity:0;transform:translateY(0) scale(.6)}15%{opacity:1;transform:translateY(-6px) scale(1.1)}100%{opacity:0;transform:translateY(-46px) scale(1)}}
+
+  .shake{animation:shakeStage .35s;}
+  @keyframes shakeStage{0%,100%{transform:translate(0,0)}20%{transform:translate(-6px,2px)}40%{transform:translate(6px,-2px)}60%{transform:translate(-4px,1px)}80%{transform:translate(4px,-1px)}}
+
+  .pulseTool{animation:toolPulse 1.1s ease-in-out infinite;}
+  @keyframes toolPulse{0%,100%{filter:drop-shadow(0 0 1px rgba(45,212,191,.3))}50%{filter:drop-shadow(0 0 10px rgba(45,212,191,.95)) drop-shadow(0 0 4px rgba(122,240,217,.9))}}
+
+  /* ---------- step navigation (zurück / weiter ohne Reset) ----------
+     seitliche Pfeile auf halber Höhe -> verdecken keine Buttons/Items unten */
+  #nav{position:absolute;inset:0;z-index:58;pointer-events:none;}
+  .navBtn{pointer-events:auto;position:absolute;top:50%;transform:translateY(-50%);
+    width:40px;height:54px;border-radius:14px;cursor:pointer;
+    background:linear-gradient(180deg,rgba(32,42,55,.9),rgba(20,26,35,.9));border:1px solid rgba(45,212,191,.35);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 6px 16px rgba(0,0,0,.5);transition:opacity .25s;}
+  #navPrev{left:6px;} #navNext{right:6px;}
+  .navBtn svg{width:20px;height:20px;display:block;}
+  .navBtn:active{transform:translateY(-50%) scale(.9);}
+  .navBtn.hidden{opacity:0;pointer-events:none;}
+  #navLbl{pointer-events:none;position:absolute;left:50%;bottom:12px;transform:translateX(-50%);
+    font-size:10px;font-weight:800;color:#7af0d9;background:rgba(10,14,20,.65);
+    padding:5px 12px;border-radius:14px;border:1px solid rgba(45,212,191,.25);text-align:center;white-space:nowrap;}
+
+  /* ---------- correct/wrong lock feedback for clickable options ---------- */
+  .offerOpt.wrongPick{border-color:#ff6b6b !important;}
+  .offerOpt.locked{opacity:.45;pointer-events:none;}
+  .matRow.wrongPick{border-color:#ff6b6b;background:linear-gradient(180deg,#2a1a1e,#21161a);}
+  .matRow.markWrong{border-color:#ff6b6b;background:linear-gradient(180deg,#2a1a1e,#21161a);}
+  .matRow.markWrong .cb{background:#ff6b6b;border-color:#ff6b6b;color:#2a0d0d;}
+  .matRow.markGood{border-color:#2dd4bf;}
+  .lockedClick{pointer-events:none !important;opacity:.6;}
+
+  /* note pad (Notizzettel mit gewählten Materialien) — einklappbar, halbtransparent,
+     in der Ecke, damit die Regale dahinter sichtbar bleiben. */
+  .notePad{position:absolute;left:8px;bottom:70px;width:128px;z-index:37;
+    background:linear-gradient(180deg,rgba(255,253,242,.82),rgba(253,243,214,.82));border-radius:6px;
+    box-shadow:0 8px 22px rgba(0,0,0,.5);padding:6px 9px 9px;transform:rotate(-2deg);
+    transition:opacity .25s, transform .25s;}
+  .notePad::before{content:"";position:absolute;left:50%;top:-7px;transform:translateX(-50%);
+    width:46px;height:14px;background:rgba(255,209,102,.7);border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,.3);}
+  .notePad .nh{font-size:9.5px;font-weight:900;color:#7a522e;text-align:center;margin-bottom:5px;
+    border-bottom:1px dashed #c8a878;padding-bottom:4px;letter-spacing:.3px;
+    display:flex;align-items:center;justify-content:center;gap:4px;cursor:pointer;}
+  .notePad .nh .ntog{font-size:8.5px;color:#2dd4bf;}
+  .notePad .nl{font-size:9px;font-weight:700;color:#3a2614;line-height:1.45;display:flex;gap:4px;align-items:flex-start;}
+  .notePad .nl .nt{color:#2dd4bf;font-weight:900;}
+  /* live durchgestrichen, sobald im Lager geholt */
+  .notePad .nl.struck{opacity:.5;}
+  .notePad .nl.struck span:last-child{text-decoration:line-through;text-decoration-color:#2dd4bf;}
+  .notePad .nl.struck .nt{color:#2dd4bf;}
+  .notePad.empty .nl{color:#9a8a70;font-style:italic;}
+  .notePad .nbody{max-height:240px;overflow:hidden;transition:max-height .25s, opacity .2s, margin .2s;}
+  /* eingeklappt: nur Kopfzeile sichtbar -> Regale frei */
+  .notePad.collapsed{width:118px;opacity:.9;}
+  .notePad.collapsed .nbody{max-height:0;opacity:0;margin-top:-4px;}
+
+  /* kompakter, einklappbarer Lade-Status (Beladen) — verdeckt LKW/Szene nicht.
+     liegt unten links in der Ecke statt mittig gross. */
+  .loadStatus{position:absolute;left:8px;bottom:64px;width:150px;z-index:37;
+    background:linear-gradient(180deg,rgba(32,42,55,.9),rgba(20,26,35,.9));
+    border:1px solid rgba(45,212,191,.35);border-radius:13px;padding:6px 9px 8px;
+    box-shadow:0 8px 22px rgba(0,0,0,.5);transition:opacity .25s;}
+  .loadStatus .lsh{font-size:10px;font-weight:900;color:#7af0d9;display:flex;align-items:center;
+    justify-content:space-between;gap:6px;cursor:pointer;}
+  .loadStatus .lsh .ltog{font-size:9px;color:#9fb0c0;}
+  .loadStatus .lsbody{max-height:120px;overflow:hidden;transition:max-height .25s, opacity .2s, margin .2s;}
+  .loadStatus.collapsed .lsbody{max-height:0;opacity:0;margin-top:-2px;}
+  .loadStatus .lstxt{font-size:9.5px;font-weight:700;color:#cdd8e2;line-height:1.4;margin-top:4px;}
+  .loadStatus .lstxt.bad{color:#ffb3b3;}
+  .loadStatus .lstxt.good{color:#7af0d9;}
+
+  /* Magazin: seitliche Pfeile zum Blättern zwischen den Gestellen/Regalreihen */
+  .magNav{position:absolute;z-index:38;width:34px;height:46px;border-radius:12px;cursor:pointer;
+    background:linear-gradient(180deg,rgba(32,42,55,.92),rgba(20,26,35,.92));border:1px solid rgba(45,212,191,.4);
+    display:flex;align-items:center;justify-content:center;box-shadow:0 6px 16px rgba(0,0,0,.5);
+    top:430px;transition:opacity .2s;}
+  #magPrev{left:6px;} #magNext{right:6px;}
+  .magNav svg{width:18px;height:18px;display:block;}
+  .magNav:active{transform:scale(.9);}
+  .magNav.hidden{opacity:0;pointer-events:none;}
+  .magRack{position:absolute;left:50%;top:178px;transform:translateX(-50%);z-index:38;
+    font-size:10px;font-weight:800;color:#7af0d9;background:rgba(10,14,20,.6);padding:4px 12px;border-radius:14px;
+    border:1px solid rgba(45,212,191,.3);pointer-events:none;white-space:nowrap;}
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <canvas id="fx"></canvas>
+
+  <!-- HUD -->
+  <div id="hud">
+    <div class="badge"><span class="dot"></span><span id="phaseLbl">Schritt 1</span></div>
+    <div class="spacer"></div>
+    <div class="badge" id="xpBadge"><span class="ico">⚡</span><span id="xpVal">0</span> XP</div>
+    <div id="mute">🔇</div>
+  </div>
+
+  <div id="steps"></div>
+  <div id="prog"><div id="progFill"></div></div>
+
+  <div id="task">
+    <h1 id="taskTitle">Büro</h1>
+    <p id="taskSub">Ein neuer Tag beginnt …</p>
+  </div>
+
+  <!-- SCENE: anruf -->
+  <div class="scn" id="sAnruf">
+    <svg id="svgAnruf" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"></svg>
+    <div class="bigBtn" id="anrufBtn">📞 Annehmen</div>
+  </div>
+
+  <!-- SCENE: mail -->
+  <div class="scn" id="sMail">
+    <svg id="svgMail" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"></svg>
+    <div class="tapHint" id="mailTap">Tippe die Mail zum Lesen</div>
+  </div>
+
+  <!-- SCENE: dialog -->
+  <div class="scn" id="sDialog">
+    <svg id="svgDialog" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"></svg>
+  </div>
+
+  <!-- SCENE: angebot -->
+  <div class="scn" id="sAngebot">
+    <svg id="svgAngebot" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"></svg>
+    <div class="offerWrap" id="offerWrap"></div>
+    <div class="readout" id="roAngebot">Wähle deine Angebotssumme</div>
+  </div>
+
+  <!-- SCENE: material -->
+  <div class="scn" id="sMaterial">
+    <svg id="svgMaterial" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"></svg>
+    <div class="matWrap" id="matWrap"></div>
+    <div class="matConfirm dim" id="matConfirm">Liste bestätigen</div>
+  </div>
+
+  <!-- SCENE: magazin -->
+  <div class="scn" id="sMagazin">
+    <svg id="svgMagazin" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"></svg>
+    <div class="collChip" id="magChip">Lager: <b>0</b> / 0 geholt</div>
+    <div class="magRack" id="magRack">Gestell 1</div>
+    <div class="magNav hidden" id="magPrev" title="Regal links">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#7af0d9" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 5 8 12 15 19"/></svg>
+    </div>
+    <div class="magNav hidden" id="magNext" title="Regal rechts">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#7af0d9" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 5 16 12 9 19"/></svg>
+    </div>
+    <div class="notePad empty collapsed" id="magNote"></div>
+    <div class="doHint" id="magHint"></div>
+  </div>
+
+  <!-- SCENE: beladen -->
+  <div class="scn" id="sBeladen">
+    <svg id="svgBeladen" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"></svg>
+    <div class="collChip" id="loadChip">Eingeladen: <b>0</b> / 0</div>
+    <!-- kompakter, einklappbarer Lade-Status (Ecke) statt grosses mittiges Pop-up -->
+    <div class="loadStatus" id="loadStatus">
+      <div class="lsh" id="loadStatusHead"><span>Lade-Info</span><span class="ltog">[–]</span></div>
+      <div class="lsbody">
+        <div class="lstxt" id="roBeladen">Lade nur die richtigen Sachen ein</div>
+      </div>
+    </div>
+    <div class="doHint" id="loadHint"></div>
+  </div>
+
+  <!-- SCENE: abschluss -->
+  <div class="scn" id="sAbschluss">
+    <svg id="svgAbschluss" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"></svg>
+  </div>
+
+  <!-- Dialog-Overlay (global) — wird sowohl beim "Bauherr im Geschaeft" ALS AUCH
+       beim Telefon-Anruf benutzt, daher ueber allen Szenen statt in einer Szene. -->
+  <div class="vnBubble" id="vnBubble"><div class="who" id="vnWho">Chef</div><div class="txt" id="vnTxt"></div></div>
+  <div class="vnChoices" id="vnChoices"></div>
+  <div class="tapHint" id="vnTap">Tippen für weiter ▸</div>
+
+  <!-- step navigation: zurück / weiter ohne Fortschrittsverlust -->
+  <div id="nav">
+    <div class="navBtn hidden" id="navPrev" title="Zurück">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#7af0d9" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 5 8 12 15 19"/></svg>
+    </div>
+    <div class="navBtn hidden" id="navNext" title="Weiter">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#7af0d9" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 5 16 12 9 19"/></svg>
+    </div>
+    <div id="navLbl"></div>
+  </div>
+
+  <!-- WIN / done -->
+  <div id="win">
+    <div class="card">
+      <h2 id="winTitle">AUF ZUR BAUSTELLE!</h2>
+      <div class="sub" id="winSub">Auftrag EFH Müller — angenommen</div>
+      <div id="stars"><span class="st">★</span><span class="st">★</span><span class="st">★</span></div>
+      <div id="xpBig">+0 XP</div>
+      <div class="sub" id="winNote">Als Nächstes: Bauprovisorium anschliessen</div>
+      <div class="ok" id="winContinue">Weiter ▸</div>
+      <div class="ok" id="again" style="margin-top:10px;background:linear-gradient(180deg,#3a4654,#2b3542);color:#cdd8e2;box-shadow:none;">Nochmal von vorne</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+"use strict";
+/* ============================================================= *
+ *  LernStrom — BÜRO-INTRO  (single-file demo)                    *
+ *  Der Anfang: Anruf -> Mail -> Chef-Dialog -> Angebot ->        *
+ *  Materialliste -> Magazin -> Lieferwagen beladen -> Abfahrt.   *
+ *  Gleiches Gerüst/Look wie baustromverteiler-v2.htm.            *
+ * ============================================================= */
+
+const STAGE_W = 390, STAGE_H = 844;
+const SVGNS   = "http://www.w3.org/2000/svg";
+const stage   = document.getElementById('stage');
+const fx      = document.getElementById('fx');
+const ctx     = fx.getContext('2d');
+
+function toSvgFor(svg, clientX, clientY){
+  const r = svg.getBoundingClientRect();
+  return {
+    x: (clientX - r.left) / r.width  * STAGE_W,
+    y: (clientY - r.top ) / r.height * STAGE_H
+  };
+}
+
+/* =============================================================
+ *  AUDIO
+ * ============================================================= */
+let audioCtx=null, muted=true;
+function AC(){ if(!audioCtx){ try{audioCtx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){} } return audioCtx; }
+function tone(freq, dur, type, vol, slideTo){
+  if(muted) return; const c=AC(); if(!c) return;
+  const o=c.createOscillator(), g=c.createGain();
+  o.type=type||'sine'; o.frequency.value=freq;
+  if(slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, c.currentTime+dur);
+  g.gain.value=0.0001;
+  g.gain.exponentialRampToValueAtTime(vol||0.2, c.currentTime+0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime+dur);
+  o.connect(g); g.connect(c.destination);
+  o.start(); o.stop(c.currentTime+dur+0.02);
+}
+function sndClick(){ tone(680,0.07,'triangle',0.25,1200); setTimeout(()=>tone(1500,0.05,'sine',0.12),20); }
+function sndSnap(){ tone(440,0.05,'square',0.18,900); setTimeout(()=>tone(1320,0.12,'triangle',0.22),30); }
+function sndBuzz(){ if(muted)return; const c=AC(); if(!c)return;
+  const o=c.createOscillator(),g=c.createGain(); o.type='sawtooth';o.frequency.value=120;
+  g.gain.value=0.0001;g.gain.exponentialRampToValueAtTime(0.22,c.currentTime+0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+0.25);
+  o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+0.27);
+}
+function sndPick(){ tone(520,0.05,'sine',0.14,720); }
+function sndPop(){ tone(300,0.06,'sine',0.18,860); setTimeout(()=>tone(900,0.06,'triangle',0.14),40); }
+function sndType(){ tone(1400+Math.random()*400,0.02,'square',0.05); }
+function sndRing(){ // klassisches Doppel-Klingeln
+  if(muted)return; const c=AC(); if(!c)return;
+  [0,1].forEach(seg=>{
+    const t0=c.currentTime+seg*0.22;
+    const o=c.createOscillator(),g=c.createGain(); o.type='triangle';
+    o.frequency.setValueAtTime(1100,t0); o.frequency.setValueAtTime(880,t0+0.05);
+    o.frequency.setValueAtTime(1100,t0+0.10); o.frequency.setValueAtTime(880,t0+0.15);
+    g.gain.value=0.0001;g.gain.exponentialRampToValueAtTime(0.16,t0+0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001,t0+0.2);
+    o.connect(g);g.connect(c.destination);o.start(t0);o.stop(t0+0.22);
+  });
+}
+function sndEngine(){ if(muted)return; const c=AC(); if(!c)return;
+  const o=c.createOscillator(),g=c.createGain(); o.type='sawtooth';o.frequency.value=70;
+  o.frequency.exponentialRampToValueAtTime(150,c.currentTime+1.2);
+  g.gain.value=0.0001;g.gain.exponentialRampToValueAtTime(0.12,c.currentTime+0.1);
+  g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+1.4);
+  o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+1.42);
+}
+function sndWin(){ [523,659,784,1047,1319].forEach((f,i)=>setTimeout(()=>tone(f,0.3,'triangle',0.2),i*110)); }
+
+let ringTimer=null;
+function startRinging(){ stopRinging(); sndRing(); ringTimer=setInterval(()=>{ if(!muted) sndRing(); },1400); }
+function stopRinging(){ if(ringTimer){ clearInterval(ringTimer); ringTimer=null; } }
+
+document.getElementById('mute').onclick=function(){
+  muted=!muted; this.textContent=muted?'🔇':'🔊';
+  if(!muted){ AC(); tone(880,0.06,'sine',0.15); }
+};
+
+/* =============================================================
+ *  PARTICLE / FX ENGINE
+ * ============================================================= */
+function sizeCanvas(){
+  const r=stage.getBoundingClientRect();
+  const dpr=window.devicePixelRatio||1;
+  fx.width=STAGE_W*dpr; fx.height=STAGE_H*dpr;
+  fx.style.width=r.width+'px'; fx.style.height=r.height+'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+let particles=[];
+function spark(x,y,n,opt){
+  opt=opt||{};
+  for(let i=0;i<n;i++){
+    const a=Math.random()*Math.PI*2, sp=(opt.speed||3)*(0.4+Math.random());
+    particles.push({
+      x,y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp - (opt.up||0),
+      life:1, decay:0.012+Math.random()*0.02,
+      size:(opt.size||2.4)*(0.6+Math.random()),
+      color:opt.color|| (Math.random()<.5?'#ffd166':'#ffae42'),
+      grav:opt.grav!=null?opt.grav:0.06, glow:opt.glow!==false
+    });
+  }
+}
+let smoke=[];
+function puff(x,y,n,opt){
+  opt=opt||{};
+  for(let i=0;i<n;i++){
+    smoke.push({
+      x:x+(Math.random()-.5)*10, y:y+(Math.random()-.5)*6,
+      vx:(Math.random()-.5)*0.7, vy:-(0.5+Math.random()*0.9),
+      r:(opt.size||6)*(0.5+Math.random()), life:1, decay:0.012+Math.random()*0.01,
+      color:opt.color||'200,210,220'
+    });
+  }
+}
+let confetti=[];
+function burstConfetti(){
+  const cols=['#2dd4bf','#ffd166','#ff6b6b','#7af0d9','#ffffff','#ffae42','#8ab4ff'];
+  for(let i=0;i<140;i++){
+    confetti.push({
+      x:STAGE_W/2+(Math.random()-.5)*60, y:STAGE_H*0.42,
+      vx:(Math.random()-.5)*9, vy:-Math.random()*11-3,
+      g:0.22+Math.random()*0.1, w:5+Math.random()*6, h:8+Math.random()*8,
+      rot:Math.random()*6.28, vr:(Math.random()-.5)*0.4,
+      color:cols[(Math.random()*cols.length)|0], life:1
+    });
+  }
+}
+
+function fxLoop(){
+  ctx.clearRect(0,0,STAGE_W,STAGE_H);
+  for(const d of dust){
+    d.ph+=0.02; d.y+=d.vy; d.x+=d.vx+Math.sin(d.ph)*0.15;
+    if(d.y<-4){d.y=STAGE_H+4;d.x=Math.random()*STAGE_W;}
+    ctx.globalAlpha=d.a*(0.6+0.4*Math.sin(d.ph));
+    ctx.fillStyle='#ffe9c0';ctx.shadowBlur=4;ctx.shadowColor='#ffd9a0';
+    ctx.beginPath();ctx.arc(d.x,d.y,d.r,0,6.28);ctx.fill();
+  }
+  ctx.shadowBlur=0;ctx.globalAlpha=1;
+  for(let i=smoke.length-1;i>=0;i--){
+    const s=smoke[i];
+    s.vy*=0.99; s.x+=s.vx; s.y+=s.vy; s.r+=0.4; s.life-=s.decay;
+    if(s.life<=0){smoke.splice(i,1);continue;}
+    ctx.globalAlpha=s.life*0.35;
+    ctx.fillStyle='rgba('+s.color+',1)';
+    ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,6.28);ctx.fill();
+  }
+  ctx.globalAlpha=1;
+  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i];
+    p.vy+=p.grav; p.x+=p.vx; p.y+=p.vy; p.life-=p.decay;
+    if(p.life<=0){particles.splice(i,1);continue;}
+    ctx.globalAlpha=Math.max(0,p.life);
+    if(p.glow){ctx.shadowBlur=10;ctx.shadowColor=p.color;}else ctx.shadowBlur=0;
+    ctx.fillStyle=p.color;
+    ctx.beginPath();ctx.arc(p.x,p.y,p.size*p.life+0.4,0,6.28);ctx.fill();
+  }
+  ctx.shadowBlur=0;
+  for(let i=confetti.length-1;i>=0;i--){
+    const c=confetti[i];
+    c.vy+=c.g;c.x+=c.vx;c.y+=c.vy;c.rot+=c.vr;c.vx*=0.99;
+    if(c.y>STAGE_H+30){confetti.splice(i,1);continue;}
+    ctx.save();ctx.translate(c.x,c.y);ctx.rotate(c.rot);
+    ctx.globalAlpha=1;ctx.fillStyle=c.color;
+    ctx.fillRect(-c.w/2,-c.h/2,c.w,c.h);
+    ctx.restore();
+  }
+  ctx.globalAlpha=1;
+  requestAnimationFrame(fxLoop);
+}
+
+function toast(text,color,x,y){
+  const t=document.createElement('div');
+  t.className='toast';t.textContent=text;t.style.color=color||'#7af0d9';
+  const r=stage.getBoundingClientRect();
+  t.style.left=(x/STAGE_W*r.width)+'px';
+  t.style.top =(y/STAGE_H*r.height)+'px';
+  t.style.transform='translate(-50%,0)';
+  stage.appendChild(t);
+  setTimeout(()=>t.remove(),1000);
+}
+function shakeStage(){ stage.classList.add('shake');setTimeout(()=>stage.classList.remove('shake'),360); }
+
+/* =============================================================
+ *  SVG helpers
+ * ============================================================= */
+function el(tag,attrs){
+  const e=document.createElementNS(SVGNS,tag);
+  for(const k in attrs) e.setAttribute(k,attrs[k]);
+  return e;
+}
+const COMMON_DEFS = `
+  <linearGradient id="metal" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#3a4654"/><stop offset="0.5" stop-color="#2b3542"/><stop offset="1" stop-color="#1d2531"/>
+  </linearGradient>
+  <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#243140"/><stop offset="1" stop-color="#18222e"/>
+  </linearGradient>
+  <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#2a3340"/><stop offset="1" stop-color="#141a23"/>
+  </linearGradient>
+  <linearGradient id="wood" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#6e4a28"/><stop offset="0.5" stop-color="#553720"/><stop offset="1" stop-color="#3a2614"/>
+  </linearGradient>
+  <linearGradient id="steel" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#d7dde4"/><stop offset="0.5" stop-color="#8d97a3"/><stop offset="1" stop-color="#4b5560"/>
+  </linearGradient>
+  <linearGradient id="screen" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#16344e"/><stop offset="1" stop-color="#0c2238"/>
+  </linearGradient>
+  <linearGradient id="teal" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#5cf0d6"/><stop offset="1" stop-color="#2dd4bf"/>
+  </linearGradient>
+  <linearGradient id="van" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#e7edf2"/><stop offset="0.5" stop-color="#c2ccd4"/><stop offset="1" stop-color="#8d97a3"/>
+  </linearGradient>
+  <radialGradient id="lamp" cx="0.5" cy="0.2" r="0.9">
+    <stop offset="0" stop-color="rgba(255,235,180,.35)"/><stop offset="1" stop-color="rgba(255,235,180,0)"/>
+  </radialGradient>
+  <filter id="soft"><feGaussianBlur stdDeviation="2.2"/></filter>
+  <filter id="ds" x="-30%" y="-30%" width="160%" height="160%">
+    <feDropShadow dx="0" dy="5" stdDeviation="5" flood-color="#000" flood-opacity="0.5"/>
+  </filter>`;
+function addDefs(svg){ const d=el('defs',{}); d.innerHTML=COMMON_DEFS; svg.appendChild(d); }
+
+function showDoHint(id,html,ms){
+  const e=document.getElementById(id); if(!e) return;
+  e.innerHTML=html; e.classList.add('on');
+  setTimeout(()=>e.classList.remove('on'),ms||5000);
+}
+function hideDoHint(id){ const e=document.getElementById(id); if(e) e.classList.remove('on'); }
+// Es gibt zwei .tapHint (mailTap, vnTap) an DERSELBEN Position -> immer nur EINEN zeigen (sonst Überlappung).
+function showOnlyTap(id){ document.querySelectorAll('.tapHint').forEach(t=>t.classList.toggle('on', t.id===id)); }
+
+/* draw a shared office backdrop (theke, regale, fenster) into an svg.
+   opts.pc = draw PC on theke, opts.dim darkens for dialog */
+function drawOffice(svg,opts){
+  opts=opts||{};
+  // back wall
+  svg.appendChild(el('rect',{x:0,y:0,width:390,height:560,fill:'url(#wall)'}));
+  // window with night/teal glow
+  svg.appendChild(el('rect',{x:28,y:120,width:120,height:150,rx:6,fill:'#0e2233',stroke:'#0a1722','stroke-width':3}));
+  svg.appendChild(el('line',{x1:88,y1:120,x2:88,y2:270,stroke:'#0a1722','stroke-width':3}));
+  svg.appendChild(el('line',{x1:28,y1:195,x2:148,y2:195,stroke:'#0a1722','stroke-width':3}));
+  svg.appendChild(el('rect',{x:28,y:120,width:120,height:150,rx:6,fill:'url(#lamp)',opacity:0.5}));
+  // shelves on the right (Regale mit Material)
+  const shelf=el('g',{});
+  shelf.appendChild(el('rect',{x:236,y:100,width:130,height:180,rx:6,fill:'#1c2530',stroke:'#0e151d','stroke-width':2}));
+  for(let r=0;r<3;r++){
+    const sy=128+r*52;
+    shelf.appendChild(el('rect',{x:240,y:sy,width:122,height:6,fill:'#2c3744'}));
+    for(let b=0;b<4;b++){
+      const bx=246+b*29, cols=['#7a4a1e','#2f6fd1','#3aa635','#9aa0a6','#c14a14','#ffb84d'];
+      shelf.appendChild(el('rect',{x:bx,y:sy-26,width:22,height:24,rx:3,fill:cols[(r*4+b)%cols.length],opacity:0.85,stroke:'#0e151d','stroke-width':1}));
+    }
+  }
+  svg.appendChild(shelf);
+  // floor
+  svg.appendChild(el('rect',{x:0,y:560,width:390,height:284,fill:'url(#floor)'}));
+  for(let i=0;i<6;i++) svg.appendChild(el('line',{x1:0,y1:560+i*48,x2:390,y2:560+i*48,stroke:'#0c1119','stroke-width':1,opacity:0.4}));
+  // counter / theke (wood)
+  const theke=el('g',{filter:'url(#ds)'});
+  theke.appendChild(el('rect',{x:30,y:470,width:330,height:120,rx:10,fill:'url(#wood)',stroke:'#2a1a0d','stroke-width':3}));
+  theke.appendChild(el('rect',{x:30,y:470,width:330,height:18,rx:8,fill:'#7a522e',opacity:0.7}));
+  theke.appendChild(el('rect',{x:48,y:500,width:120,height:70,rx:5,fill:'#3a2614',opacity:0.5}));
+  theke.appendChild(el('rect',{x:222,y:500,width:120,height:70,rx:5,fill:'#3a2614',opacity:0.5}));
+  svg.appendChild(theke);
+  // LernStrom sign over theke
+  const sign=el('g',{});
+  sign.appendChild(el('rect',{x:150,y:40,width:150,height:36,rx:9,fill:'#11202c',stroke:'#2dd4bf','stroke-width':2}));
+  const st=el('text',{x:225,y:64,'text-anchor':'middle','font-size':'18','font-weight':'900',fill:'#7af0d9','font-family':'Segoe UI, sans-serif','letter-spacing':'1'});
+  st.textContent='LernStrom'; sign.appendChild(st);
+  const sub=el('text',{x:225,y:90,'text-anchor':'middle','font-size':'10','font-weight':'700',fill:'#9fb0c0'});
+  sub.textContent='Elektro · Filiale'; sign.appendChild(sub);
+  svg.appendChild(sign);
+  if(opts.dim){ svg.appendChild(el('rect',{x:0,y:0,width:390,height:844,fill:'rgba(6,9,14,.45)'})); }
+}
+
+/* =============================================================
+ *  GAME STATE
+ * ============================================================= */
+let xp=0;
+const xpVal=document.getElementById('xpVal');
+function addXp(n){
+  n=Math.round((Number(n)||0)*0.5); // XP global -50% (Roadmap)
+  const start=xp,end=xp+n,t0=performance.now();
+  (function anim(t){
+    const k=Math.min(1,(t-t0)/600);
+    xp=Math.round(start+(end-start)*(1-Math.pow(1-k,3)));
+    xpVal.textContent=xp;
+    if(k<1)requestAnimationFrame(anim);
+  })(performance.now());
+}
+
+/* ----- ZUFALLS-AUFTAKT -----
+   Der Auftrag kommt pro Spielstart über GENAU EINEN zufaelligen Kanal rein:
+   'anruf' (Telefon klingelt), 'mail' (Mail trifft ein) oder
+   'dialog' (Bauherr laeuft direkt ins Geschaeft). Danach geht es normal
+   weiter mit Angebot/Material/Lager/Beladen/Abschluss. */
+const AUFTAKT_KINDS = ['anruf','mail','dialog'];
+const AUFTAKT_KIND  = AUFTAKT_KINDS[Math.floor(Math.random()*AUFTAKT_KINDS.length)];
+const AUFTAKT_TITLES = {
+  anruf:  ['Büro · Anruf','Das Telefon klingelt — nimm ab'],
+  mail:   ['Büro · E-Mail','Eine Auftragsanfrage trifft ein — lies sie'],
+  dialog: ['Büro · Kundschaft','Der Bauherr steht im Geschäft — hör zu']
+};
+
+const STEP_LIST = ['auftakt','angebot','material','magazin','beladen','abschluss'];
+const STEP_TITLES = {
+  auftakt:  AUFTAKT_TITLES[AUFTAKT_KIND],
+  angebot:  ['Angebot kalkulieren','Wähle eine kluge Angebotssumme'],
+  material: ['Materialliste','Kreuze das richtige Material an'],
+  magazin:  ['Magazin / Lager','Hol die Artikel aus den Regalen'],
+  beladen:  ['Lieferwagen beladen','Lade nur das benötigte Material ein'],
+  abschluss:['Auf zur Baustelle!','Die Vorbereitung ist fertig']
+};
+let stepIdx=0;
+// Schritte, die der Spieler bereits abgeschlossen hat -> dürfen frei besucht
+// werden OHNE Reset/Fortschrittsverlust (Navigations-Bug-Fix).
+const doneSteps=new Set();
+// höchster je erreichter Schritt -> bis hierher darf vorgesprungen werden
+let maxReached=0;
+const stepsBar=document.getElementById('steps');
+function buildStepsBar(){
+  stepsBar.innerHTML='';
+  STEP_LIST.forEach(()=>{ const d=document.createElement('div'); d.className='sc'; stepsBar.appendChild(d); });
+}
+function setHud(step){
+  const chips=stepsBar.children;
+  for(let i=0;i<chips.length;i++){
+    chips[i].className='sc'+(i<stepIdx?' done':i===stepIdx?' cur':'');
+  }
+  document.getElementById('phaseLbl').textContent='Schritt '+(stepIdx+1)+'/'+STEP_LIST.length;
+  const t=STEP_TITLES[step];
+  document.getElementById('taskTitle').textContent=t[0];
+  document.getElementById('taskSub').textContent=t[1];
+  document.getElementById('progFill').style.width=(stepIdx/(STEP_LIST.length-1)*100)+'%';
+}
+
+const AUFTAKT_SCENE = { anruf:'sAnruf', mail:'sMail', dialog:'sDialog' };
+const SCENE_OF = {
+  auftakt:AUFTAKT_SCENE[AUFTAKT_KIND], angebot:'sAngebot',
+  material:'sMaterial', magazin:'sMagazin', beladen:'sBeladen', abschluss:'sAbschluss'
+};
+function showScene(step){
+  stopRinging();
+  Object.values(SCENE_OF).forEach(id=>{ document.getElementById(id).classList.remove('on'); });
+  // hide floating UI from all scenes
+  document.querySelectorAll('.vnBubble,.vnChoices,.tapHint,.doHint').forEach(e=>e.classList.remove('on'));
+  const tk=document.getElementById('task');
+  tk.style.opacity='';
+  tk.classList.remove('faded');
+  clearTimeout(window.__taskFadeT);
+  window.__taskFadeT=setTimeout(()=>tk.classList.add('faded'),3500);
+  const cur=document.getElementById(SCENE_OF[step]);
+  setTimeout(()=>cur.classList.add('on'),60);
+}
+// Stoppt laufende Szenen-Animationen/Listener vor Szenenwechsel (kein Leak).
+function stopActiveScene(){
+  try{ if(buildAnruf._stop) buildAnruf._stop(); }catch(_){}
+  try{ dialogAlive=false; }catch(_){}
+  try{ stopRinging(); }catch(_){}
+  try{ if(buildBeladen._cleanup) buildBeladen._cleanup(); }catch(_){}
+}
+function gotoStep(name){
+  stopActiveScene();
+  stepIdx=STEP_LIST.indexOf(name);
+  if(stepIdx>maxReached) maxReached=stepIdx;
+  setHud(name);
+  showScene(name);
+  BUILDERS[name]();
+  updateNav();
+}
+window.__goto=function(n){ try{gotoStep(n);}catch(e){console.log('goto err',e);} };
+
+/* ----- Schritt-Navigation (zurück/weiter) -----
+   Zurück: immer möglich (Schritt > 0). Weiter: nur zu bereits
+   freigeschalteten/abgeschlossenen Schritten – so kann man vom
+   LKW-Beladen zurück ins Lager und wieder vor, OHNE Reset. */
+const navPrev=document.getElementById('navPrev');
+const navNext=document.getElementById('navNext');
+const navLbl =document.getElementById('navLbl');
+function updateNav(){
+  const cur=STEP_LIST[stepIdx];
+  // Beim Abschluss: während der Fahrt-Cutscene/WIN keine Nav; sobald erledigt
+  // (WIN gezeigt) darf man zurück, aber nicht erneut "weiter".
+  const abschlussLive = (cur==='abschluss' && !isDone('abschluss'));
+  navPrev.classList.toggle('hidden', abschlussLive || stepIdx<=0);
+  const canFwd = !abschlussLive && cur!=='abschluss' && stepIdx<maxReached;
+  navNext.classList.toggle('hidden', !canFwd);
+  if(abschlussLive){ navLbl.textContent=''; navLbl.style.display='none'; return; }
+  navLbl.style.display='';
+  navLbl.textContent=(stepIdx+1)+' / '+STEP_LIST.length+'  ·  '+STEP_TITLES[cur][0];
+}
+navPrev.onclick=()=>{ AC(); sndClick(); if(stepIdx>0) gotoStep(STEP_LIST[stepIdx-1]); };
+navNext.onclick=()=>{ AC(); sndClick(); if(stepIdx<maxReached) gotoStep(STEP_LIST[stepIdx+1]); };
+
+// Dev-Sprungleiste (nur mit ?dev in der URL)
+if(typeof location!=='undefined' && /dev/.test(location.search) && document.body){
+  const bar=document.createElement('div');
+  bar.style.cssText='position:fixed;bottom:4px;left:4px;right:4px;z-index:99999;display:flex;flex-wrap:wrap;gap:3px;justify-content:center;';
+  STEP_LIST.forEach((s,i)=>{ const b=document.createElement('button'); b.textContent=(i+1)+'·'+s;
+    b.style.cssText='font-size:10px;font-weight:700;padding:4px 7px;background:#11202c;color:#7af0d9;border:1px solid #2dd4bf;border-radius:7px;cursor:pointer;';
+    b.onclick=()=>gotoStep(s); bar.appendChild(b); });
+  document.body.appendChild(bar);
+}
+function nextStep(){
+  doneSteps.add(STEP_LIST[stepIdx]); // aktueller Schritt gilt als erledigt
+  const ni=stepIdx+1;
+  if(ni>=STEP_LIST.length) return;
+  gotoStep(STEP_LIST[ni]);
+}
+// true, wenn dieser Schritt schon erledigt ist -> beim Rückbesuch NICHT
+// erneut Pflichtaufgabe/auto-advance auslösen, nur anzeigen.
+function isDone(name){ return doneSteps.has(name); }
+
+/* =============================================================
+ *  STEP 1 — ANRUF  (Cut-Scene: Telefon klingelt, wackelt)
+ * ============================================================= */
+const svgAnruf=document.getElementById('svgAnruf');
+function buildAnruf(){
+  svgAnruf.innerHTML=''; addDefs(svgAnruf);
+  drawOffice(svgAnruf,{});
+
+  // phone on the counter (animated: wackelt + glow rings)
+  const phone=el('g',{});
+  phone.setAttribute('transform','translate(120,452)');
+  // base
+  phone.appendChild(el('rect',{x:-44,y:0,width:88,height:30,rx:8,fill:'url(#metal)',stroke:'#10151c','stroke-width':2}));
+  // keypad
+  for(let r=0;r<2;r++)for(let cc=0;cc<3;cc++) phone.appendChild(el('rect',{x:-32+cc*22,y:8+r*10,width:14,height:7,rx:2,fill:'#39424d'}));
+  // handset (cradle) on top
+  const hs=el('g',{});
+  hs.appendChild(el('rect',{x:-44,y:-18,width:88,height:18,rx:9,fill:'#222a35',stroke:'#10151c','stroke-width':2}));
+  hs.appendChild(el('circle',{cx:-40,cy:-9,r:10,fill:'#2c3744',stroke:'#10151c','stroke-width':2}));
+  hs.appendChild(el('circle',{cx:40,cy:-9,r:10,fill:'#2c3744',stroke:'#10151c','stroke-width':2}));
+  phone.appendChild(hs);
+  svgAnruf.appendChild(phone);
+
+  // ring rings (expanding) + bell glyphs
+  const ringG=el('g',{});
+  svgAnruf.appendChild(ringG);
+  const bell=el('text',{x:120,y:410,'text-anchor':'middle','font-size':'30'}); bell.textContent='🔔'; svgAnruf.appendChild(bell);
+
+  // caller chip
+  const chip=el('g',{});
+  chip.appendChild(el('rect',{x:200,y:430,width:170,height:60,rx:14,fill:'#11202c',stroke:'#2dd4bf','stroke-width':2,filter:'url(#ds)'}));
+  const c1=el('text',{x:216,y:452,'font-size':'11','font-weight':'700',fill:'#9fb0c0'}); c1.textContent='Eingehender Anruf'; chip.appendChild(c1);
+  const c2=el('text',{x:216,y:472,'font-size':'14','font-weight':'900',fill:'#7af0d9'}); c2.textContent='Bauherr Müller'; chip.appendChild(c2);
+  svgAnruf.appendChild(chip);
+
+  // animation loop for this scene
+  let alive=true; let t=0;
+  function anim(){
+    if(!alive) return;
+    t+=0.06;
+    const wob=Math.sin(t*6)*4;
+    hs.setAttribute('transform','translate(0,'+(-Math.abs(Math.sin(t*6))*4)+') rotate('+wob+' 0 -9)');
+    bell.setAttribute('transform','rotate('+(Math.sin(t*7)*16)+' 120 400)');
+    // expanding ring every ~1s
+    if(Math.sin(t)>0.985){
+      const rr=el('circle',{cx:120,cy:430,r:16,fill:'none',stroke:'#7af0d9','stroke-width':3,opacity:0.8});
+      ringG.appendChild(rr);
+      const t0=performance.now();
+      (function gr(tt){ const k=Math.min(1,(tt-t0)/700); rr.setAttribute('r',16+k*50); rr.setAttribute('opacity',0.8*(1-k));
+        if(k<1)requestAnimationFrame(gr); else rr.remove(); })(performance.now());
+    }
+    requestAnimationFrame(anim);
+  }
+  anim();
+  buildAnruf._stop=()=>{ alive=false; };
+
+  const btn=document.getElementById('anrufBtn');
+  if(isDone('auftakt')){
+    // Rückbesuch: kein erneutes Klingeln/Annehmen erzwingen
+    buildAnruf._stop();
+    btn.style.display='none';
+    return;
+  }
+  startRinging();
+  showDoHint('','',0);
+
+  btn.style.display='block';
+  btn.onclick=()=>{
+    AC(); stopRinging(); sndClick(); buildAnruf._stop();
+    btn.style.display='none';
+    spark(120,430,18,{color:'#2dd4bf',speed:3,up:1});
+    toast('Abgehoben …','#7af0d9',180,400);
+    addXp(10);
+    // NEU: kleiner Telefon-Dialog mit dem Bauherrn (statt direkt weiter).
+    setTimeout(()=>startPhoneDialog(),600);
+  };
+}
+
+/* ----- Telefon-Dialog nach dem Abheben -------------------------------------
+   Nutzt dieselbe Sprechblase (vnBubble) wie der "Bauherr im Geschaeft"-Dialog,
+   aber ohne Figuren — man hoert den Bauherrn am Telefon, inkl. Antwort-Auswahl. */
+const PHONE_SCRIPT=[
+  {who:'lehr', txt:'Müller am Apparat — grüezi! Ich baue ein neues Einfamilienhaus und brauche die komplette Elektroinstallation.'},
+  {who:'chef', txt:'Grüezi Herr Müller! Ein ganzes Haus von A bis Z — das übernehmen wir gern.'},
+  {who:'lehr', txt:'Neubau, alles neu: vom Bauprovisorium bis zur fertigen Wohnung. Kriegen Sie das hin?'},
+  {choice:true, q:'Was sagst du am Telefon?', opts:[
+     {t:'«Klar, wir hauen das schnell runter!»', good:false, fb:'Müller: «Hmm … bitte sauber kalkulieren, nicht husch-husch.»'},
+     {t:'«Ja — wir kalkulieren Ihnen sauber eine Offerte.»', good:true, fb:'Müller: «Perfekt. Ich freue mich auf die Offerte!»'}
+  ]},
+  {who:'chef', txt:'Wir stellen zuerst ein faires Angebot zusammen, dann das Material — und dann fahren wir raus.'}
+];
+let phoneIdx=0, phoneAlive=false;
+function phoneTap(){ if(phoneAlive) phoneAdvance(); }
+function phoneTapStop(e){ e.stopPropagation(); if(phoneAlive) phoneAdvance(); }
+function startPhoneDialog(){
+  phoneIdx=0; phoneAlive=true;
+  svgAnruf.addEventListener('pointerdown',phoneTap);
+  vnBubble.addEventListener('pointerdown',phoneTapStop);
+  vnTap.addEventListener('pointerdown',phoneTapStop);
+  phoneShow();
+}
+function phoneShow(){
+  const step=PHONE_SCRIPT[phoneIdx];
+  if(!step){ endPhone(); return; }
+  if(step.choice){
+    vnBubble.classList.remove('on'); vnTap.classList.remove('on');
+    vnChoices.innerHTML='';
+    const q=document.createElement('div');
+    q.style.cssText='font-size:13px;font-weight:800;color:#ffd166;margin-bottom:2px;text-align:center;';
+    q.textContent=step.q; vnChoices.appendChild(q);
+    step.opts.forEach(o=>{ const b=document.createElement('div'); b.className='vnChoice'; b.innerHTML=o.t;
+      b.onclick=()=>{ AC(); sndPick(); phonePick(o); }; vnChoices.appendChild(b); });
+    setTimeout(()=>vnChoices.classList.add('on'),40);
+    return;
+  }
+  vnChoices.classList.remove('on');
+  vnWho.textContent = step.who==='chef' ? 'Du (Lehrling)' : 'Bauherr Müller · Telefon';
+  vnWho.className = 'who '+(step.who==='chef'?'lehrling':'chef');
+  vnBubble.classList.add('on');
+  typeText(step.txt, ()=>{ showOnlyTap('vnTap'); });
+}
+function phonePick(o){
+  vnChoices.classList.remove('on');
+  if(!o.good){ sndBuzz(); } else { sndSnap(); spark(120,430,16,{color:'#2dd4bf',speed:3,up:1}); addXp(15); }
+  vnWho.textContent='Bauherr Müller · Telefon'; vnWho.className='who chef';
+  vnBubble.classList.add('on');
+  typeText(o.fb, ()=>{ showOnlyTap('vnTap'); });
+  phoneIdx++;
+}
+function phoneAdvance(){
+  if(typing){ clearInterval(typeTimer); typing=false;
+    const step=PHONE_SCRIPT[phoneIdx]; if(step && !step.choice){ vnTxt.textContent=step.txt; showOnlyTap('vnTap'); } return; }
+  const step=PHONE_SCRIPT[phoneIdx];
+  if(step && step.choice && vnChoices.classList.contains('on')) return;
+  phoneIdx++; sndPick(); phoneShow();
+}
+function endPhone(){
+  phoneAlive=false;
+  svgAnruf.removeEventListener('pointerdown',phoneTap);
+  vnBubble.removeEventListener('pointerdown',phoneTapStop);
+  vnTap.removeEventListener('pointerdown',phoneTapStop);
+  vnBubble.classList.remove('on'); vnTap.classList.remove('on');
+  toast('Auftrag besprochen ✓','#7af0d9',195,300);
+  addXp(10);
+  setTimeout(()=>nextStep(),700);
+}
+
+/* =============================================================
+ *  STEP 2 — MAIL  (Cut-Scene: Mail ploppt am PC auf)
+ * ============================================================= */
+const svgMail=document.getElementById('svgMail');
+function buildMail(){
+  svgMail.innerHTML=''; addDefs(svgMail);
+  drawOffice(svgMail,{});
+
+  // PC monitor on the counter
+  const mon=el('g',{filter:'url(#ds)'});
+  mon.setAttribute('transform','translate(195,360)');
+  mon.appendChild(el('rect',{x:-110,y:-130,width:220,height:150,rx:10,fill:'#0c1119',stroke:'#2c3744','stroke-width':4}));
+  const scr=el('rect',{x:-100,y:-120,width:200,height:130,rx:5,fill:'url(#screen)'});
+  mon.appendChild(scr);
+  // desktop bits
+  mon.appendChild(el('rect',{x:-92,y:-112,width:184,height:16,rx:4,fill:'#0c2238'}));
+  mon.appendChild(el('circle',{cx:-84,cy:-104,r:3,fill:'#7af0d9'}));
+  mon.appendChild(el('text',{x:-72,y:-100,'font-size':'8',fill:'#7af0d9','font-weight':'700'})).textContent='Posteingang — LernStrom';
+  // stand
+  mon.appendChild(el('rect',{x:-14,y:20,width:28,height:24,fill:'#1c2530'}));
+  mon.appendChild(el('rect',{x:-44,y:42,width:88,height:8,rx:4,fill:'#1c2530'}));
+  svgMail.appendChild(mon);
+
+  // mail pop-up (slides/pops in)
+  const mail=el('g',{cursor:'pointer'});
+  mail.setAttribute('transform','translate(195,300) scale(0.2)');
+  mail.setAttribute('opacity','0');
+  const mw=258, mh=176;
+  mail.appendChild(el('rect',{x:-mw/2,y:-mh/2,width:mw,height:mh,rx:12,fill:'#f4f7fa',stroke:'#2dd4bf','stroke-width':3,filter:'url(#ds)'}));
+  // envelope header bar
+  mail.appendChild(el('rect',{x:-mw/2,y:-mh/2,width:mw,height:30,rx:12,fill:'#2dd4bf'}));
+  mail.appendChild(el('rect',{x:-mw/2,y:-mh/2+16,width:mw,height:14,fill:'#2dd4bf'}));
+  const mt=el('text',{x:0,y:-mh/2+20,'text-anchor':'middle','font-size':'12','font-weight':'900',fill:'#06281f'}); mt.textContent='✉  Neue Anfrage'; mail.appendChild(mt);
+  // body lines
+  const lines=[
+    ['Von:','Bauherr Müller'],
+    ['Betreff:','EFH Müller — Elektroinstallation'],
+    ['','Einfamilienhaus, Neubau.'],
+    ['','Bitte um Offerte für die'],
+    ['','komplette Elektroinstallation.']
+  ];
+  lines.forEach((ln,i)=>{
+    const y=-mh/2+56+i*22;
+    if(ln[0]){ const a=el('text',{x:-mw/2+16,y:y,'font-size':'11','font-weight':'800',fill:'#5a6573'}); a.textContent=ln[0]; mail.appendChild(a); }
+    const b=el('text',{x:-mw/2+(ln[0]?68:16),y:y,'font-size':'11.5','font-weight':ln[0]?'800':'600',fill:'#1c2530'}); b.textContent=ln[1]; mail.appendChild(b);
+  });
+  svgMail.appendChild(mail);
+
+  // pop-in animation
+  let opened=false;
+  if(isDone('auftakt')){
+    // Rückbesuch: Mail direkt offen anzeigen, kein erneutes Pflicht-Tippen
+    mail.setAttribute('transform','translate(195,300) scale(1)');
+    mail.setAttribute('opacity','1');
+    document.getElementById('mailTap').classList.remove('on');
+    return;
+  }
+  setTimeout(()=>{
+    sndPop();
+    const t0=performance.now();
+    (function a(t){ const k=Math.min(1,(t-t0)/520);
+      const e=k<1?1-Math.pow(1-k,3):1;
+      const sc=0.2+1.0*(e<.85? e/0.85 : 1) * (e>0.85?1:1);
+      const s=0.2+(1.0-0.2)*e + (Math.sin(Math.min(1,e)*Math.PI)*0.06);
+      mail.setAttribute('transform','translate(195,'+(300-e*4)+') scale('+s+')');
+      mail.setAttribute('opacity',Math.min(1,k*2));
+      if(k<1)requestAnimationFrame(a);
+    })(performance.now());
+    spark(195,300,14,{color:'#2dd4bf',speed:2.5});
+    showOnlyTap('mailTap');   // nur mailTap zeigen (vnTap ausblenden) -> kein Overlap
+  },420);
+
+  function openMail(){
+    if(opened) return; opened=true;
+    AC(); sndClick();
+    document.getElementById('mailTap').classList.remove('on');
+    // emphasise + glow
+    spark(195,300,20,{color:'#ffd166',speed:3,up:1});
+    toast('Auftrag gelesen ✓','#7af0d9',195,250);
+    addXp(10);
+    setTimeout(()=>nextStep(),850);
+  }
+  mail.addEventListener('pointerdown',openMail);
+}
+
+/* =============================================================
+ *  STEP 3 — DIALOG  (Visual Novel: Chef <-> Lehrling)
+ * ============================================================= */
+const svgDialog=document.getElementById('svgDialog');
+const vnBubble=document.getElementById('vnBubble');
+const vnWho=document.getElementById('vnWho');
+const vnTxt=document.getElementById('vnTxt');
+const vnChoices=document.getElementById('vnChoices');
+const vnTap=document.getElementById('vnTap');
+
+/* character portrait (silhouette) drawn as svg group */
+function makeChar(x, side, col, faceCol){
+  const g=el('g',{});
+  g.setAttribute('transform','translate('+x+',540)');
+  // body
+  g.appendChild(el('path',{d:'M -52 200 Q -52 70 0 70 Q 52 70 52 200 Z',fill:col,stroke:'#0e151d','stroke-width':2}));
+  // collar
+  g.appendChild(el('path',{d:'M -20 80 L 0 110 L 20 80',fill:'none',stroke:'#0e151d','stroke-width':3}));
+  // head
+  g.appendChild(el('circle',{cx:0,cy:30,r:38,fill:faceCol,stroke:'#0e151d','stroke-width':2}));
+  // simple face
+  g.appendChild(el('circle',{cx:-13,cy:26,r:3.5,fill:'#1c2530'}));
+  g.appendChild(el('circle',{cx:13,cy:26,r:3.5,fill:'#1c2530'}));
+  const mouth=el('path',{d:'M -10 42 Q 0 48 10 42',fill:'none',stroke:'#1c2530','stroke-width':2,'stroke-linecap':'round'}); g.appendChild(mouth);
+  g._mouth=mouth;
+  return g;
+}
+
+let chefChar=null, lehrChar=null, dialogAlive=false;
+function buildDialog(){
+  svgDialog.innerHTML=''; addDefs(svgDialog);
+  drawOffice(svgDialog,{dim:true});
+
+  // two characters facing each other — der Bauherr steht direkt im Geschaeft
+  chefChar=makeChar(96,'l','#3a4f63','#c79b76');   // Du (Lehrling) links, blau
+  lehrChar=makeChar(296,'r','#6e4a28','#d6a884');  // Bauherr rechts, braune Jacke
+  lehrChar.setAttribute('transform','translate(296,540) scale(-0.92,0.92)'); // mirrored + a touch smaller
+  svgDialog.appendChild(chefChar);
+  svgDialog.appendChild(lehrChar);
+  // name tags — direkt ÜBER dem Kopf (vorher zu hoch geschwebt)
+  // Köpfe liegen bei y≈540+30, Oberkante ≈532 -> Label-Unterkante knapp darüber.
+  const NT_Y=498;
+  const cn=el('g',{}); cn.appendChild(el('rect',{x:48,y:NT_Y,width:96,height:24,rx:8,fill:'#11202c',stroke:'#2dd4bf','stroke-width':1.5}));
+  cn.appendChild(el('text',{x:96,y:NT_Y+17,'text-anchor':'middle','font-size':'12','font-weight':'900',fill:'#7af0d9'})).textContent='Du (Lehrling)';
+  svgDialog.appendChild(cn);
+  const ln=el('g',{}); ln.appendChild(el('rect',{x:240,y:NT_Y,width:112,height:24,rx:8,fill:'#11202c',stroke:'#ffd166','stroke-width':1.5}));
+  ln.appendChild(el('text',{x:296,y:NT_Y+17,'text-anchor':'middle','font-size':'12','font-weight':'900',fill:'#ffd166'})).textContent='Bauherr Müller';
+  svgDialog.appendChild(ln);
+
+  // mouth talk animation
+  dialogAlive=true; let tt=0;
+  (function talk(){ if(!dialogAlive)return; tt+=0.18;
+    const open=2+Math.abs(Math.sin(tt))*4;
+    if(activeSpeaker){ activeSpeaker._mouth.setAttribute('d','M -10 42 Q 0 '+(42+open)+' 10 42'); }
+    requestAnimationFrame(talk);
+  })();
+
+  if(isDone('auftakt')){
+    // Rückbesuch: nur Schluss-Satz zeigen, kein erneuter Pflicht-Durchlauf
+    activeSpeaker=chefChar; vnWho.textContent='Du (Lehrling)'; vnWho.className='who lehrling';
+    vnTxt.textContent='Alles besprochen — weiter zur Offerte.';
+    vnBubble.classList.add('on');
+    dialogAlive=false; // Tippen löst keinen neuen Durchlauf aus
+    return;
+  }
+  startDialog();
+}
+
+let activeSpeaker=null;
+// Auftakt-Variante "dialog": der Bauherr steht direkt im Geschaeft.
+// who:'chef' -> linke Figur (Du/Lehrling), who:'lehr' -> rechte Figur (Bauherr).
+const SPEAKER_NAME = { chef:'Du (Lehrling)', lehr:'Bauherr Müller' };
+const SPEAKER_CLASS = { chef:'lehrling', lehr:'chef' };
+const DIALOG_SCRIPT=[
+  {who:'lehr',  txt:'Grüezi! Müller mein Name — ich baue ein neues Einfamilienhaus und brauche jemanden für die komplette Elektroinstallation.'},
+  {who:'chef',  txt:'Grüezi Herr Müller, schön dass Sie reinkommen! Ein ganzes Haus — von A bis Z, das machen wir gern.'},
+  {who:'lehr',  txt:'Neubau, alles neu: vom Bauprovisorium bis zur fertigen Wohnung. Können Sie das übernehmen?'},
+  {choice:true, q:'Wie antwortest du dem Bauherrn?', opts:[
+     {t:'«Klar, volles Risiko — wir machen einfach alles!»', good:false, fb:'Bauherr: «Hmm … das klingt mir etwas gar forsch. Rechnen Sie das bitte sauber durch.»'},
+     {t:'«Ja — wir kalkulieren Ihnen sauber und realistisch eine Offerte.»', good:true, fb:'Bauherr: «Genau das will ich hören. So arbeiten Profis.»'}
+  ]},
+  {who:'chef',  txt:'Wir stellen Ihnen zuerst ein faires Angebot zusammen, dann das Material — und dann fahren wir raus.'},
+  {who:'lehr',  txt:'Tönt gut. Ich bin gespannt auf die Offerte!'},
+  {who:'chef',  txt:'Auf geht’s — zuerst kalkulieren wir den Preis. Zu teuer und der Kunde springt ab.'}
+];
+let dlgIdx=0;
+function startDialog(){ dlgIdx=0; showLine(); }
+function showLine(){
+  const step=DIALOG_SCRIPT[dlgIdx];
+  if(!step){ endDialog(); return; }
+  if(step.choice){
+    vnBubble.classList.remove('on');
+    vnTap.classList.remove('on');
+    activeSpeaker=null;
+    vnChoices.innerHTML='';
+    const q=document.createElement('div');
+    q.style.cssText='font-size:13px;font-weight:800;color:#ffd166;margin-bottom:2px;text-align:center;';
+    q.textContent=step.q;
+    vnChoices.appendChild(q);
+    step.opts.forEach(o=>{
+      const b=document.createElement('div'); b.className='vnChoice';
+      b.innerHTML=o.t;
+      b.onclick=()=>{ AC(); sndPick(); pickChoice(o); };
+      vnChoices.appendChild(b);
+    });
+    setTimeout(()=>vnChoices.classList.add('on'),40);
+    return;
+  }
+  // normal line
+  vnChoices.classList.remove('on');
+  activeSpeaker = step.who==='chef'?chefChar:lehrChar;
+  vnWho.textContent = SPEAKER_NAME[step.who]||'';
+  vnWho.className = 'who '+(SPEAKER_CLASS[step.who]||'chef');
+  vnBubble.classList.add('on');
+  // typewriter
+  typeText(step.txt, ()=>{ showOnlyTap('vnTap'); });
+}
+let typing=false, typeTimer=null;
+function typeText(full, done){
+  typing=true; vnTxt.textContent=''; vnTap.classList.remove('on');
+  let i=0;
+  clearInterval(typeTimer);
+  typeTimer=setInterval(()=>{
+    vnTxt.textContent=full.slice(0,++i);
+    if(i%2===0) sndType();
+    if(i>=full.length){ clearInterval(typeTimer); typing=false; if(done)done(); }
+  },20);
+}
+function pickChoice(o){
+  vnChoices.classList.remove('on');
+  if(!o.good){ sndBuzz(); }
+  else { sndSnap(); spark(195,420,16,{color:'#2dd4bf',speed:3,up:1}); addXp(15); }
+  // Antwort des Bauherrn (rechte Figur) zeigen, dann weiter
+  activeSpeaker=lehrChar;
+  vnWho.textContent=SPEAKER_NAME.lehr; vnWho.className='who chef';
+  vnBubble.classList.add('on');
+  typeText(o.fb, ()=>{ showOnlyTap('vnTap'); });
+  // advance past the choice node on next tap
+  dlgIdx++;
+}
+function advanceDialog(){
+  if(typing){ // skip typewriter to full
+    clearInterval(typeTimer); typing=false;
+    const step=DIALOG_SCRIPT[dlgIdx];
+    if(step && !step.choice){ vnTxt.textContent=step.txt; showOnlyTap('vnTap'); }
+    return;
+  }
+  const step=DIALOG_SCRIPT[dlgIdx];
+  if(step && step.choice && vnChoices.classList.contains('on')) return; // must choose
+  dlgIdx++;
+  sndPick();
+  showLine();
+}
+// tap anywhere on dialog scene to advance (gutmütig: nur wenn nicht gerade Auswahl offen)
+svgDialog.addEventListener('pointerdown',()=>{ if(dialogAlive) advanceDialog(); });
+vnBubble.addEventListener('pointerdown',(e)=>{ e.stopPropagation(); if(dialogAlive) advanceDialog(); });
+vnTap.addEventListener('pointerdown',(e)=>{ e.stopPropagation(); if(dialogAlive) advanceDialog(); });
+function endDialog(){
+  dialogAlive=false;
+  vnBubble.classList.remove('on'); vnTap.classList.remove('on');
+  toast('Auftrag besprochen ✓','#7af0d9',195,300);
+  addXp(10);
+  setTimeout(()=>nextStep(),700);
+}
+
+/* =============================================================
+ *  STEP 4 — ANGEBOT  (Summe wählen / "pokern")
+ * ============================================================= */
+const svgAngebot=document.getElementById('svgAngebot');
+const offerWrap=document.getElementById('offerWrap');
+const roAngebot=document.getElementById('roAngebot');
+function buildAngebot(){
+  svgAngebot.innerHTML=''; addDefs(svgAngebot);
+  // calc desk background
+  svgAngebot.appendChild(el('rect',{x:0,y:0,width:390,height:844,fill:'url(#wall)'}));
+  svgAngebot.appendChild(el('rect',{x:0,y:560,width:390,height:284,fill:'url(#floor)'}));
+  // big offer document on screen
+  const doc=el('g',{filter:'url(#ds)'});
+  doc.appendChild(el('rect',{x:55,y:140,width:280,height:200,rx:14,fill:'#f4f7fa',stroke:'#2dd4bf','stroke-width':3}));
+  doc.appendChild(el('rect',{x:55,y:140,width:280,height:36,rx:14,fill:'#2dd4bf'}));
+  doc.appendChild(el('rect',{x:55,y:160,width:280,height:16,fill:'#2dd4bf'}));
+  doc.appendChild(el('text',{x:195,y:165,'text-anchor':'middle','font-size':'14','font-weight':'900',fill:'#06281f'})).textContent='OFFERTE · EFH Müller';
+  const rows=['Elektroinstallation komplett','Bauprovisorium / Baustrom','Material & Montage',' ','Wie hoch offerieren wir?'];
+  rows.forEach((r,i)=>{ const y=200+i*26;
+    doc.appendChild(el('text',{x:75,y:y,'font-size':'11','font-weight':i===4?'900':'700',fill:i===4?'#0c5f4e':'#3a4654'})).textContent=r;
+    if(i<3) doc.appendChild(el('line',{x1:75,y1:y+6,x2:315,y2:y+6,stroke:'#d3dbe2','stroke-width':1}));
+  });
+  svgAngebot.appendChild(doc);
+
+  // Risiko-Label NICHT vorab anzeigen (verrät sonst die Lösung). ds = neutral.
+  const OPTIONS=[
+    {price:'CHF 28’000', nm:'Sparvariante', ds:'Sehr günstig kalkuliert', outcome:'thin',
+       fb:'Zu knapp — kaum Marge, ein Fehler kostet euch Geld.'},
+    {price:'CHF 36’000', nm:'Standardvariante', ds:'Marktüblich kalkuliert', outcome:'win',
+       fb:'Fair kalkuliert — Müller sagt zu.'},
+    {price:'CHF 44’000', nm:'Komfortvariante', ds:'Mehr Reserve eingerechnet', outcome:'risky',
+       fb:'Etwas hoch — Müller zögert. Lieber marktüblich.'},
+    {price:'CHF 58’000', nm:'Premiumvariante', ds:'Grosszügig kalkuliert', outcome:'lose',
+       fb:'Zu teuer — Müller holt ein anderes Angebot ein.'}
+  ];
+  const order=shuffled(OPTIONS); // Position der Optionen mischen
+  offerWrap.innerHTML='';
+  let decided=isDone('angebot');
+  let lock=false;
+  order.forEach(o=>{
+    const row=document.createElement('div'); row.className='offerOpt';
+    // Risiko-Chip ist anfangs neutral ("?") und wird erst nach Auswahl enthüllt
+    row.innerHTML='<div class="price">'+o.price+'</div>'+
+      '<div class="meta"><div class="nm">'+o.nm+'</div><div class="ds">'+o.ds+'</div></div>'+
+      '<div class="risk mid riskChip">?</div>';
+    o._row=row;
+    if(decided){
+      // Rückbesuch: korrekte Wahl markieren, alles gesperrt
+      if(o.outcome==='win'){ row.style.borderColor='#2dd4bf'; row.querySelector('.riskChip').textContent='fair'; row.querySelector('.riskChip').className='risk lo riskChip'; }
+      else row.classList.add('locked');
+    } else {
+      row.onclick=()=>{ if(lock) return; AC(); pickOffer(o,row); };
+    }
+    offerWrap.appendChild(row);
+  });
+  roAngebot.classList.remove('good','bad');
+  roAngebot.textContent= decided ? 'Angebot bereits angenommen ✓'
+                                 : 'Wähle deine Angebotssumme — pokere klug';
+
+  function reveal(row,txt,cls){ const c=row.querySelector('.riskChip'); if(c){ c.textContent=txt; c.className='risk '+cls+' riskChip'; } }
+
+  function pickOffer(o,row){
+    if(o.outcome==='win'){
+      sndSnap(); row.style.borderColor='#2dd4bf'; reveal(row,'fair','lo');
+      spark(195,420,22,{color:'#2dd4bf',speed:3.5,up:1});
+      roAngebot.classList.remove('bad'); roAngebot.classList.add('good');
+      roAngebot.innerHTML='<span class="big">Angenommen!</span> '+o.fb;
+      toast('Auftrag bestätigt ✓','#7af0d9',195,360);
+      addXp(25); decided=true; lock=true;
+      document.querySelectorAll('.offerOpt').forEach(r=>{ if(r!==row) r.classList.add('dead'); });
+      setTimeout(()=>nextStep(),1300);
+    } else {
+      // FALSCH: kurze Sperre gegen Spammen, KEIN XP, Risiko erst jetzt enthüllen
+      lock=true; sndBuzz();
+      if(o.outcome==='lose'){ shakeStage(); reveal(row,'zu hoch','hi'); }
+      else if(o.outcome==='thin'){ reveal(row,'zu knapp','mid'); }
+      else { reveal(row,'zu hoch','mid'); }
+      row.classList.add('wrongPick');
+      roAngebot.classList.remove('good'); roAngebot.classList.add('bad');
+      roAngebot.textContent='✗ '+o.fb+' Probier’s nochmal.';
+      toast('Nicht optimal','#ff7a7a',195,360);
+      setTimeout(()=>{ lock=false; row.classList.remove('wrongPick'); reveal(row,'?','mid');
+        roAngebot.classList.remove('bad'); roAngebot.textContent='Wähle deine Angebotssumme — pokere klug'; },1500);
+    }
+  }
+}
+
+/* =============================================================
+ *  STEP 5 — MATERIAL  (Checkliste ankreuzen)
+ * ============================================================= */
+const svgMaterial=document.getElementById('svgMaterial');
+const matWrap=document.getElementById('matWrap');
+const matConfirm=document.getElementById('matConfirm');
+// correct=true sind die Sachen, die WIRKLICH für den EFH-/Baustrom-Start gebraucht werden.
+// sub = NEUTRALE Beschreibung (verrät NICHT richtig/falsch). 'why' = Erklärung NACH Auswahl.
+const MATERIALS=[
+  {ic:'🔌', nm:'Baustromverteiler 400V', sub:'Verteilung', correct:true,  why:'Pflicht fürs Bauprovisorium.'},
+  {ic:'🧵', nm:'Kabel 5×6 mm²', sub:'Leitung', correct:true,  why:'Zuleitung für den Baustrom.'},
+  {ic:'🧵', nm:'Kabel 3×2,5 mm²', sub:'Leitung', correct:true,  why:'Für Steckdosen / Installation.'},
+  {ic:'⚡', nm:'Leitungsschutzschalter (LS)', sub:'Schutztechnik', correct:true,  why:'Sicherungen sind Pflicht.'},
+  {ic:'🛡️', nm:'FI-Schutzschalter (RCD) 30 mA', sub:'Schutztechnik', correct:true,  why:'Personenschutz, vorgeschrieben.'},
+  {ic:'🔩', nm:'Kabelschuhe 6 mm²', sub:'Kleinmaterial', correct:true,  why:'Für den Anschluss der Adern.'},
+  {ic:'🌡️', nm:'Schrumpfschlauch', sub:'Kleinmaterial', correct:true,  why:'Isoliert Verbindungen.'},
+  {ic:'⏚', nm:'Erdungsmaterial / PA', sub:'Schutztechnik', correct:true,  why:'Schutzerdung / Potenzialausgleich.'},
+  {ic:'🪛', nm:'Klemmen & Verbindungsdosen', sub:'Kleinmaterial', correct:true,  why:'Für saubere Verteilung.'},
+  {ic:'🚰', nm:'PVC-Wasserrohre', sub:'Rohrmaterial', correct:false, why:'Das ist Sanitär — nicht unser Gewerk.'},
+  {ic:'🪵', nm:'Holzbalken / Dachlatten', sub:'Baumaterial', correct:false, why:'Zimmerei — gehört nicht zur Elektro.'},
+  {ic:'🎨', nm:'Wandfarbe & Pinsel', sub:'Ausbau', correct:false, why:'Maler — falsches Gewerk.'},
+  {ic:'🧱', nm:'Zementsäcke', sub:'Baumaterial', correct:false, why:'Maurer — nicht unser Material.'},
+  {ic:'🔧', nm:'Sanitär-Fittinge', sub:'Rohrmaterial', correct:false, why:'Sanitär — gehört nicht zu uns.'},
+  {ic:'🪟', nm:'Fensterdichtungen', sub:'Ausbau', correct:false, why:'Fensterbauer — falsches Gewerk.'}
+];
+// Fisher-Yates Shuffle (einmal beim Aufbau) -> falsche Optionen NICHT immer unten
+function shuffled(arr){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]]; } return a; }
+// Speichert die gewählte (richtige) Materialliste für den Notizzettel im Lager.
+let chosenMaterials=[];
+function buildMaterial(){
+  svgMaterial.innerHTML=''; addDefs(svgMaterial);
+  svgMaterial.appendChild(el('rect',{x:0,y:0,width:390,height:844,fill:'url(#wall)'}));
+  svgMaterial.appendChild(el('rect',{x:0,y:560,width:390,height:284,fill:'url(#floor)',opacity:0.6}));
+
+  matWrap.innerHTML='';
+  // Reihenfolge nur EINMAL mischen (stabil bei Rückbesuch im selben Lauf)
+  if(!buildMaterial._order){ buildMaterial._order=shuffled(MATERIALS.map((_,i)=>i)); }
+  const order=buildMaterial._order;
+  const done=isDone('material');
+
+  const state=new Map();
+  order.forEach(i=>{
+    const m=MATERIALS[i];
+    const row=document.createElement('div'); row.className='matRow';
+    row.innerHTML='<div class="cb"></div><div class="ic">'+m.ic+'</div>'+
+      '<div class="nm">'+m.nm+'<div class="sub">'+m.sub+'</div></div>';
+    state.set(i,false);
+    m._row=row;
+    if(done){
+      // Rückbesuch: korrekte Lösung anzeigen, gesperrt
+      if(m.correct){ row.classList.add('on','markGood'); row.querySelector('.cb').textContent='✓'; }
+      row.classList.add('lockedClick');
+    } else {
+      row.onclick=()=>{
+        if(matConfirm._locked) return; // während Sperre keine Eingabe
+        AC(); const v=!state.get(i); state.set(i,v);
+        row.classList.toggle('on',v);
+        row.classList.remove('markWrong','markGood'); // alte Markierung zurücksetzen
+        row.querySelector('.cb').textContent=v?'✓':'';
+        sndPick();
+        updateConfirm();
+      };
+    }
+    matWrap.appendChild(row);
+  });
+
+  if(done){ matConfirm.classList.add('dim'); matConfirm.onclick=null; return; }
+
+  function updateConfirm(){
+    const anyChecked=[...state.values()].some(v=>v);
+    matConfirm.classList.toggle('dim',!anyChecked);
+  }
+  matConfirm._locked=false;
+  updateConfirm();
+
+  matConfirm.onclick=()=>{
+    if(matConfirm._locked) return;                 // Anti-Spam: gesperrt -> ignorieren
+    AC();
+    if(![...state.values()].some(v=>v)){ sndBuzz(); toast('Noch nichts angekreuzt','#ffd166',195,400); return; }
+    // check correctness
+    let missing=0, wrong=0;
+    MATERIALS.forEach((m,i)=>{
+      const checked=state.get(i);
+      if(m.correct && !checked) missing++;
+      if(!m.correct && checked) wrong++;
+    });
+    if(missing===0 && wrong===0){
+      sndSnap(); burstConfettiLite();
+      MATERIALS.forEach(m=>m._row.classList.add('on','markGood'));
+      toast('Liste komplett & korrekt ✓','#7af0d9',195,420);
+      chosenMaterials=MATERIALS.filter(m=>m.correct).map(m=>({ic:m.ic,nm:m.nm}));
+      addXp(30);
+      setTimeout(()=>nextStep(),1100);
+    } else {
+      // FALSCH: kurze Sperre gegen Spammen, KEIN XP, klares Feedback je Position
+      sndBuzz(); shakeStage();
+      matConfirm._locked=true;
+      matConfirm.classList.add('dim');
+      let firstWrongWhy='';
+      MATERIALS.forEach((m,i)=>{
+        const checked=state.get(i);
+        if(checked && !m.correct){
+          m._row.classList.add('markWrong');        // jetzt klar als falsch markiert
+          if(!firstWrongWhy) firstWrongWhy=m.why;
+        }
+      });
+      let msg;
+      if(wrong>0){ msg='Falsch markiert: '+wrong+'. '+(firstWrongWhy||'Gehört nicht zu uns.'); }
+      else { msg='Es fehlt noch Material ('+missing+'). Denk an Kabel, Sicherungen, FI, Erdung …'; }
+      toast(wrong>0?'Falsches Material':'Liste unvollständig','#ff7a7a',195,420);
+      showDoHintMaterial(msg);
+      // Sperre nach 1,4s lösen, Markierungen bleiben sichtbar
+      setTimeout(()=>{ matConfirm._locked=false; updateConfirm(); },1400);
+    }
+  };
+}
+function showDoHintMaterial(msg){
+  let chip=document.getElementById('_matMsg');
+  if(!chip){ chip=document.createElement('div'); chip.id='_matMsg';
+    chip.style.cssText='position:absolute;left:14px;right:14px;bottom:128px;z-index:40;text-align:center;font-size:12px;font-weight:800;color:#ffb3b3;background:rgba(40,20,24,.9);padding:9px 12px;border-radius:12px;border:1px solid rgba(255,107,107,.4);';
+    document.getElementById('sMaterial').appendChild(chip);
+  }
+  chip.textContent=msg; chip.style.opacity='1';
+  clearTimeout(chip._t); chip._t=setTimeout(()=>{ chip.style.opacity='0'; },2600);
+}
+function burstConfettiLite(){
+  const cols=['#2dd4bf','#ffd166','#7af0d9','#ffffff'];
+  for(let i=0;i<60;i++){
+    confetti.push({ x:STAGE_W/2+(Math.random()-.5)*120, y:STAGE_H*0.3,
+      vx:(Math.random()-.5)*7, vy:-Math.random()*9-2, g:0.22, w:5+Math.random()*5, h:7+Math.random()*7,
+      rot:Math.random()*6.28, vr:(Math.random()-.5)*0.4, color:cols[(Math.random()*cols.length)|0], life:1 });
+  }
+}
+
+/* =============================================================
+ *  STEP 6 — MAGAZIN  (Artikel aus Hochregal antippen/sammeln)
+ * ============================================================= */
+const svgMagazin=document.getElementById('svgMagazin');
+const magChip=document.getElementById('magChip');
+// die 8 zu holenden Artikel (Teilmenge der korrekten Liste)
+const PICK_LIST=[
+  {ic:'🔌', nm:'Baustromverteiler'},
+  {ic:'🧵', nm:'Kabel 5×6 mm²'},
+  {ic:'🧵', nm:'Kabel 3×2,5 mm²'},
+  {ic:'⚡', nm:'LS-Schalter'},
+  {ic:'🛡️', nm:'FI-Schutzschalter'},
+  {ic:'🔩', nm:'Kabelschuhe'},
+  {ic:'🌡️', nm:'Schrumpfschlauch'},
+  {ic:'⏚', nm:'Erdungsmaterial'}
+];
+let collected=0;
+// Falsches Material, das im Lager mit herumsteht (Ballast) — wie bisher erlaubt.
+const MAG_DECOYS=[
+  {ic:'🚰', nm:'PVC-Wasserrohr'},
+  {ic:'🎨', nm:'Wandfarbe'},
+  {ic:'🧱', nm:'Zementsack'},
+  {ic:'🪵', nm:'Dachlatte'},
+  {ic:'🔧', nm:'Sanitär-Fitting'},
+  {ic:'🪟', nm:'Fensterdichtung'}
+];
+function buildMagazin(){
+  svgMagazin.innerHTML=''; addDefs(svgMagazin);
+  collected=0; magPicked.clear();
+  // warehouse background
+  svgMagazin.appendChild(el('rect',{x:0,y:0,width:390,height:844,fill:'url(#wall)'}));
+  svgMagazin.appendChild(el('rect',{x:0,y:660,width:390,height:184,fill:'url(#floor)'}));
+  for(let i=0;i<4;i++) svgMagazin.appendChild(el('line',{x1:0,y1:660+i*46,x2:390,y2:660+i*46,stroke:'#0c1119','stroke-width':1,opacity:0.4}));
+
+  const revisit=isDone('magazin');
+
+  // ---- mehrere Gestelle / Regalreihen: man blättert per Pfeil hin & her ----
+  // Jedes Gestell trägt eine Sektion mit ein paar richtigen Kisten + Ballast.
+  // Verteilung der 8 zu holenden Artikel auf die Gestelle (Rest = Decoys).
+  const RACKS=[
+    {name:'Gestell 1 · Verteiler & Kabel', picks:[0,1,2],     decoys:[0,1]},
+    {name:'Gestell 2 · Schutztechnik',      picks:[3,4,7],     decoys:[2,3]},
+    {name:'Gestell 3 · Kleinmaterial',      picks:[5,6],       decoys:[4,5]}
+  ];
+  const levels=[260,400,540];
+  const colsX=[60,240];
+
+  // gemeinsamer Regalrahmen pro Gestell
+  function drawRackFrame(g){
+    g.appendChild(el('rect',{x:24,y:230,width:10,height:430,fill:'#39424d'}));
+    g.appendChild(el('rect',{x:356,y:230,width:10,height:430,fill:'#39424d'}));
+    g.appendChild(el('rect',{x:190,y:230,width:8,height:430,fill:'#2c3744'}));
+    levels.forEach(ly=> g.appendChild(el('rect',{x:24,y:ly+48,width:342,height:12,rx:2,fill:'url(#steel)',stroke:'#10151c','stroke-width':1.5})));
+  }
+
+  // eine pickbare/Ballast-Kiste zeichnen
+  function makeCrate(it,pos,opts){
+    opts=opts||{};
+    const g=el('g',{cursor: opts.pickable?'pointer':'default'});
+    g.setAttribute('transform','translate('+pos.x+','+pos.y+')');
+    const box=el('rect',{x:0,y:0,width:120,height:42,rx:6,fill:'#3a2a18',stroke:'#1c130a','stroke-width':2});
+    g.appendChild(box);
+    g.appendChild(el('rect',{x:0,y:0,width:120,height:13,rx:6,fill:'#553720',opacity:0.7}));
+    const ico=el('text',{x:18,y:30,'font-size':'20'}); ico.textContent=it.ic; g.appendChild(ico);
+    const lbl=el('text',{x:40,y:20,'font-size':'9.5','font-weight':'800',fill:'#f0e2d0'}); lbl.textContent=it.nm; g.appendChild(lbl);
+    if(opts.pickable){
+      const tag=el('text',{x:40,y:33,'font-size':'8','font-weight':'700',fill:'#caa'}); tag.textContent='antippen ▸'; g.appendChild(tag);
+      const ring=el('rect',{x:-3,y:-3,width:126,height:48,rx:8,fill:'none',stroke:'#7af0d9','stroke-width':2,class:'pulseTool',opacity:0.7}); g.appendChild(ring);
+      g._tag=tag; g._ring=ring;
+    } else {
+      const tag=el('text',{x:40,y:33,'font-size':'8','font-weight':'700',fill:'#7a6a55'}); tag.textContent='falsches Material'; g.appendChild(tag);
+    }
+    g._box=box;
+    return g;
+  }
+  function markCrateDone(g){
+    g._box.setAttribute('fill','#1d3540'); g._box.setAttribute('stroke','#2dd4bf');
+    if(g._ring) g._ring.remove(); if(g._tag) g._tag.remove();
+    g.appendChild(el('text',{x:104,y:30,'font-size':'16','font-weight':'900',fill:'#7af0d9'})).textContent='✓';
+  }
+
+  // Gestelle als eigene Gruppen anlegen (nur eines sichtbar)
+  const rackGroups=[];
+  RACKS.forEach((rk)=>{
+    const rg=el('g',{}); rg.setAttribute('display','none');
+    drawRackFrame(rg);
+    // Slots: pro Ebene 2 Spalten -> bis zu 6 Plätze
+    const slots=[];
+    levels.forEach(ly=>{ colsX.forEach(sx=>{ slots.push({x:sx,y:ly}); }); });
+    let si=0;
+    // richtige Kisten
+    rk.picks.forEach(pi=>{
+      const it=PICK_LIST[pi];
+      const cpos=slots[si++];
+      const already=revisit||magEverPicked.has(pi); // schon geholt -> nicht erneut antippbar (XP-Exploit-Fix)
+      const g=makeCrate(it,cpos,{pickable:!already});
+      rg.appendChild(g);
+      let got=false;
+      if(already){ got=true; markCrateDone(g); strikeMagNote(pi); }
+      else g.addEventListener('pointerdown',()=>{
+        if(got)return; got=true; AC(); sndPop();
+        magEverPicked.add(pi);             // dauerhaft merken -> beim Zurück/Vor kein XP-Doppeln
+        markCrateDone(g);
+        flyToCart(cpos.x+60, cpos.y+20, it.ic);
+        collected++;
+        strikeMagNote(pi);                 // Live durchstreichen auf dem Notizzettel
+        magChip.innerHTML='Lager: <b>'+collected+'</b> / '+PICK_LIST.length+' geholt';
+        spark(180,640,8,{color:'#2dd4bf',speed:2});
+        addXp(5);
+        if(collected===PICK_LIST.length){
+          toast('Alles aus dem Lager geholt ✓','#7af0d9',195,640);
+          addXp(15);
+          setTimeout(()=>nextStep(),1000);
+        }
+      });
+    });
+    // Ballast (falsches Material liegt mit dazwischen)
+    rk.decoys.forEach(di=>{
+      const it=MAG_DECOYS[di%MAG_DECOYS.length];
+      if(si>=slots.length) return;
+      rg.appendChild(makeCrate(it,slots[si++],{pickable:false}));
+    });
+    svgMagazin.appendChild(rg);
+    rackGroups.push(rg);
+  });
+
+  // sammel-wagen / palette unten
+  const cart=el('g',{});
+  cart.appendChild(el('rect',{x:120,y:716,width:150,height:14,rx:3,fill:'#553720',stroke:'#1c130a','stroke-width':2}));
+  cart.appendChild(el('circle',{cx:140,cy:738,r:9,fill:'#1c2530',stroke:'#0e151d','stroke-width':2}));
+  cart.appendChild(el('circle',{cx:250,cy:738,r:9,fill:'#1c2530',stroke:'#0e151d','stroke-width':2}));
+  cart.appendChild(el('text',{x:195,y:710,'text-anchor':'middle','font-size':'9','font-weight':'800',fill:'#9fb0c0'})).textContent='Sammelwagen';
+  svgMagazin.appendChild(cart);
+
+  // Blättern zwischen den Gestellen
+  let curRack=0;
+  const magPrev=document.getElementById('magPrev');
+  const magNext=document.getElementById('magNext');
+  const magRack=document.getElementById('magRack');
+  function showRack(i){
+    curRack=(i+RACKS.length)%RACKS.length;
+    rackGroups.forEach((rg,j)=>rg.setAttribute('display', j===curRack?'inline':'none'));
+    magRack.textContent=RACKS[curRack].name;
+    magPrev.classList.toggle('hidden', curRack===0);
+    magNext.classList.toggle('hidden', curRack===RACKS.length-1);
+  }
+  magPrev.onclick=()=>{ AC(); sndClick(); showRack(curRack-1); };
+  magNext.onclick=()=>{ AC(); sndClick(); showRack(curRack+1); };
+  showRack(0);
+
+  // Notizzettel mit den zu holenden Materialien (einklappbar, in der Ecke)
+  renderMagNote();
+
+  if(revisit){
+    magChip.innerHTML='Lager: <b>'+PICK_LIST.length+'</b> / '+PICK_LIST.length+' geholt';
+    collected=PICK_LIST.length;
+  } else {
+    collected=magEverPicked.size;   // schon geholte Artikel mitzählen (kein Reset beim Zurück/Vor)
+    magChip.innerHTML='Lager: <b>'+collected+'</b> / '+PICK_LIST.length+' geholt';
+    if(collected<PICK_LIST.length)
+      showDoHint('magHint','Tippe die <b>richtigen Kisten</b> an. Mit den <b>Pfeilen</b> blätterst du durch die Gestelle. Falsches Material bleibt stehen.',4600);
+  }
+}
+// Welche Notizzettel-Zeilen sind schon im Lager geholt (für Live-Durchstreichen).
+const magPicked=new Set();
+const magEverPicked=new Set(); // dauerhaft über Rebuilds: welche Artikel je geholt -> kein XP-Doppeln beim Zurück/Vor
+function renderMagNote(){
+  const note=document.getElementById('magNote');
+  if(!note) return;
+  // Quelle = die im Lager tatsächlich zu holenden Artikel (PICK_LIST), damit
+  // sich jede Zeile 1:1 abhaken/durchstreichen lässt.
+  const list = PICK_LIST.map(it=>({ic:it.ic,nm:it.nm}));
+  note.classList.toggle('empty', list.length===0);
+  // Kopf bleibt immer sichtbar (Klick = ein/ausklappen), Body wird verdeckt.
+  let html='<div class="nh" id="magNoteHead"><span>Materialliste</span><span class="ntog" id="magNoteTog">▸</span></div><div class="nbody">';
+  list.forEach((it,i)=>{
+    const struck = magPicked.has(i) ? ' struck' : '';
+    html+='<div class="nl'+struck+'" data-mi="'+i+'"><span class="nt">'+it.ic+'</span><span>'+it.nm+'</span></div>';
+  });
+  html+='</div>';
+  note.innerHTML=html;
+  // Toggle-Pfeil je nach Zustand
+  const tog=document.getElementById('magNoteTog');
+  if(tog) tog.textContent = note.classList.contains('collapsed') ? '▸' : '▾';
+  // Kopfzeile klickbar: ein-/ausklappen (verdeckt sonst die Regale)
+  const head=document.getElementById('magNoteHead');
+  if(head) head.onclick=()=>{
+    note.classList.toggle('collapsed');
+    const t=document.getElementById('magNoteTog');
+    if(t) t.textContent = note.classList.contains('collapsed') ? '▸' : '▾';
+    try{ AC(); sndClick(); }catch(_){}
+  };
+}
+// Streicht eine geholte Position live auf dem Notizzettel durch.
+function strikeMagNote(idx){
+  magPicked.add(idx);
+  const note=document.getElementById('magNote');
+  if(!note) return;
+  const row=note.querySelector('.nl[data-mi="'+idx+'"]');
+  if(row) row.classList.add('struck');
+}
+function flyToCart(x,y,ic){
+  const fly=el('text',{x:x,y:y,'text-anchor':'middle','font-size':'18'}); fly.textContent=ic;
+  svgMagazin.appendChild(fly);
+  const tx=160+Math.random()*70, ty=716;
+  const t0=performance.now();
+  (function a(t){ const k=Math.min(1,(t-t0)/620);
+    const e=1-Math.pow(1-k,2);
+    fly.setAttribute('x',x+(tx-x)*e);
+    fly.setAttribute('y',y+(ty-y)*e - Math.sin(e*Math.PI)*40);
+    fly.setAttribute('opacity',1-k*0.3);
+    if(k<1)requestAnimationFrame(a); else fly.remove();
+  })(performance.now());
+}
+
+/* =============================================================
+ *  STEP 7 — BELADEN  (Lieferwagen: richtige Sachen einladen)
+ * ============================================================= */
+const svgBeladen=document.getElementById('svgBeladen');
+const loadChip=document.getElementById('loadChip');
+const roBeladen=document.getElementById('roBeladen');
+// 6 Sachen liegen bereit; 4 gehören in den Wagen, 2 sind Ballast (zu viel)
+const LOAD_ITEMS=[
+  {ic:'🔌', nm:'Verteiler', good:true},
+  {ic:'🧵', nm:'Kabelrolle', good:true},
+  {ic:'⚡', nm:'Sicherungen', good:true},
+  {ic:'🧰', nm:'Werkzeugkiste', good:true},
+  {ic:'🪑', nm:'Bürostuhl', good:false},
+  {ic:'🪴', nm:'Zimmerpflanze', good:false}
+];
+function buildBeladen(){
+  svgBeladen.innerHTML=''; addDefs(svgBeladen);
+  svgBeladen.appendChild(el('rect',{x:0,y:0,width:390,height:844,fill:'url(#wall)'}));
+  svgBeladen.appendChild(el('rect',{x:0,y:600,width:390,height:244,fill:'url(#floor)'}));
+
+  // the van (left side, open cargo door) — load zone
+  const van=el('g',{filter:'url(#ds)'});
+  van.appendChild(el('rect',{x:20,y:250,width:200,height:170,rx:16,fill:'url(#van)',stroke:'#5a6573','stroke-width':3}));
+  // cab
+  van.appendChild(el('path',{d:'M 220 280 L 280 290 L 300 360 L 300 420 L 220 420 Z',fill:'url(#van)',stroke:'#5a6573','stroke-width':3}));
+  van.appendChild(el('rect',{x:236,y:300,width:50,height:36,rx:4,fill:'#0e2233',stroke:'#3a4654','stroke-width':2}));
+  // open cargo area (dark interior = drop target)
+  const cargo=el('rect',{x:36,y:268,width:168,height:136,rx:8,fill:'#10151c',stroke:'#2dd4bf','stroke-width':2.5,'stroke-dasharray':'7 6'});
+  van.appendChild(cargo);
+  van.appendChild(el('text',{x:120,y:262,'text-anchor':'middle','font-size':'10','font-weight':'800',fill:'#7af0d9'})).textContent='⬇ hier einladen';
+  // wheels
+  van.appendChild(el('circle',{cx:80,cy:425,r:24,fill:'#1c2530',stroke:'#0e151d','stroke-width':3}));
+  van.appendChild(el('circle',{cx:80,cy:425,r:10,fill:'#39424d'}));
+  van.appendChild(el('circle',{cx:262,cy:425,r:24,fill:'#1c2530',stroke:'#0e151d','stroke-width':3}));
+  van.appendChild(el('circle',{cx:262,cy:425,r:10,fill:'#39424d'}));
+  // LernStrom branding
+  van.appendChild(el('text',{x:120,y:340,'text-anchor':'middle','font-size':'15','font-weight':'900',fill:'#2dd4bf','opacity':'0.6'})).textContent='LernStrom';
+  svgBeladen.appendChild(van);
+
+  // items to drag (bottom row, 2 are wrong)
+  const itemsG=el('g',{}); svgBeladen.appendChild(itemsG);
+  let loaded=0; const needed=LOAD_ITEMS.filter(i=>i.good).length;
+  const revisit=isDone('beladen');
+  loadChip.innerHTML='Eingeladen: <b>'+(revisit?needed:0)+'</b> / '+needed;
+  // sauberes 2x2-Raster im Laderaum (x 36–204, y 268–404), herunterskaliert
+  const CARGO_SC=0.6;
+  function cargoSlotPos(slot){ return { x:80+(slot%2)*78, y:312+((slot/2)|0)*54 }; }
+  const items=[];
+  let placedGood=0;
+  LOAD_ITEMS.forEach((it,i)=>{
+    const col=i%3, rrow=(i/3)|0;
+    const sx=70+col*120, sy=640+rrow*92;
+    const g=el('g',{cursor:'grab'});
+    const card=el('rect',{x:-42,y:-34,width:84,height:68,rx:10,fill:'#243443',stroke:'#3a4654','stroke-width':2});
+    g.appendChild(card);
+    g.appendChild(el('text',{x:0,y:-2,'text-anchor':'middle','font-size':'26'})).textContent=it.ic;
+    g.appendChild(el('text',{x:0,y:24,'text-anchor':'middle','font-size':'9','font-weight':'800',fill:'#cdd8e2'})).textContent=it.nm;
+    const hit=el('rect',{x:-46,y:-38,width:92,height:76,fill:'transparent'}); g.appendChild(hit);
+    const obj={it,g,card,hit,sx,sy,placed:false,drag:false};
+    if(revisit){
+      // Rückbesuch: richtige Items schon eingeladen anzeigen, Ballast bleibt stehen
+      if(it.good){
+        const gp=cargoSlotPos(placedGood++);
+        g.setAttribute('transform','translate('+gp.x+','+gp.y+') scale('+CARGO_SC+')');
+        card.setAttribute('fill','#1d3540'); card.setAttribute('stroke','#2dd4bf');
+        hit.setAttribute('pointer-events','none'); obj.placed=true;
+      } else {
+        g.setAttribute('transform','translate('+sx+','+sy+')');
+        hit.setAttribute('pointer-events','none');
+      }
+    } else {
+      g.setAttribute('transform','translate('+sx+','+sy+')');
+    }
+    itemsG.appendChild(g);
+    items.push(obj);
+  });
+
+  let dragItem=null, ox=0, oy=0;
+  function inCargo(x,y){ return x>36 && x<204 && y>268 && y<404; }
+  function down(e,obj){
+    if(obj.placed)return; e.preventDefault(); AC(); sndPick();
+    dragItem=obj; obj.drag=true; obj.g.setAttribute('cursor','grabbing');
+    itemsG.appendChild(obj.g); // to front
+    const p=toSvgFor(svgBeladen,e.clientX,e.clientY); ox=p.x; oy=p.y;
+    try{obj.hit.setPointerCapture(e.pointerId);}catch(_){}
+  }
+  function move(e){
+    if(!dragItem)return;
+    const p=toSvgFor(svgBeladen,e.clientX,e.clientY);
+    dragItem.g.setAttribute('transform','translate('+p.x+','+p.y+')');
+    dragItem._cx=p.x; dragItem._cy=p.y;
+    cargo.setAttribute('opacity', inCargo(p.x,p.y)?1:0.6);
+  }
+  function up(){
+    if(!dragItem)return;
+    const obj=dragItem; dragItem=null; obj.drag=false; obj.g.setAttribute('cursor','grab');
+    cargo.setAttribute('opacity',1);
+    const x=obj._cx||obj.sx, y=obj._cy||obj.sy;
+    if(inCargo(x,y)){
+      if(obj.it.good){
+        obj.placed=true; sndSnap();
+        // settle into the cargo grid — 2x2 Raster + herunterskaliert,
+        // damit sich die eingeladenen Items NICHT überlappen
+        const slot=loaded;
+        const gp=cargoSlotPos(slot);
+        animTo(obj.g,gp.x,gp.y,CARGO_SC);
+        obj.card.setAttribute('fill','#1d3540'); obj.card.setAttribute('stroke','#2dd4bf');
+        obj.hit.setAttribute('pointer-events','none');
+        spark(x,y,10,{color:'#2dd4bf',speed:2});
+        loaded++; addXp(8);
+        loadChip.innerHTML='Eingeladen: <b>'+loaded+'</b> / '+needed;
+        roBeladen.classList.remove('bad'); roBeladen.classList.add('good');
+        roBeladen.textContent=obj.it.nm+' eingeladen ✓';
+        if(loaded===needed){
+          roBeladen.textContent='Wagen ist startklar ✓';
+          toast('Alles geladen ✓','#7af0d9',120,260);
+          addXp(15);
+          setTimeout(()=>nextStep(),1100);
+        }
+      } else {
+        // wrong item -> bounce back, minus feedback
+        sndBuzz(); shakeStage();
+        roBeladen.classList.remove('good'); roBeladen.classList.add('bad');
+        roBeladen.textContent='Das gehört nicht auf die Baustelle! Zurück damit.';
+        toast('Falsch — zu viel Ballast!','#ff7a7a',x,y-40);
+        animTo(obj.g,obj.sx,obj.sy);
+      }
+    } else {
+      animTo(obj.g,obj.sx,obj.sy);
+    }
+  }
+  function animTo(g,tx,ty,scTo){
+    const cur=g.getAttribute('transform').match(/translate\(([-\d.]+),([-\d.]+)\)(?:\s*scale\(([-\d.]+)\))?/);
+    let x0=cur?+cur[1]:tx, y0=cur?+cur[2]:ty, s0=(cur&&cur[3]!=null)?+cur[3]:1;
+    const s1=(scTo!=null)?scTo:s0;
+    const t0=performance.now();
+    (function a(t){ const k=Math.min(1,(t-t0)/280); const e=1-Math.pow(1-k,3);
+      const s=s0+(s1-s0)*e;
+      g.setAttribute('transform','translate('+(x0+(tx-x0)*e)+','+(y0+(ty-y0)*e)+') scale('+s+')');
+      if(k<1)requestAnimationFrame(a);
+    })(performance.now());
+  }
+  // kompakter Lade-Status: Kopfzeile klickbar -> ein-/ausklappen (Szene frei)
+  const ls=document.getElementById('loadStatus');
+  const lsHead=document.getElementById('loadStatusHead');
+  if(ls && lsHead){
+    const tog=lsHead.querySelector('.ltog');
+    lsHead.onclick=()=>{ ls.classList.toggle('collapsed');
+      if(tog) tog.textContent=ls.classList.contains('collapsed')?'[+]':'[–]';
+      try{ AC(); sndClick(); }catch(_){}
+    };
+  }
+
+  roBeladen.classList.remove('good','bad');
+  if(revisit){
+    roBeladen.textContent='Wagen ist startklar ✓';
+    buildBeladen._cleanup=()=>{}; // keine Listener im Rückbesuch
+    return;
+  }
+  items.forEach(obj=>{ obj._d=e=>down(e,obj); obj.hit.addEventListener('pointerdown',obj._d); });
+  window.addEventListener('pointermove',move);
+  window.addEventListener('pointerup',up);
+  buildBeladen._cleanup=()=>{ items.forEach(o=>o.hit.removeEventListener('pointerdown',o._d)); window.removeEventListener('pointermove',move); window.removeEventListener('pointerup',up); };
+
+  roBeladen.textContent='Zieh nur das benötigte Material in den Wagen. Ballast (Stuhl, Pflanze) bleibt stehen.';
+  showDoHint('loadHint','Zieh die <b>'+needed+' richtigen</b> Sachen in den Laderaum.',3500);
+}
+
+/* =============================================================
+ *  STEP 8 — ABSCHLUSS  (Cut-Scene: Lieferwagen fährt los)
+ * ============================================================= */
+const svgAbschluss=document.getElementById('svgAbschluss');
+function buildAbschluss(){
+  if(buildBeladen._cleanup) buildBeladen._cleanup();
+  svgAbschluss.innerHTML=''; addDefs(svgAbschluss);
+  // sky / morning gradient
+  svgAbschluss.appendChild(el('rect',{x:0,y:0,width:390,height:844,fill:'url(#wall)'}));
+  svgAbschluss.appendChild(el('rect',{x:0,y:0,width:390,height:520,fill:'#1a3142',opacity:0.5}));
+  // sun
+  svgAbschluss.appendChild(el('circle',{cx:310,cy:120,r:40,fill:'#ffd166',opacity:0.25}));
+  svgAbschluss.appendChild(el('circle',{cx:310,cy:120,r:24,fill:'#ffd166',opacity:0.5}));
+  // distant buildings / baustelle silhouette + crane
+  const sky=el('g',{opacity:0.55});
+  [[20,360,40,160],[70,400,46,120],[300,380,50,140],[350,410,40,110]].forEach(([x,y,w,h])=>
+    sky.appendChild(el('rect',{x,y,width:w,height:h,fill:'#0e1822'})));
+  // crane
+  sky.appendChild(el('line',{x1:330,y1:520,x2:330,y2:300,stroke:'#0e1822','stroke-width':6}));
+  sky.appendChild(el('line',{x1:260,y1:312,x2:360,y2:312,stroke:'#0e1822','stroke-width':5}));
+  sky.appendChild(el('line',{x1:300,y1:312,x2:300,y2:360,stroke:'#0e1822','stroke-width':2}));
+  svgAbschluss.appendChild(sky);
+  // road
+  svgAbschluss.appendChild(el('rect',{x:0,y:520,width:390,height:324,fill:'#222a35'}));
+  const dashes=el('g',{});
+  for(let i=0;i<7;i++) dashes.appendChild(el('rect',{x:-40+i*70,y:650,width:38,height:9,rx:3,fill:'#ffd166',opacity:0.7}));
+  svgAbschluss.appendChild(dashes);
+
+  // the loaded van (drives across)
+  const van=el('g',{});
+  van.setAttribute('transform','translate(-200,560)');
+  van.appendChild(el('rect',{x:0,y:-110,width:180,height:120,rx:16,fill:'url(#van)',stroke:'#5a6573','stroke-width':3}));
+  van.appendChild(el('path',{d:'M 180 -90 L 240 -78 L 258 -10 L 258 10 L 180 10 Z',fill:'url(#van)',stroke:'#5a6573','stroke-width':3}));
+  van.appendChild(el('rect',{x:196,y:-66,width:46,height:34,rx:4,fill:'#0e2233',stroke:'#3a4654','stroke-width':2}));
+  van.appendChild(el('text',{x:90,y:-40,'text-anchor':'middle','font-size':'20','font-weight':'900',fill:'#2dd4bf'})).textContent='LernStrom';
+  van.appendChild(el('text',{x:90,y:-18,'text-anchor':'middle','font-size':'10','font-weight':'700',fill:'#5a6573'})).textContent='Elektro';
+  const w1=el('circle',{cx:48,cy:14,r:26,fill:'#1c2530',stroke:'#0e151d','stroke-width':4}); van.appendChild(w1);
+  van.appendChild(el('circle',{cx:48,cy:14,r:11,fill:'#39424d'}));
+  const w2=el('circle',{cx:216,cy:14,r:26,fill:'#1c2530',stroke:'#0e151d','stroke-width':4}); van.appendChild(w2);
+  van.appendChild(el('circle',{cx:216,cy:14,r:11,fill:'#39424d'}));
+  // spokes (rotate)
+  const sp1=el('line',{x1:48,y1:-4,x2:48,y2:32,stroke:'#1c2530','stroke-width':3}); van.appendChild(sp1);
+  const sp2=el('line',{x1:216,y1:-4,x2:216,y2:32,stroke:'#1c2530','stroke-width':3}); van.appendChild(sp2);
+  svgAbschluss.appendChild(van);
+
+  // caption
+  const cap=el('text',{x:195,y:160,'text-anchor':'middle','font-size':'18','font-weight':'900',fill:'#fff',opacity:0});
+  cap.textContent='Auf zur Baustelle!'; svgAbschluss.appendChild(cap);
+  const cap2=el('text',{x:195,y:188,'text-anchor':'middle','font-size':'12','font-weight':'700',fill:'#9fb0c0',opacity:0});
+  cap2.textContent='Als Nächstes: Bauprovisorium anschliessen'; svgAbschluss.appendChild(cap2);
+
+  if(isDone('abschluss')){
+    // Rückbesuch: Endbild statisch zeigen, keine Fahrt/Sound/WIN-Wiederholung
+    van.setAttribute('transform','translate(100,560)');
+    cap.setAttribute('opacity',1); cap2.setAttribute('opacity',1);
+    return;
+  }
+  sndEngine();
+  let t0=performance.now(), spokeA=0, dashOff=0, done=false;
+  (function drive(t){
+    const k=Math.min(1,(t-t0)/3400);
+    const e=k<0.5? 2*k*k : 1-Math.pow(-2*k+2,2)/2;
+    const vx=-200 + e*(195-90+200); // ends roughly centered then continues
+    const finalX = -200 + e*620;
+    van.setAttribute('transform','translate('+finalX+',560)');
+    spokeA+=18; sp1.setAttribute('transform','rotate('+spokeA+' 48 14)'); sp2.setAttribute('transform','rotate('+spokeA+' 216 14)');
+    dashOff=(dashOff+9)%70;
+    dashes.setAttribute('transform','translate('+(-dashOff)+',0)');
+    // exhaust puff
+    if(Math.random()<0.4) puff(finalX+0,576,1,{size:5,color:'120,130,140'});
+    // captions fade in mid-way
+    if(k>0.25){ cap.setAttribute('opacity',Math.min(1,(k-0.25)/0.25)); }
+    if(k>0.4){ cap2.setAttribute('opacity',Math.min(1,(k-0.4)/0.25)); }
+    if(k<1) requestAnimationFrame(drive);
+    else if(!done){ done=true; finishIntro(); }
+  })(performance.now());
+}
+function finishIntro(){
+  doneSteps.add('abschluss');     // Finale gilt als abgeschlossen (kein Replay)
+  updateNav();                    // Zurück-Pfeil freigeben, nachdem WIN erscheint
+  sndWin(); burstConfetti();
+  spark(STAGE_W/2,STAGE_H*0.4,40,{color:'#ffd166',speed:6,up:2});
+  document.getElementById('progFill').style.width='100%';
+  setTimeout(()=>{
+    const win=document.getElementById('win'); win.classList.add('show');
+    addXp(40);
+    const sts=document.querySelectorAll('#stars .st');
+    sts.forEach((s,i)=>setTimeout(()=>{s.classList.add('lit');sndSnap();},300+i*260));
+    const xb=document.getElementById('xpBig'); const target=xp; let tt=performance.now();
+    (function cc(t){const k=Math.min(1,(t-tt)/900);xb.textContent='+'+Math.round(target*(1-Math.pow(1-k,3)))+' XP';if(k<1)requestAnimationFrame(cc);})(performance.now());
+  },650);
+}
+document.getElementById('again').onclick=()=>location.reload();
+// "Weiter" schliesst nur das Abschluss-Fenster (kein Auto-Weiter, kein Reset).
+// Falls eine übergeordnete App ein nächstes Modul lädt, kann sie window.__onIntroDone nutzen.
+document.getElementById('winContinue').onclick=function(){
+  AC(); sndClick();
+  document.getElementById('win').classList.remove('show');
+  if(typeof window.__onIntroDone==='function'){ try{ window.__onIntroDone(); }catch(_){} }
+};
+
+/* =============================================================
+ *  BUILDERS registry + boot
+ * ============================================================= */
+const AUFTAKT_BUILDER = { anruf:buildAnruf, mail:buildMail, dialog:buildDialog };
+function buildAuftakt(){ AUFTAKT_BUILDER[AUFTAKT_KIND](); }
+const BUILDERS = {
+  auftakt:  buildAuftakt,
+  angebot:  buildAngebot,
+  material: buildMaterial,
+  magazin:  buildMagazin,
+  beladen:  buildBeladen,
+  abschluss:buildAbschluss
+};
+
+let dust=[];
+function initDust(){
+  for(let i=0;i<20;i++) dust.push({
+    x:Math.random()*STAGE_W,y:Math.random()*STAGE_H,
+    vy:-(0.1+Math.random()*0.25),vx:(Math.random()-.5)*0.2,
+    r:0.5+Math.random()*1.4,a:0.05+Math.random()*0.16,ph:Math.random()*6.28
+  });
+}
+
+function boot(){
+  sizeCanvas();
+  initDust();
+  buildStepsBar();
+  fxLoop();
+  gotoStep('auftakt');
+}
+window.addEventListener('resize',sizeCanvas);
+boot();
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="light">
+<script>try{var _t=localStorage.getItem("ls-theme");if(_t)document.documentElement.setAttribute("data-theme",_t);}catch(e){}</script>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon_32.png">
+  <link rel="apple-touch-icon" href="appicon_192.png">
+<title>AGB – LernStrom</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{ --bg:#E9F3EE; --ink:#0E3B31; --teal:#0C9488; --teal-d:#0A7A70; --field:#E1EFE9; --muted:#5D7167; --line:#D3E5DD; --card:#FFFFFF; }
+  html[data-theme="dark"]{ --bg:#0B1714; --ink:#EAF4EF; --teal:#3CC9B0; --teal-d:#2DB8A1; --field:#15231F; --muted:#8AA399; --line:#1D322B; --card:#10201C; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--ink);font-family:'Instrument Sans',sans-serif;-webkit-font-smoothing:antialiased;line-height:1.6;transition:background .4s,color .4s;}
+  nav{display:flex;justify-content:space-between;align-items:center;padding:24px 40px;border-bottom:1px solid var(--line);position:sticky;top:0;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(12px);z-index:50;}
+  .logo{font-family:'Fraunces',serif;font-weight:600;font-size:22px;letter-spacing:-.5px;text-decoration:none;color:var(--ink);display:inline-flex;align-items:center;gap:10px;}
+  .logo-mark{width:28px;height:28px;border-radius:8px;display:block;flex-shrink:0;}
+  .nav-right{display:flex;align-items:center;gap:18px;}
+  .back{color:var(--muted);text-decoration:none;font-size:14px;}
+  .back:hover{color:var(--ink);}
+  .theme-toggle{width:40px;height:40px;border:1px solid var(--line);border-radius:50%;background:var(--card);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:border-color .2s,transform .3s;color:var(--ink);}
+  .theme-toggle:hover{border-color:var(--teal);transform:rotate(-18deg);}
+  .theme-toggle svg{width:17px;height:17px;}
+  .theme-toggle .ico-moon{display:none;}
+  html[data-theme="dark"] .theme-toggle .ico-sun{display:none;}
+  html[data-theme="dark"] .theme-toggle .ico-moon{display:block;}
+  .wrap{max-width:780px;margin:0 auto;padding:80px 40px;}
+  .kicker{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;}
+  h1{font-family:'Fraunces',serif;font-weight:500;font-size:clamp(38px,6vw,64px);letter-spacing:-2px;line-height:1.02;margin:16px 0 12px;}
+  .stand{color:var(--muted);font-size:14px;margin-bottom:48px;}
+  .block{margin-bottom:34px;}
+  .block h2{font-family:'Fraunces',serif;font-weight:500;font-size:22px;letter-spacing:-.5px;margin-bottom:12px;}
+  .block p{color:var(--muted);font-size:16px;line-height:1.8;margin-bottom:10px;}
+  .block a{color:var(--ink);}
+  .block ul{color:var(--muted);font-size:16px;line-height:1.8;margin:6px 0 10px 22px;}
+  .block li{margin-bottom:6px;}
+  footer{border-top:1px solid var(--line);padding:32px 40px;max-width:780px;margin:0 auto;display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px;align-items:center;}
+  footer .fnote{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);}
+  .flinks{display:flex;gap:20px;flex-wrap:wrap;}
+  .flinks a{color:var(--muted);text-decoration:none;font-size:13px;}
+  .flinks a:hover{color:var(--ink);}
+  @media(max-width:600px){nav{padding:16px 22px;}.wrap{padding:48px 22px;}footer{padding:24px 22px;}}
+</style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="logo"><img src="appicon_192.png" alt="LernStrom Logo" class="logo-mark">LernStrom</a>
+  <div class="nav-right">
+    <a href="index.html" class="back">← Startseite</a>
+    <button class="theme-toggle" onclick="tt()" aria-label="Hell/Dunkel"><svg class="ico-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M1.5 12h3M19.5 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg><svg class="ico-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a7 7 0 1 0 10.5 10.5z"/></svg></button>
+  </div>
+</nav>
+<div class="wrap">
+  <div class="kicker">Rechtliches</div>
+  <h1>AGB</h1>
+  <div class="stand">Allgemeine Geschäftsbedingungen · Stand: 18. Juni 2026</div>
+
+  <div class="block">
+    <h2>1. Geltungsbereich und Anbieter</h2>
+    <p>Diese Allgemeinen Geschäftsbedingungen (nachfolgend «AGB») regeln die Nutzung der Lernplattform LernStrom (Website lernstrom.ch, die Web-App unter lernstrom.ch/app sowie die LernStrom-App für mobile Geräte) und den Kauf der darüber angebotenen digitalen Lerninhalte.</p>
+    <p>Anbieter und Vertragspartner ist:<br>LernStrom Distefano, Inhaber Cataldo Distefano, Büelwiesstrasse 4, 9249 Algetshausen, Schweiz (Einzelunternehmen, eingetragen im Schweizer Handelsregister; nachfolgend «Anbieter»). Kontakt: <a href="mailto:info@lernstrom.ch">info@lernstrom.ch</a>.</p>
+    <p>Mit der Registrierung eines Kontos und/oder dem Kauf eines Zugangs erklärt sich die nutzende Person (nachfolgend «Nutzer») mit diesen AGB einverstanden. Abweichende Bedingungen des Nutzers werden nicht anerkannt.</p>
+  </div>
+
+  <div class="block">
+    <h2>2. Leistungsbeschreibung</h2>
+    <p>LernStrom stellt digitale Lerninhalte zur Prüfungs- und Lernvorbereitung für verschiedene Schweizer Berufe bereit – insbesondere Repetitions- und Übungsfragen im Quiz- und Karteikartenformat, inklusive Fortschrittsanzeige und Statistik.</p>
+    <p>Die Inhalte dienen ausschliesslich der eigenen Lern- und Prüfungsvorbereitung. Es handelt sich um eigenständig erstellte Übungs- und Repetitionsfragen und ausdrücklich <strong>nicht</strong> um offizielle Prüfungsinhalte, amtliche Prüfungsunterlagen oder von einer Prüfungsbehörde herausgegebene Inhalte.</p>
+    <p>Sämtliche Fragen und Antworten sind <strong>eigenständig formulierte Repetitions- und Übungsfragen</strong>, die – teilweise unter Einsatz von KI-Werkzeugen – selbst erstellt und redaktionell geprüft wurden. Sie orientieren sich thematisch an den Lernzielen der jeweiligen Ausbildung, sind aber <strong>keine Kopien</strong> offizieller Prüfungsaufgaben und stehen in keiner Verbindung zu Prüfungsbehörden, Berufsverbänden oder Lehrmittelverlagen. Ein Anspruch auf Vollständigkeit, fachliche Richtigkeit oder Prüfungserfolg besteht nicht.</p>
+    <p>Der Anbieter übernimmt keine Gewähr für die Richtigkeit, Vollständigkeit oder Aktualität der Inhalte und gibt keinerlei Zusicherung ab, dass mit der Nutzung ein bestimmter Lernerfolg, das Bestehen einer Prüfung oder eines Qualifikationsverfahrens erreicht wird.</p>
+    <p><strong>Dossier (optionale Zusatzfunktion):</strong> Das Dossier ist ein persönlicher, privater Lernordner, in dem der Nutzer eigene Fotos, PDFs, Notizen, Lerndokus, Checklisten und Karteikarten ablegen kann; teilweise mit KI-Unterstützung (z. B. Texterkennung/„Text auslesen", Erstellen von Checklisten/Karteikarten). Das Dossier ist je nach Beruf kostenpflichtig (Abo) oder im gekauften ÜK-/QV-Zugang enthalten. Die abgelegten Inhalte sind privat und werden vom Anbieter inhaltlich nicht eingesehen; für die Nutzungsstatistik ist lediglich die aggregierte Speichergrösse sichtbar (Details siehe Datenschutzerklärung). KI-Ergebnisse können Fehler enthalten und ersetzen keine Fachperson oder amtlichen Unterlagen.</p>
+    <p><strong>KI-Lernassistenten:</strong> LernStrom stellt KI-gestützte Lernassistenten bereit (üK-Lernhelfer „Theo", Lern-Coach „Carter", KI-Nachhilfe). Ihre Antworten werden automatisch erzeugt, können fehlerhaft oder unvollständig sein und stellen keine fachliche, rechtliche oder amtliche Auskunft dar; sie ersetzen weder eine Fachperson noch offizielle Lehrmittel. Der üK-Lernhelfer ist im Kauf eines üK-Lehrjahrs bzw. des QV enthalten. Zur Verarbeitung der Eingaben siehe Datenschutzerklärung.</p>
+  </div>
+
+  <div class="block">
+    <h2>3. Konto und Registrierung</h2>
+    <p>Für die Nutzung ist ein Benutzerkonto (E-Mail-Adresse und Passwort) erforderlich. Der Nutzer ist verpflichtet, wahrheitsgemässe Angaben zu machen und seine Zugangsdaten geheim zu halten. Das Konto ist persönlich und darf nicht an Dritte weitergegeben werden.</p>
+    <p>Der Nutzer ist für sämtliche Aktivitäten über sein Konto verantwortlich. Bei Verdacht auf Missbrauch ist der Anbieter unverzüglich zu informieren.</p>
+    <p>Minderjährige dürfen die kostenpflichtigen Angebote nur mit Zustimmung ihrer gesetzlichen Vertretung nutzen. Mit dem Kauf bestätigt der Nutzer, dass diese Zustimmung vorliegt.</p>
+  </div>
+
+  <div class="block">
+    <h2>4. Preise und Zahlung</h2>
+    <p>Alle Preise sind Endpreise in Schweizer Franken (CHF). Eine allfällige Mehrwertsteuer ist im Preis enthalten.</p>
+    <p>Die Zahlung erfolgt über den Zahlungsdienstleister Stripe (z. B. Kreditkarte, TWINT, Google Pay). Mit dem Kauf akzeptiert der Nutzer die jeweiligen Bedingungen des Zahlungsdienstleisters. Der Kaufpreis ist sofort zur Zahlung fällig.</p>
+    <p>Der Anbieter erhält und speichert keine vollständigen Zahlungs- oder Kreditkartendaten; diese werden ausschliesslich durch den Zahlungsdienstleister verarbeitet.</p>
+    <p><strong>Abonnemente (z. B. Dossier-Abo):</strong> Bestimmte Funktionen werden als monatliches Abonnement angeboten. Das Abo verlängert sich automatisch um jeweils einen weiteren Monat, solange es nicht gekündigt wird, und wird zu Beginn jeder Periode automatisch belastet. Der Nutzer kann das Abo jederzeit auf das Ende der laufenden, bereits bezahlten Periode kündigen; bereits bezahlte Perioden werden nicht zurückerstattet. Bleibt eine fällige Zahlung aus (z. B. abgelaufene Karte), kann der Zugang zur Abo-Funktion nach erfolglosen Zahlungsversuchen gesperrt werden, bis die Zahlung wieder erfolgt. Eine erneute Zahlung schaltet den Zugang automatisch wieder frei.</p>
+  </div>
+
+  <div class="block">
+    <h2>5. Vertragsschluss und Freischaltung</h2>
+    <p>Der Vertrag über einen kostenpflichtigen Zugang kommt mit erfolgreicher Bezahlung zustande. Die Freischaltung erfolgt als digitale Bereitstellung unmittelbar nach Zahlungseingang.</p>
+    <p>Damit der Zugang dem richtigen Konto zugeordnet werden kann, ist beim Bezahlen dieselbe E-Mail-Adresse zu verwenden wie für das LernStrom-Konto. Für Verzögerungen oder Fehlzuordnungen aufgrund falscher oder abweichender Angaben des Nutzers haftet der Anbieter nicht.</p>
+  </div>
+
+  <div class="block">
+    <h2>6. Kein Widerrufsrecht / Erstattungen</h2>
+    <p>Es handelt sich um digitale Inhalte, die sofort nach dem Kauf bereitgestellt werden. Nach schweizerischem Recht besteht kein gesetzliches Widerrufs-, Rückgabe- oder Umtauschrecht.</p>
+    <p>Mit dem Kauf stimmt der Nutzer der sofortigen Bereitstellung ausdrücklich zu und nimmt zur Kenntnis, dass der Kauf damit verbindlich ist. Bereits freigeschaltete Zugänge sind grundsätzlich von einer Rückerstattung ausgeschlossen.</p>
+    <p>Bei technischen Problemen, die der Anbieter zu verantworten hat und nicht innert angemessener Frist behebt, wird eine einvernehmliche Lösung (z. B. Behebung oder Erstattung) angestrebt. Im Übrigen erfolgen Rückerstattungen nur aus Kulanz und ohne Rechtsanspruch.</p>
+  </div>
+
+  <div class="block">
+    <h2>7. Nutzungsrechte</h2>
+    <p>Mit dem Kauf erhält der Nutzer ein einfaches, nicht übertragbares, nicht unterlizenzierbares und zeitlich auf die Verfügbarkeit des Dienstes beschränktes Recht, die freigeschalteten Inhalte ausschliesslich zu eigenen, nicht-kommerziellen Lernzwecken zu nutzen.</p>
+    <p>Sämtliche Inhalte (Fragen, Texte, Grafiken, Software, Aufbau und Gestaltung) sind urheberrechtlich geschützt und verbleiben im Eigentum des Anbieters bzw. der jeweiligen Rechteinhaber. Untersagt sind insbesondere:</p>
+    <ul>
+      <li>das Vervielfältigen, Speichern, Exportieren oder öffentliche Zugänglichmachen der Inhalte ausserhalb der bestimmungsgemässen Nutzung;</li>
+      <li>die Weitergabe, der Weiterverkauf oder das Teilen von Inhalten, Zugängen oder Zugangsdaten mit Dritten;</li>
+      <li>das automatisierte Auslesen (Scraping), Kopieren oder systematische Abspeichern von Inhalten;</li>
+      <li>jede kommerzielle Verwertung ohne vorherige schriftliche Zustimmung des Anbieters.</li>
+    </ul>
+    <p><strong>Marke, Name und Eigentum:</strong> Die Plattform LernStrom als Ganzes – einschliesslich des Namens und der Marke «LernStrom», des Logos, des Quellcodes, der Software, der Datenbanken, des Aufbaus, des Designs sowie sämtlicher Texte und Grafiken – ist geistiges Eigentum des Anbieters (Einzelunternehmen «LernStrom Distefano», eingetragen im Schweizer Handelsregister) und ist urheber-, marken- und wettbewerbsrechtlich geschützt. Sämtliche Rechte sind vorbehalten.</p>
+    <p>Über die in diesen AGB ausdrücklich eingeräumten Nutzungsrechte hinaus ist jede Verwendung nur mit vorheriger schriftlicher Zustimmung des Anbieters zulässig. Untersagt sind insbesondere das Kopieren, Nachahmen, Nachbauen, Vervielfältigen oder Verbreiten der Plattform, ihres Konzepts, ihres Erscheinungsbilds («Look &amp; Feel») oder einzelner Teile davon, das Reverse Engineering, Dekompilieren oder Disassemblieren der Software sowie die Verwendung des Namens «LernStrom», der Marke, des Logos oder verwechselbar ähnlicher Zeichen für eigene Angebote. Verstösse können zivil- und strafrechtlich verfolgt werden.</p>
+  </div>
+
+  <div class="block">
+    <h2>8. Pflichten des Nutzers</h2>
+    <p>Der Nutzer verpflichtet sich, den Dienst nicht missbräuchlich zu nutzen, keine Sicherheitsvorkehrungen zu umgehen, keine Schadsoftware einzusetzen und den Betrieb nicht zu beeinträchtigen. Pro Person ist nur ein Konto zulässig.</p>
+    <p><strong>Eigene Inhalte im Dossier:</strong> Für sämtliche Inhalte, die der Nutzer ins Dossier hochlädt oder dort erstellt, ist er selbst verantwortlich. Er sichert zu, über die erforderlichen Rechte zu verfügen und keine rechtswidrigen, urheberrechtsverletzenden oder beleidigenden Inhalte abzulegen. Das Dossier dient ausschliesslich der eigenen Lernvorbereitung.</p>
+    <p><strong>KI-Profilbild:</strong> Beim Erstellen eines KI-Profilbilds dürfen nur Stichworte und – falls verwendet – Fotos eingesetzt werden, an denen der Nutzer die nötigen Rechte hat (insbesondere nur eigene Fotos, keine Bilder fremder Personen ohne deren Einwilligung). Untersagt sind Eingaben oder Ergebnisse mit religiösen, politischen oder extremistischen Symbolen, Hassinhalten, sexuellen, gewaltverherrlichenden oder sonst rechtswidrigen Darstellungen. Der Anbieter setzt hierzu Filter ein und kann Profilbilder, die dagegen verstossen, ohne Vorankündigung entfernen.</p>
+    <p>Bei Verstössen gegen diese AGB ist der Anbieter berechtigt, den Zugang vorübergehend oder dauerhaft zu sperren und das Konto zu löschen. In schwerwiegenden Fällen entfällt ein Anspruch auf Rückerstattung bereits bezahlter Zugänge.</p>
+  </div>
+
+  <div class="block">
+    <h2>9. Verfügbarkeit und Änderungen</h2>
+    <p>Der Anbieter bemüht sich um eine möglichst unterbrechungsfreie Verfügbarkeit, schuldet jedoch keine bestimmte Verfügbarkeit. Wartungsarbeiten, technische Störungen oder Umstände ausserhalb des Einflussbereichs des Anbieters (z. B. Ausfälle von Dritt-Diensten) können zu vorübergehenden Einschränkungen führen.</p>
+    <p>Der Anbieter ist berechtigt, Inhalte, Funktionen und das Angebot jederzeit anzupassen, zu erweitern, einzuschränken oder einzustellen, soweit dies dem Nutzer zumutbar ist.</p>
+  </div>
+
+  <div class="block">
+    <h2>10. Haftung</h2>
+    <p>Der Anbieter haftet für Schäden nur bei Vorsatz oder grober Fahrlässigkeit. Die Haftung für leichte Fahrlässigkeit ist – soweit gesetzlich zulässig – ausgeschlossen.</p>
+    <p>Ausgeschlossen ist – soweit gesetzlich zulässig – insbesondere die Haftung für indirekte Schäden, Folgeschäden, entgangenen Gewinn, Datenverluste sowie für Schäden, die aus der Nutzung oder Nichtverfügbarkeit der Inhalte, aus fehlendem Prüfungserfolg oder aus der Verwendung der Inhalte entstehen.</p>
+    <p>Eine zwingende gesetzliche Haftung (z. B. für Personenschäden) bleibt vorbehalten. Für Inhalte verlinkter Websites Dritter wird keine Haftung übernommen.</p>
+    <p>Ausdrücklich ausgeschlossen ist – soweit gesetzlich zulässig – jede Haftung für Schäden, Datenverluste, entgangene Inhalte oder Nutzungsausfälle, die durch technische Störungen, Programmfehler, Abstürze, die vorübergehende oder dauerhafte Einstellung des Dienstes, Wartungsarbeiten, höhere Gewalt oder durch Angriffe Dritter (insbesondere Hacking, unbefugten Zugriff, Schadsoftware, Datendiebstahl oder Manipulation) entstehen. Der Anbieter schuldet keine bestimmte Sicherheit, Verfügbarkeit oder Wiederherstellung von Daten und Inhalten.</p>
+    <p>In den vorgenannten Fällen besteht – soweit gesetzlich zulässig – kein Anspruch auf Erstattung, Auszahlung, Gutschrift, Schadenersatz oder sonstige Entschädigung; bereits gezahlte Beträge werden nicht zurückerstattet. Der Nutzer ist selbst für die Sicherung eigener Inhalte (z. B. Dossier-Daten) verantwortlich.</p>
+  </div>
+
+  <div class="block">
+    <h2>11. Datenschutz</h2>
+    <p>Die Bearbeitung von Personendaten richtet sich nach der <a href="datenschutz.html">Datenschutzerklärung</a>, die integraler Bestandteil dieser AGB ist.</p>
+  </div>
+
+  <div class="block">
+    <h2>12. Kündigung und Kontolöschung</h2>
+    <p>Der Nutzer kann sein Konto jederzeit löschen (siehe <a href="konto-loeschen.html">Konto löschen</a> oder per Nachricht an <a href="mailto:info@lernstrom.ch">info@lernstrom.ch</a>). Mit der Löschung des Kontos können bereits gekaufte Zugänge sowie der Lernfortschritt unwiederbringlich verloren gehen; ein Anspruch auf Erstattung besteht dadurch nicht.</p>
+  </div>
+
+  <div class="block">
+    <h2>13. Änderungen der AGB</h2>
+    <p>Der Anbieter kann diese AGB jederzeit anpassen. Massgebend ist die zum Zeitpunkt des jeweiligen Kaufs bzw. der jeweiligen Nutzung veröffentlichte Fassung. Die jeweils aktuelle Fassung ist auf lernstrom.ch abrufbar.</p>
+  </div>
+
+  <div class="block">
+    <h2>14. Salvatorische Klausel</h2>
+    <p>Sollten einzelne Bestimmungen dieser AGB unwirksam oder undurchführbar sein oder werden, bleibt die Wirksamkeit der übrigen Bestimmungen unberührt. An die Stelle der unwirksamen Bestimmung tritt eine Regelung, die dem wirtschaftlichen Zweck am nächsten kommt.</p>
+  </div>
+
+  <div class="block">
+    <h2>15. Anwendbares Recht und Gerichtsstand</h2>
+    <p>Es gilt ausschliesslich schweizerisches Recht unter Ausschluss kollisionsrechtlicher Bestimmungen und des UN-Kaufrechts. Gerichtsstand ist – soweit gesetzlich zulässig – der Sitz des Anbieters. Zwingende Gerichtsstände, insbesondere zugunsten von Konsumentinnen und Konsumenten, bleiben vorbehalten.</p>
+  </div>
+</div>
+<footer>
+  <div class="fnote">© 2026 LernStrom</div>
+  <div class="flinks"><a href="impressum.html">Impressum</a><a href="agb.html">AGB</a><a href="datenschutz.html">Datenschutz</a><a href="konto-loeschen.html">Konto löschen</a></div>
+</footer>
+<script>function tt(){var h=document.documentElement;var n=h.getAttribute('data-theme')==='dark'?'light':'dark';h.setAttribute('data-theme',n);try{localStorage.setItem('ls-theme',n);}catch(e){}}</script>
+</body>
+</html>

@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>StromLab — PSA / Störlichtbogen DC (Batterie)</title>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;min-height:100vh;background:radial-gradient(130% 100% at 50% 0%,#15222e 0%,#0b1017 70%);
+    color:#e8edf2;font-family:'Segoe UI',system-ui,sans-serif;padding:18px 14px 40px}
+  .wrap{max-width:620px;margin:0 auto}
+  .backlink{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:#8aa0b2;
+    text-decoration:none;margin-bottom:10px;padding:5px 11px;border-radius:20px;
+    border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);transition:.15s}
+  .backlink:hover{color:#7af0d9;border-color:rgba(45,212,191,.35);background:rgba(45,212,191,.08)}
+  .backlink svg{width:13px;height:13px;display:block}
+  header h1{font-size:24px;font-weight:900;margin:0;letter-spacing:.3px}
+  header h1 .lab{color:#7af0d9}
+  header .sub{font-size:12.5px;color:#8da0b2;font-weight:600;margin-top:3px}
+  header .tag{display:inline-block;margin-top:8px;font-size:10.5px;font-weight:800;letter-spacing:.5px;
+    text-transform:uppercase;color:#7af0d9;background:rgba(45,212,191,.12);border:1px solid rgba(45,212,191,.3);
+    padding:4px 10px;border-radius:20px}
+  .card{background:linear-gradient(180deg,#172230,#101824);border:1px solid rgba(255,255,255,.07);
+    border-radius:18px;padding:16px;margin-top:14px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+  .results{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .result{display:flex;align-items:center;gap:16px;background:linear-gradient(180deg,#10302a,#0e1c1a);
+    border:1px solid rgba(45,212,191,.35);box-shadow:0 0 30px rgba(45,212,191,.12);
+    border-radius:18px;padding:16px}
+  .result .big{font-size:38px;font-weight:900;color:#7af0d9;line-height:1;font-variant-numeric:tabular-nums}
+  .result .unit{font-size:16px;color:#9fe9da;font-weight:800}
+  .result .lbl{font-size:11px;color:#9fb0c0;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+  .result .calc{font-size:11px;color:#8da0b2;margin-top:5px;font-weight:600}
+  .grp{margin-top:16px}
+  .grp .h{font-size:11px;font-weight:800;color:#8da0b2;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;display:flex;justify-content:space-between}
+  .grp .h .v{color:#7af0d9}
+  input[type=number]{background:#0e1722;border:1px solid rgba(255,255,255,.12);color:#e8edf2;
+    border-radius:9px;padding:7px 8px;font-size:13px;font-weight:700;width:100%;font-family:inherit}
+  input[type=number]:focus{outline:none;border-color:#2dd4bf}
+  .seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .fld{margin-top:8px}
+  .fld label{display:block;font-size:10.5px;font-weight:800;color:#8da0b2;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
+  .stufe{display:inline-block;padding:4px 11px;border-radius:9px;font-weight:900;font-size:13px;margin-top:4px}
+  .s0{background:rgba(120,140,160,.2);color:#9fb0c0}
+  .s1{background:rgba(250,204,21,.18);color:#fde047;border:1px solid rgba(250,204,21,.4)}
+  .s2{background:rgba(249,115,22,.2);color:#fdba74;border:1px solid rgba(249,115,22,.45)}
+  .s3{background:rgba(239,68,68,.22);color:#fca5a5;border:1px solid rgba(239,68,68,.5)}
+  table{width:100%;border-collapse:collapse;margin-top:6px;font-size:12px}
+  th,td{padding:7px 4px;text-align:center;border-bottom:1px solid rgba(255,255,255,.05)}
+  th{color:#8da0b2;font-size:10.5px;font-weight:800;text-transform:uppercase}
+  td.mm{color:#cdd8e2;font-weight:800;text-align:left;padding-left:8px}
+  td.val{color:#9fb0c0;font-variant-numeric:tabular-nums}
+  .bar{height:10px;border-radius:6px;background:#0e1722;overflow:hidden;margin-top:8px;border:1px solid rgba(255,255,255,.08)}
+  .bar>span{display:block;height:100%;background:linear-gradient(90deg,#facc15,#f97316,#ef4444)}
+  .note{font-size:11px;color:#6f8093;margin-top:12px;line-height:1.5}
+  .note b{color:#9fb0c0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="backlink" href="index.htm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>StromLab</a>
+  <header>
+    <h1><span class="lab">StromLab</span> · PSA DC</h1>
+    <div class="sub">Störlichtbogen-Energie E<sub>LB</sub> an Batterie &amp; Inverter — DC-Schutzkleidung</div>
+    <div class="tag">DGUV 203-077 · APC-Klassen · DC / Batterie</div>
+  </header>
+
+  <div class="results">
+    <div class="result">
+      <div>
+        <div class="lbl">E<sub>LB</sub> Batterie</div>
+        <div><span class="big" id="rBat">–</span> <span class="unit">kJ</span></div>
+        <div class="calc" id="cBat"></div>
+      </div>
+    </div>
+    <div class="result">
+      <div>
+        <div class="lbl">E<sub>LB</sub> Inverter</div>
+        <div><span class="big" id="rInv">–</span> <span class="unit">kJ</span></div>
+        <div class="calc" id="cInv"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="grp"><div class="h"><span>Erforderliche DC-Schutzkleidung</span><span class="v" id="stTop"></span></div></div>
+    <div id="stBat"></div>
+    <div id="stInv" style="margin-top:6px"></div>
+    <div class="bar"><span id="bar"></span></div>
+  </div>
+
+  <div class="card">
+    <div class="grp"><div class="h"><span>Batterie</span><span class="v" id="batV"></span></div></div>
+    <div class="seg">
+      <div class="fld"><label>U [V]</label><input type="number" id="bU" value="400" step="10"></div>
+      <div class="fld"><label>C<sub>N</sub> [kWh]</label><input type="number" id="bCN" value="85" step="5"></div>
+      <div class="fld"><label>R<sub>in</sub> [mΩ]</label><input type="number" id="bRin" value="42.1" step="1"></div>
+      <div class="fld"><label>Sicherungszeit t<sub>k</sub> [s]</label><input type="number" id="bTk" value="0.20" step="0.05"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="grp"><div class="h"><span>Kabel Batterie → Inverter</span><span class="v" id="kabV"></span></div></div>
+    <div class="seg">
+      <div class="fld"><label>l [m]</label><input type="number" id="kL" value="1.5" step="0.5"></div>
+      <div class="fld"><label>S [mm²]</label><input type="number" id="kS" value="300" step="10"></div>
+    </div>
+    <div class="fld"><label>R<sub>kab</sub> [µΩ] (0 = aus l/S berechnen)</label><input type="number" id="kR" value="90" step="5"></div>
+  </div>
+
+  <div class="card">
+    <div class="grp"><div class="h"><span>Detail / Zwischenwerte</span><span class="v">DC-Kurzschluss</span></div></div>
+    <table id="detTbl"></table>
+    <div class="note" id="footnote"></div>
+  </div>
+</div>
+
+<script>
+/* ===== StromLab PSA DC — Störlichtbogen Batterie/DC =====
+   DGUV-I 203-077: DC-Lichtbogen, Energiefreisetzung E_LB = U_arc * I_arc * t_k.
+   I_arc (DC-Kurzschluss) = U / R_ges.  R_ges = R_in (Batterie) [+ R_kab am Inverter].
+   U_arc ~ Anteil der Quellspannung am Lichtbogen (Maximalleistung bei U_arc=U/2).
+   Stufe (APC-Klassen) aus E_LB [kJ]: Skala 100/200/300 kJ aus Datensatz. */
+
+const RHO = 0.01851;  // Cu Ohm*mm2/m
+
+const $=id=>document.getElementById(id);
+
+function classFromE(E_kJ){
+  if(E_kJ < 50)  return {n:0,lbl:'keine DC-PSA',cls:'s0'};
+  if(E_kJ < 100) return {n:1,lbl:'APC 1 · DGUV 203-077 Kl.1',cls:'s1'};
+  if(E_kJ < 200) return {n:2,lbl:'APC 2 · DGUV 203-077 Kl.2',cls:'s2'};
+  return {n:3,lbl:'APC 3 · DGUV 203-077 Kl.3',cls:'s3'};
+}
+
+function compute(){
+  const U=+$('bU').value, Rin=+$('bRin').value/1000, tk=+$('bTk').value;   // Rin Ohm
+  let Rkab=+$('kR').value/1e6;                                              // uOhm -> Ohm
+  const l=+$('kL').value, S=+$('kS').value;
+  if(Rkab<=0 && S>0){ Rkab = RHO*l/S * 2; }                                // Hin+Rück (einadrig)
+
+  // --- Batterieseite (Lichtbogen direkt an der Batterie, nur Rin) ---
+  const Ik_bat = U / Rin;                  // A (DC-Kurzschluss)
+  // --- Inverterseite (zusätzlich Kabel) ---
+  const Ik_inv = U / (Rin + Rkab);         // A
+
+  // Lichtbogenleistung max bei U_arc = U/2  ->  P = (U/2)*I   (I beim Bogen-Arbeitspunkt ~ I_k/2)
+  // praxisnah: P_arc = U^2 / (4 * R) ; E = P_arc * tk
+  const P_bat = (U*U)/(4*Rin);
+  const P_inv = (U*U)/(4*(Rin+Rkab));
+  const E_bat = P_bat * tk / 1000;         // kJ
+  const E_inv = P_inv * tk / 1000;         // kJ
+
+  return {U,Rin,Rkab,tk,l,S,Ik_bat,Ik_inv,P_bat,P_inv,E_bat,E_inv};
+}
+
+let animRaf={};
+function animTo(node,to,key){
+  cancelAnimationFrame(animRaf[key]);const from=parseFloat(node.textContent)||0;const t0=performance.now();
+  (function a(t){const k=Math.min(1,(t-t0)/450);const v=from+(to-from)*(1-Math.pow(1-k,3));
+    node.textContent=Math.round(v);if(k<1)animRaf[key]=requestAnimationFrame(a);else node.textContent=Math.round(to);})(performance.now());
+}
+
+function setStufe(divId,prefix,c){
+  $(divId).innerHTML=prefix+' <span class="stufe '+c.cls+'">'+c.lbl+'</span>';
+}
+
+function render(){
+  const r=compute();
+  const cBat=classFromE(r.E_bat), cInv=classFromE(r.E_inv);
+  animTo($('rBat'),r.E_bat,'b'); animTo($('rInv'),r.E_inv,'i');
+  $('cBat').innerHTML='I<sub>k</sub> '+(r.Ik_bat/1000).toFixed(1)+' kA · t<sub>k</sub> '+r.tk+' s';
+  $('cInv').innerHTML='I<sub>k</sub> '+(r.Ik_inv/1000).toFixed(1)+' kA · +Kabel';
+  setStufe('stBat','Batterie:',cBat);
+  setStufe('stInv','Inverter:',cInv);
+  const maxC = cBat.n>=cInv.n?cBat:cInv;
+  $('stTop').textContent='max '+maxC.lbl.split(' ·')[0];
+  const maxE=Math.max(r.E_bat,r.E_inv);
+  $('bar').style.width=Math.min(100,(maxE/300)*100).toFixed(0)+'%';
+  $('batV').textContent=r.U+' V · '+(+$('bCN').value)+' kWh';
+  $('kabV').textContent=r.l+' m · '+r.S+' mm²';
+
+  const t=$('detTbl'); t.innerHTML='';
+  const hr=document.createElement('tr');
+  ['Größe','Batterie','Inverter'].forEach(h=>{const th=document.createElement('th');th.innerHTML=h;hr.appendChild(th);});
+  t.appendChild(hr);
+  const addRow=(name,a,b)=>{const tr=document.createElement('tr');
+    const c0=document.createElement('td');c0.className='mm';c0.innerHTML=name;
+    const c1=document.createElement('td');c1.className='val';c1.textContent=a;
+    const c2=document.createElement('td');c2.className='val';c2.textContent=b;
+    tr.append(c0,c1,c2);t.appendChild(tr);};
+  addRow('R<sub>ges</sub> [mΩ]',(r.Rin*1000).toFixed(1),((r.Rin+r.Rkab)*1000).toFixed(2));
+  addRow('I<sub>k</sub> (DC) [kA]',(r.Ik_bat/1000).toFixed(2),(r.Ik_inv/1000).toFixed(2));
+  addRow('P<sub>LB</sub> [kW]',(r.P_bat/1000).toFixed(0),(r.P_inv/1000).toFixed(0));
+  addRow('E<sub>LB</sub> [kJ]',r.E_bat.toFixed(0),r.E_inv.toFixed(0));
+
+  $('footnote').innerHTML=
+    '<b>Modell (DGUV-I 203-077):</b> DC-Kurzschluss I<sub>k</sub> = U / R<sub>ges</sub>; '+
+    'R<sub>ges</sub> = R<sub>in</sub> (Batterie) bzw. R<sub>in</sub>+R<sub>kab</sub> (Inverter). '+
+    'Lichtbogenleistung max. bei U<sub>Bogen</sub>=U/2 → P<sub>LB</sub>=U²/(4·R), '+
+    'Energie E<sub>LB</sub> = P<sub>LB</sub>·t<sub>k</sub> (Sicherungszeit). '+
+    'R<sub>kab</sub> aus l/S (Cu, hin+rück) wenn Eingabe 0. '+
+    'APC-Klassen aus E<sub>LB</sub>: &lt;50 kJ keine · 50–100 APC1 · 100–200 APC2 · ≥200 kJ APC3.';
+}
+
+['bU','bCN','bRin','bTk','kL','kS','kR'].forEach(id=>$(id).addEventListener('input',render));
+render();
+</script>
+</body>
+</html>

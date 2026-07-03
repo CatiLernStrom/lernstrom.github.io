@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>LernStrom — Baustromverteiler verkabeln</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    background:radial-gradient(circle at 50% 30%, #1a2230 0%, #0c1018 70%, #06080d 100%);
+    font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:#e8edf2;
+    display:flex;align-items:center;justify-content:center;
+    overflow:hidden;
+    user-select:none;-webkit-user-select:none;
+    touch-action:none;
+  }
+  /* phone stage */
+  #stage{
+    position:relative;
+    width:390px;height:844px;
+    max-height:100vh;
+    border-radius:34px;
+    overflow:hidden;
+    box-shadow:0 30px 90px rgba(0,0,0,.7), 0 0 0 10px #0a0d13, 0 0 0 12px #1c232e, inset 0 0 60px rgba(0,0,0,.4);
+    background:
+      radial-gradient(120% 60% at 50% -10%, rgba(45,212,191,.10), transparent 60%),
+      linear-gradient(180deg,#26303d 0%, #1a212c 35%, #141a23 100%);
+  }
+  @media (max-height:860px){ #stage{transform:scale(calc(100vh / 860));} }
+
+  /* warm workshop floor / vignette */
+  #stage::after{
+    content:"";position:absolute;inset:0;border-radius:34px;pointer-events:none;
+    box-shadow:inset 0 0 120px rgba(0,0,0,.55), inset 0 -40px 80px rgba(0,0,0,.5);
+    background:radial-gradient(140% 90% at 50% 120%, rgba(120,80,30,.18), transparent 55%);
+    z-index:60;
+  }
+
+  canvas#fx{position:absolute;inset:0;z-index:40;pointer-events:none;}
+
+  /* ---------- HUD ---------- */
+  #hud{position:absolute;top:0;left:0;right:0;z-index:50;padding:14px 16px 8px;display:flex;align-items:center;gap:10px;}
+  .badge{
+    display:flex;align-items:center;gap:7px;
+    background:linear-gradient(180deg,#202a37,#161d27);
+    border:1px solid rgba(255,255,255,.07);
+    border-radius:14px;padding:7px 11px;font-size:13px;font-weight:700;
+    box-shadow:0 4px 10px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.05);
+  }
+  .badge .dot{width:9px;height:9px;border-radius:50%;background:#2dd4bf;box-shadow:0 0 8px #2dd4bf;}
+  #xpBadge{color:#ffd166;}
+  #xpBadge .ico{filter:drop-shadow(0 0 5px rgba(255,209,102,.6));}
+  .spacer{flex:1;}
+  #mute{
+    width:38px;height:38px;border-radius:12px;cursor:pointer;
+    background:linear-gradient(180deg,#202a37,#161d27);
+    border:1px solid rgba(255,255,255,.07);
+    display:flex;align-items:center;justify-content:center;font-size:17px;
+    box-shadow:0 4px 10px rgba(0,0,0,.4);
+  }
+  #mute:active{transform:scale(.92);}
+
+  /* progress bar of seated wires */
+  #prog{position:absolute;top:58px;left:16px;right:16px;z-index:50;height:8px;border-radius:6px;
+    background:rgba(0,0,0,.4);overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,.6);}
+  #progFill{height:100%;width:0%;border-radius:6px;
+    background:linear-gradient(90deg,#2dd4bf,#7af0d9);transition:width .5s cubic-bezier(.2,1.3,.4,1);
+    box-shadow:0 0 12px rgba(45,212,191,.7);}
+
+  /* ---------- title / instruction ---------- */
+  #task{position:absolute;top:74px;left:0;right:0;z-index:50;text-align:center;pointer-events:none;transition:opacity .6s, transform .6s;}
+  #task.faded{opacity:0;transform:translateY(-8px);pointer-events:none;}
+  #task.hidden{opacity:0!important;transform:translateY(-8px);pointer-events:none!important;}
+  #task h1{font-size:15px;font-weight:800;letter-spacing:.3px;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.6);}
+  #task p{font-size:12px;margin-top:3px;color:#9fb0c0;font-weight:600;}
+  /* kompakter Toggle "Aufgabe ein/aus" — verdeckt die Spielflaeche nicht */
+  #taskToggle{position:absolute;top:96px;right:12px;z-index:58;cursor:pointer;
+    font-size:10px;font-weight:800;color:#9fb0c0;background:rgba(10,14,20,.55);
+    border:1px solid rgba(255,255,255,.08);border-radius:11px;padding:4px 9px;
+    -webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);user-select:none;-webkit-user-select:none;}
+  #taskToggle:active{transform:scale(.94);}
+  #task .fuse{display:inline-block;margin-top:6px;background:linear-gradient(180deg,#2a3645,#1a222e);
+    border:1px solid rgba(45,212,191,.35);border-radius:20px;padding:4px 12px;font-size:11px;color:#7af0d9;font-weight:800;
+    box-shadow:0 0 14px rgba(45,212,191,.25);}
+
+  /* ====================================================== */
+  /*  PHASE 1 : QUERSCHNITT WÄHLEN                            */
+  /* ====================================================== */
+  #phaseCross{position:absolute;inset:0;z-index:30;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:30px;padding:150px 0 90px;}
+  #crossRow{display:flex;gap:2px;align-items:flex-end;justify-content:center;flex-wrap:nowrap;width:360px;}
+  .cross{
+    position:relative;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;
+    transition:transform .25s cubic-bezier(.2,1.5,.4,1);
+    width:58px;padding-top:14px;
+  }
+  .cross:hover,.cross.hov{transform:translateY(-10px) scale(1.12);z-index:5;}
+  .cross .disc{
+    width:46px;height:46px;border-radius:50%;
+    background:
+      radial-gradient(circle at 35% 30%, #ffe7b0, #e9a23b 38%, #b5701b 70%, #6e3f0c 100%);
+    box-shadow:0 6px 14px rgba(0,0,0,.55), inset 0 2px 4px rgba(255,255,255,.5), inset 0 -6px 10px rgba(0,0,0,.4);
+    display:flex;align-items:center;justify-content:center;position:relative;
+    border:2px solid #2a3340;
+  }
+  .cross .disc::after{content:"";position:absolute;border-radius:50%;
+    background:radial-gradient(circle at 38% 32%, #fff4dc, #d98b2a 60%, #7c4a14 100%);
+    box-shadow:inset 0 2px 3px rgba(255,255,255,.6), inset 0 -3px 6px rgba(0,0,0,.45);}
+  .cross .lbl{font-size:11px;font-weight:800;color:#cdd8e2;background:rgba(0,0,0,.3);padding:2px 7px;border-radius:9px;}
+  .cross .amp{font-size:9px;font-weight:700;color:#7e8ea0;}
+  .cross.wrong{animation:crossShake .4s;}
+  .cross.right .disc{box-shadow:0 0 0 3px #2dd4bf, 0 0 22px rgba(45,212,191,.8), inset 0 2px 4px rgba(255,255,255,.5);}
+  @keyframes crossShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px) rotate(-4deg)}40%{transform:translateX(7px) rotate(4deg)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+  #crossHint{margin:0;font-size:12px;color:#9fb0c0;font-weight:600;text-align:center;max-width:300px;line-height:1.5;}
+  #crossHint b{color:#7af0d9;}
+  /* dekorative Sicherungs-Vorschau im oberen Drittel (Phase 1) */
+  #crossPreview{width:200px;display:flex;flex-direction:column;align-items:center;gap:10px;
+    pointer-events:none;filter:drop-shadow(0 14px 28px rgba(0,0,0,.55));}
+  #crossPreview .fuseBody{width:120px;height:130px;border-radius:14px;position:relative;
+    background:linear-gradient(180deg,#e9eef3 0%,#cdd6df 50%,#aeb9c4 100%);
+    border:2px solid #8b97a3;box-shadow:inset 0 2px 4px rgba(255,255,255,.8),inset 0 -8px 14px rgba(0,0,0,.18);}
+  #crossPreview .fuseBody::before{content:"";position:absolute;left:50%;top:-9px;transform:translateX(-50%);
+    width:18px;height:20px;border-radius:3px;background:linear-gradient(180deg,#5a6573,#39424d);box-shadow:0 2px 3px rgba(0,0,0,.4);}
+  #crossPreview .fuseBody::after{content:"";position:absolute;left:50%;bottom:-9px;transform:translateX(-50%);
+    width:18px;height:20px;border-radius:3px;background:linear-gradient(180deg,#5a6573,#39424d);box-shadow:0 2px 3px rgba(0,0,0,.4);}
+  #crossPreview .lever{position:absolute;left:50%;top:16px;transform:translateX(-50%);
+    width:30px;height:46px;border-radius:5px;background:linear-gradient(180deg,#2dd4bf,#15917f);
+    box-shadow:inset 0 2px 3px rgba(255,255,255,.5),0 3px 6px rgba(0,0,0,.35);}
+  #crossPreview .ratingTxt{position:absolute;left:0;right:0;bottom:14px;text-align:center;
+    font-size:15px;font-weight:900;color:#2a3340;letter-spacing:.5px;}
+  #crossPreview .cap{font-size:11px;font-weight:800;color:#7e8ea0;letter-spacing:.4px;text-transform:uppercase;}
+
+  /* ====================================================== */
+  /*  PHASE 2 : VERKABELN  (svg scene)                       */
+  /* ====================================================== */
+  #scene{position:absolute;inset:0;z-index:20;opacity:0;pointer-events:none;transition:opacity .6s;}
+  #scene.on{opacity:1;pointer-events:auto;}
+  svg#board{position:absolute;inset:0;width:100%;height:100%;display:block;}
+
+  /* dust particles layer behind */
+  /* hint chip near cable */
+  #wireHint{position:absolute;left:50%;transform:translateX(-50%);bottom:74px;z-index:25;
+    font-size:12px;color:#9fb0c0;font-weight:600;background:rgba(10,14,20,.6);padding:6px 14px;border-radius:20px;
+    border:1px solid rgba(255,255,255,.06);pointer-events:none;text-align:center;}
+  #wireHint b{color:#fff;}
+
+  /* ====================================================== */
+  /*  WIN OVERLAY                                            */
+  /* ====================================================== */
+  #win{position:absolute;inset:0;z-index:70;display:none;flex-direction:column;align-items:center;justify-content:center;
+    background:radial-gradient(circle at 50% 40%, rgba(45,212,191,.18), rgba(6,9,14,.86) 60%);
+    backdrop-filter:blur(2px);}
+  #win.show{display:flex;animation:winIn .5s;}
+  @keyframes winIn{from{opacity:0}to{opacity:1}}
+  #win .card{
+    width:300px;padding:26px 22px 24px;border-radius:24px;text-align:center;
+    background:linear-gradient(180deg,#222d3a,#161d27);
+    border:1px solid rgba(45,212,191,.3);
+    box-shadow:0 30px 70px rgba(0,0,0,.7), 0 0 40px rgba(45,212,191,.2), inset 0 1px 0 rgba(255,255,255,.06);
+    transform:scale(.6);animation:pop .6s cubic-bezier(.2,1.6,.4,1) forwards;
+  }
+  @keyframes pop{to{transform:scale(1)}}
+  #win h2{font-size:23px;font-weight:900;color:#fff;letter-spacing:.5px;}
+  #win .sub{font-size:13px;color:#9fb0c0;margin-top:5px;font-weight:600;}
+  #stars{display:flex;gap:8px;justify-content:center;margin:16px 0 6px;}
+  #stars .st{font-size:34px;color:#2a3340;transform:scale(0);}
+  #stars .st.lit{color:#ffd166;text-shadow:0 0 16px rgba(255,209,102,.8);animation:starPop .5s cubic-bezier(.2,1.8,.4,1) forwards;}
+  @keyframes starPop{0%{transform:scale(0) rotate(-40deg)}70%{transform:scale(1.4) rotate(10deg)}100%{transform:scale(1) rotate(0)}}
+  #xpBig{font-size:30px;font-weight:900;color:#ffd166;margin:8px 0 4px;text-shadow:0 0 18px rgba(255,209,102,.5);}
+  #win .ok{margin-top:16px;padding:12px 0;border-radius:14px;cursor:pointer;font-weight:800;font-size:15px;color:#06281f;
+    background:linear-gradient(180deg,#5cf0d6,#2dd4bf);box-shadow:0 8px 20px rgba(45,212,191,.4);}
+  #win .ok:active{transform:scale(.96);}
+
+  /* small floating spark badge text on snap */
+  .toast{position:absolute;z-index:55;font-weight:900;font-size:15px;pointer-events:none;
+    text-shadow:0 2px 6px rgba(0,0,0,.6);animation:toastUp 1s ease-out forwards;}
+  @keyframes toastUp{0%{opacity:0;transform:translateY(0) scale(.6)}15%{opacity:1;transform:translateY(-6px) scale(1.1)}100%{opacity:0;transform:translateY(-46px) scale(1)}}
+
+  .shake{animation:shakeStage .35s;}
+  @keyframes shakeStage{0%,100%{transform:translate(0,0)}20%{transform:translate(-6px,2px)}40%{transform:translate(6px,-2px)}60%{transform:translate(-4px,1px)}80%{transform:translate(4px,-1px)}}
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <canvas id="fx"></canvas>
+
+  <!-- HUD -->
+  <div id="hud">
+    <div class="badge"><span class="dot"></span>Phase 1</div>
+    <div class="spacer"></div>
+    <div class="badge" id="xpBadge"><span class="ico">⚡</span><span id="xpVal">0</span> XP</div>
+    <div id="mute">🔇</div>
+  </div>
+  <div id="prog"><div id="progFill"></div></div>
+
+  <div id="task">
+    <h1 id="taskTitle">Baustromverteiler verkabeln</h1>
+    <p id="taskSub">Wähle den richtigen Aderquerschnitt</p>
+    <div class="fuse">Sicherung: Leitungsschutzschalter C 25 A</div>
+  </div>
+  <div id="taskToggle">Aufgabe ausblenden</div>
+
+  <!-- PHASE 1: cross-section choose -->
+  <div id="phaseCross">
+    <div id="crossPreview">
+      <div class="fuseBody"><div class="lever"></div><div class="ratingTxt">C 25 A</div></div>
+      <div class="cap">Leitungsschutzschalter</div>
+    </div>
+    <div id="crossHint">Tippe den passenden <b>Querschnitt</b> zur Absicherung.<br>NIN: welcher Querschnitt trägt <b>25 A</b>?</div>
+    <div id="crossRow"></div>
+  </div>
+
+  <!-- PHASE 2: wiring scene -->
+  <div id="scene">
+    <svg id="board" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"></svg>
+    <div id="wireHint">Ziehe jede <b>Ader</b> auf die <b>farblich passende</b> Klemme</div>
+  </div>
+
+  <!-- WIN -->
+  <div id="win">
+    <div class="card">
+      <h2>VERTEILER LÄUFT!</h2>
+      <div class="sub">Anschluss korrekt nach NIN ausgeführt</div>
+      <div id="stars"><span class="st">★</span><span class="st">★</span><span class="st">★</span></div>
+      <div id="xpBig">+120 XP</div>
+      <div class="sub" id="winNote">6 mm² · C25 A · alle Adern farbrichtig</div>
+      <div class="ok" id="again">Nochmal spielen</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+"use strict";
+/* ============================================================= *
+ *  LernStrom — Baustromverteiler  (single-file demo)            *
+ *  Pure SVG + Canvas particle FX + WebAudio.                    *
+ * ============================================================= */
+
+const STAGE_W = 390, STAGE_H = 844;
+const stage   = document.getElementById('stage');
+const svg     = document.getElementById('board');
+const fx      = document.getElementById('fx');
+const ctx     = fx.getContext('2d');
+const SVGNS   = "http://www.w3.org/2000/svg";
+
+/* ---------- coordinate helper: client px -> svg viewbox px ---- */
+function toSvg(clientX, clientY){
+  const r = svg.getBoundingClientRect();
+  return {
+    x: (clientX - r.left) / r.width  * STAGE_W,
+    y: (clientY - r.top ) / r.height * STAGE_H
+  };
+}
+
+/* =============================================================
+ *  AUDIO  (tiny WebAudio synth)
+ * ============================================================= */
+let audioCtx=null, muted=true;
+function AC(){ if(!audioCtx){ try{audioCtx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){} } return audioCtx; }
+function tone(freq, dur, type, vol, slideTo){
+  if(muted) return; const c=AC(); if(!c) return;
+  const o=c.createOscillator(), g=c.createGain();
+  o.type=type||'sine'; o.frequency.value=freq;
+  if(slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, c.currentTime+dur);
+  g.gain.value=0.0001;
+  g.gain.exponentialRampToValueAtTime(vol||0.2, c.currentTime+0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime+dur);
+  o.connect(g); g.connect(c.destination);
+  o.start(); o.stop(c.currentTime+dur+0.02);
+}
+function sndClick(){ tone(680,0.07,'triangle',0.25,1200); setTimeout(()=>tone(1500,0.05,'sine',0.12),20); }
+function sndSnap(){ tone(440,0.05,'square',0.18,900); setTimeout(()=>tone(1320,0.12,'triangle',0.22),30); }
+function sndBuzz(){ if(muted)return; const c=AC(); if(!c)return;
+  const o=c.createOscillator(),g=c.createGain(); o.type='sawtooth';o.frequency.value=120;
+  g.gain.value=0.0001;g.gain.exponentialRampToValueAtTime(0.22,c.currentTime+0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+0.25);
+  o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+0.27);
+}
+function sndPick(){ tone(520,0.05,'sine',0.14,720); }
+function sndWin(){ [523,659,784,1047,1319].forEach((f,i)=>setTimeout(()=>tone(f,0.3,'triangle',0.2),i*110)); }
+
+document.getElementById('mute').onclick=function(){
+  muted=!muted; this.textContent=muted?'🔇':'🔊';
+  if(!muted){ AC(); tone(880,0.06,'sine',0.15); }
+};
+
+/* =============================================================
+ *  PARTICLE / FX ENGINE  (canvas)
+ * ============================================================= */
+function sizeCanvas(){
+  const r=stage.getBoundingClientRect();
+  const dpr=window.devicePixelRatio||1;
+  fx.width=STAGE_W*dpr; fx.height=STAGE_H*dpr;
+  fx.style.width=r.width+'px'; fx.style.height=r.height+'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+let particles=[];
+function spark(x,y,n,opt){
+  opt=opt||{};
+  for(let i=0;i<n;i++){
+    const a=Math.random()*Math.PI*2, sp=(opt.speed||3)*(0.4+Math.random());
+    particles.push({
+      x,y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp - (opt.up||0),
+      life:1, decay:0.012+Math.random()*0.02,
+      size:(opt.size||2.4)*(0.6+Math.random()),
+      color:opt.color|| (Math.random()<.5?'#ffd166':'#ffae42'),
+      grav:opt.grav!=null?opt.grav:0.06, glow:opt.glow!==false
+    });
+  }
+}
+let confetti=[];
+function burstConfetti(){
+  const cols=['#2dd4bf','#ffd166','#ff6b6b','#7af0d9','#ffffff','#ffae42','#8ab4ff'];
+  for(let i=0;i<140;i++){
+    confetti.push({
+      x:STAGE_W/2+(Math.random()-.5)*60, y:STAGE_H*0.42,
+      vx:(Math.random()-.5)*9, vy:-Math.random()*11-3,
+      g:0.22+Math.random()*0.1, w:5+Math.random()*6, h:8+Math.random()*8,
+      rot:Math.random()*6.28, vr:(Math.random()-.5)*0.4,
+      color:cols[(Math.random()*cols.length)|0], life:1
+    });
+  }
+}
+// flowing current pulses along seated wires (set when win)
+let currentPulses=[];
+
+function fxLoop(){
+  ctx.clearRect(0,0,STAGE_W,STAGE_H);
+  // sparks
+  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i];
+    p.vy+=p.grav; p.x+=p.vx; p.y+=p.vy; p.life-=p.decay;
+    if(p.life<=0){particles.splice(i,1);continue;}
+    ctx.globalAlpha=Math.max(0,p.life);
+    if(p.glow){ctx.shadowBlur=10;ctx.shadowColor=p.color;}else ctx.shadowBlur=0;
+    ctx.fillStyle=p.color;
+    ctx.beginPath();ctx.arc(p.x,p.y,p.size*p.life+0.4,0,6.28);ctx.fill();
+  }
+  ctx.shadowBlur=0;
+  // confetti
+  for(let i=confetti.length-1;i>=0;i--){
+    const c=confetti[i];
+    c.vy+=c.g;c.x+=c.vx;c.y+=c.vy;c.rot+=c.vr;c.vx*=0.99;
+    if(c.y>STAGE_H+30){confetti.splice(i,1);continue;}
+    ctx.save();ctx.translate(c.x,c.y);ctx.rotate(c.rot);
+    ctx.globalAlpha=1;ctx.fillStyle=c.color;
+    ctx.fillRect(-c.w/2,-c.h/2,c.w,c.h);
+    ctx.restore();
+  }
+  // current pulses along seated wires
+  for(const cp of currentPulses){
+    cp.t+=cp.spd; if(cp.t>1) cp.t-=1;
+    const len=cp.path.getTotalLength();
+    for(let k=0;k<3;k++){
+      let tt=cp.t - k*0.12; if(tt<0)tt+=1;
+      const pt=cp.path.getPointAtLength(tt*len);
+      ctx.globalAlpha=(1-k*0.3);
+      ctx.shadowBlur=14;ctx.shadowColor='#bff7ff';
+      ctx.fillStyle='#ddffff';
+      ctx.beginPath();ctx.arc(pt.x,pt.y,3.2-k*0.6,0,6.28);ctx.fill();
+    }
+  }
+  ctx.shadowBlur=0;ctx.globalAlpha=1;
+  requestAnimationFrame(fxLoop);
+}
+
+/* floating toast text */
+function toast(text,color,x,y){
+  const t=document.createElement('div');
+  t.className='toast';t.textContent=text;t.style.color=color||'#7af0d9';
+  const r=stage.getBoundingClientRect();
+  t.style.left=(x/STAGE_W*r.width)+'px';
+  t.style.top =(y/STAGE_H*r.height)+'px';
+  t.style.transform='translate(-50%,0)';
+  stage.appendChild(t);
+  setTimeout(()=>t.remove(),1000);
+}
+
+/* =============================================================
+ *  SVG helpers
+ * ============================================================= */
+function el(tag,attrs){
+  const e=document.createElementNS(SVGNS,tag);
+  for(const k in attrs) e.setAttribute(k,attrs[k]);
+  return e;
+}
+
+/* =============================================================
+ *  GAME STATE
+ * ============================================================= */
+let xp=0;
+const xpVal=document.getElementById('xpVal');
+function addXp(n){
+  n=Math.round((Number(n)||0)*0.5); // XP global -50% (Roadmap)
+  const start=xp,end=xp+n,t0=performance.now();
+  (function anim(t){
+    const k=Math.min(1,(t-t0)/600);
+    xp=Math.round(start+(end-start)*(1-Math.pow(1-k,3)));
+    xpVal.textContent=xp;
+    if(k<1)requestAnimationFrame(anim);
+  })(performance.now());
+}
+
+/* =============================================================
+ *  PHASE 1 — Querschnitt wählen
+ * ============================================================= */
+const CROSS_OPTIONS=[
+  {mm:"1,5", amp:"13 A"},
+  {mm:"2,5", amp:"16 A"},
+  {mm:"4",   amp:"20 A"},
+  {mm:"6",   amp:"25 A", correct:true},
+  {mm:"10",  amp:"40 A"},
+  {mm:"16",  amp:"63 A"}
+];
+const crossRow=document.getElementById('crossRow');
+let crossDone=false;
+
+function buildCross(){
+  crossRow.innerHTML='';
+  CROSS_OPTIONS.forEach((o,i)=>{
+    const c=document.createElement('div');c.className='cross';
+    // disc inner size scales slightly with mm to *feel* like cross-section
+    const sz=20+i*3.4;
+    c.innerHTML=
+      '<div class="disc"><div style="width:'+sz+'px;height:'+sz+'px;border-radius:50%"></div></div>'+
+      '<div class="lbl">'+o.mm+' mm²</div>'+
+      '<div class="amp">≤ '+o.amp+'</div>';
+    c.addEventListener('pointerenter',()=>{sndPick();});
+    c.addEventListener('click',()=>pickCross(o,c));
+    crossRow.appendChild(c);
+  });
+}
+function pickCross(o,c){
+  if(crossDone) return;
+  AC();
+  if(o.correct){
+    crossDone=true;
+    c.classList.add('right');
+    sndSnap();
+    const r=c.getBoundingClientRect(), sr=stage.getBoundingClientRect();
+    const px=(r.left+r.width/2-sr.left)/sr.width*STAGE_W;
+    const py=(r.top+r.height/2-sr.top)/sr.height*STAGE_H;
+    spark(px,py,26,{color:'#2dd4bf',speed:4,up:1});
+    toast('RICHTIG! 6 mm² ✓','#7af0d9',px,py-30);
+    addXp(30);
+    setTimeout(gotoWiring,820);
+  }else{
+    c.classList.add('wrong');
+    sndBuzz();
+    stage.classList.add('shake');setTimeout(()=>stage.classList.remove('shake'),360);
+    setTimeout(()=>c.classList.remove('wrong'),420);
+  }
+}
+buildCross();
+
+/* =============================================================
+ *  PHASE 2 — Wiring scene (build the SVG board)
+ * ============================================================= */
+
+// the 5 conductors of a CH 5-wire cable (NIN colours)
+const WIRES=[
+  {id:'L1', label:'L1', color:'#7a4a1e', hi:'#a9692f', name:'braun'},
+  {id:'L2', label:'L2', color:'#2a2a2a', hi:'#555',    name:'schwarz'},
+  {id:'L3', label:'L3', color:'#9aa0a6', hi:'#c4c9cf', name:'grau'},
+  {id:'N',  label:'N',  color:'#2f6fd1', hi:'#4f93e8', name:'blau'},
+  {id:'PE', label:'PE', color:'#3aa635', hi:'#ffd23a', name:'grün-gelb', stripe:true}
+];
+
+// terminals on the right side of the box, y positions
+const termX = 250;            // terminal column x
+const termY0 = 250, termGap = 86;
+// cable exits bottom-left, fans out
+const cableBaseX = 112, cableBaseY = 742;
+
+let terminals=[];   // {wire, x, y, node, filled}
+let cores=[];       // draggable core objects
+
+const layerStatic = el('g',{}); // box, frame
+const layerWires  = el('g',{}); // bezier cores
+const layerTerms  = el('g',{}); // terminals on top
+const layerGlow   = el('g',{}); // LED etc
+
+function buildBoard(){
+  svg.innerHTML='';
+  // ---- defs (gradients) ----
+  const defs=el('defs',{});
+  defs.innerHTML=`
+    <linearGradient id="metal" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a4654"/>
+      <stop offset="0.5" stop-color="#2b3542"/>
+      <stop offset="1" stop-color="#1d2531"/>
+    </linearGradient>
+    <linearGradient id="brushed" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#454f5c"/>
+      <stop offset="0.5" stop-color="#5a6573"/>
+      <stop offset="1" stop-color="#3a4350"/>
+    </linearGradient>
+    <radialGradient id="led" cx="0.5" cy="0.4" r="0.6">
+      <stop offset="0" stop-color="#fff"/>
+      <stop offset="0.3" stop-color="#aef7e4"/>
+      <stop offset="1" stop-color="#0c5f4e"/>
+    </radialGradient>
+    <linearGradient id="copper" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffd9a0"/>
+      <stop offset="0.5" stop-color="#e08e3c"/>
+      <stop offset="1" stop-color="#9c5a18"/>
+    </linearGradient>
+    <linearGradient id="osb" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6b4f2e"/>
+      <stop offset="0.5" stop-color="#8a6a3e"/>
+      <stop offset="1" stop-color="#5a4226"/>
+    </linearGradient>
+    <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#4a4136"/>
+      <stop offset="0.4" stop-color="#352f28"/>
+      <stop offset="1" stop-color="#211d18"/>
+    </linearGradient>
+    <filter id="soft"><feGaussianBlur stdDeviation="2.2"/></filter>
+    <filter id="ds" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="5" stdDeviation="5" flood-color="#000" flood-opacity="0.5"/>
+    </filter>
+  `;
+  svg.appendChild(defs);
+
+  // ---- background context: OSB wall + construction floor + box shadow ----
+  const bg=el('g',{});
+  // OSB / wood panel wall behind the box
+  bg.appendChild(el('rect',{x:0,y:0,width:390,height:640,fill:'#3a2c1c',opacity:0.55}));
+  bg.appendChild(el('rect',{x:0,y:0,width:390,height:640,fill:'url(#osb)',opacity:0.5}));
+  // horizontal plank seams on the wall
+  [120,300,470].forEach(wy=>{
+    bg.appendChild(el('line',{x1:0,y1:wy,x2:390,y2:wy,stroke:'#1c140a','stroke-width':2,opacity:0.35}));
+  });
+  // construction floor (estrich/concrete) lower part
+  bg.appendChild(el('rect',{x:0,y:640,width:390,height:204,fill:'url(#floor)'}));
+  bg.appendChild(el('line',{x1:0,y1:640,x2:390,y2:640,stroke:'#0a0d12','stroke-width':3,opacity:0.6}));
+  // floor speckle / aggregate
+  for(let s=0;s<26;s++){
+    bg.appendChild(el('circle',{cx:Math.random()*390,cy:646+Math.random()*190,r:0.8+Math.random()*1.6,
+      fill:'#0c0f15',opacity:0.18+Math.random()*0.2}));
+  }
+  // soft contact shadow of the box on the floor/wall
+  bg.appendChild(el('ellipse',{cx:264,cy:600,rx:130,ry:34,fill:'#000',opacity:0.4,filter:'url(#soft)'}));
+  svg.appendChild(bg);
+
+  // ---- distributor enclosure ----
+  const box=el('g',{filter:'url(#ds)'});
+  // body
+  box.appendChild(el('rect',{x:160,y:130,width:208,height:448,rx:20,fill:'url(#metal)',stroke:'#10151c','stroke-width':2}));
+  // brushed inner panel
+  box.appendChild(el('rect',{x:176,y:152,width:176,height:408,rx:12,fill:'url(#brushed)',opacity:0.5}));
+  // top "lid" hinge + label plate
+  box.appendChild(el('rect',{x:182,y:140,width:164,height:28,rx:8,fill:'#161d27',opacity:0.85}));
+  const plate=el('text',{x:264,y:159,'text-anchor':'middle','font-size':'13','font-weight':'800',fill:'#7af0d9','font-family':'Segoe UI, sans-serif'});
+  plate.textContent='BAUSTROM 400V';box.appendChild(plate);
+  // 4 corner screws
+  [[174,144],[354,144],[174,566],[354,566]].forEach(([sx,sy])=>{
+    box.appendChild(el('circle',{cx:sx,cy:sy,r:5.5,fill:'#1a212c',stroke:'#4a5663','stroke-width':1.5}));
+    box.appendChild(el('circle',{cx:sx-1.4,cy:sy-1.4,r:1.6,fill:'#6b7785',opacity:0.7}));
+    box.appendChild(el('line',{x1:sx-3.5,y1:sy,x2:sx+3.5,y2:sy,stroke:'#5a6573','stroke-width':1.5}));
+  });
+  // CEE sockets on the left inner column of the front panel (decorative)
+  // red 400V CEE
+  box.appendChild(el('circle',{cx:194,cy:232,r:18,fill:'#1a212c',stroke:'#10151c','stroke-width':2}));
+  box.appendChild(el('circle',{cx:194,cy:232,r:14,fill:'#b8342f',stroke:'#7a1f1b','stroke-width':2}));
+  box.appendChild(el('circle',{cx:194,cy:232,r:8,fill:'#2a0e0c'}));
+  box.appendChild(el('text',{x:194,y:262,'text-anchor':'middle','font-size':'8','font-weight':'800',fill:'#cdd8e2','font-family':'Segoe UI, sans-serif'})).textContent='400V';
+  // blue 230V CEE
+  box.appendChild(el('circle',{cx:194,cy:312,r:15,fill:'#1a212c',stroke:'#10151c','stroke-width':2}));
+  box.appendChild(el('circle',{cx:194,cy:312,r:11,fill:'#2f6fd1',stroke:'#1c4a91','stroke-width':2}));
+  box.appendChild(el('circle',{cx:194,cy:312,r:6,fill:'#0c1f3a'}));
+  box.appendChild(el('text',{x:194,y:338,'text-anchor':'middle','font-size':'8','font-weight':'800',fill:'#cdd8e2','font-family':'Segoe UI, sans-serif'})).textContent='230V';
+  // FI/LS breaker row (decorative) in left column, lower
+  for(let b=0;b<4;b++){
+    const bx=178+b*11;
+    box.appendChild(el('rect',{x:bx,y:400,width:9,height:26,rx:2,fill:'#e9eef3',stroke:'#9aa3ad','stroke-width':1}));
+    box.appendChild(el('rect',{x:bx+2.5,y:405,width:4,height:8,rx:1.5,fill:'#2dd4bf'}));
+  }
+  // DIN rail down the terminal column
+  const rail=el('rect',{x:termX-18,y:196,width:36,height:372,rx:4,fill:'#9aa3ad'});
+  rail.setAttribute('opacity','0.35');box.appendChild(rail);
+  svg.appendChild(box);
+
+  // ---- LED indicator (off) ----
+  const led=el('circle',{id:'led',cx:330,cy:180,r:7,fill:'#3a2f2f',stroke:'#10151c','stroke-width':1.5});
+  svg.appendChild(led);
+  svg.__led=led;
+
+  svg.appendChild(layerWires);
+  svg.appendChild(layerTerms);
+
+  // ---- terminals ----
+  terminals=[];
+  WIRES.forEach((w,i)=>{
+    const ty=termY0+i*termGap*0; // override below
+  });
+  // distribute 5 terminals along rail
+  const tY0=210, tGap=86;
+  WIRES.forEach((w,i)=>{
+    const ty=tY0+i*tGap;
+    const g=el('g',{class:'term','data-id':w.id});
+    // terminal block body
+    g.appendChild(el('rect',{x:termX-26,y:ty-19,width:52,height:38,rx:6,fill:'#11161e',stroke:'#3a4654','stroke-width':1.5}));
+    // colored band showing required colour
+    const band=el('rect',{x:termX-26,y:ty-19,width:9,height:38,rx:4,fill:w.color});
+    g.appendChild(band);
+    if(w.stripe){ // PE green-yellow stripes
+      for(let s=0;s<4;s++) g.appendChild(el('rect',{x:termX-26,y:ty-19+s*9.5,width:9,height:4.7,fill:'#ffd23a'}));
+    }
+    // screw hole (target)
+    const hole=el('circle',{cx:termX,cy:ty,r:11,fill:'#05080c',stroke:'#3a4654','stroke-width':2});
+    g.appendChild(hole);
+    g.appendChild(el('circle',{cx:termX,cy:ty,r:7,fill:'#0c1117'}));
+    // ring highlight (hidden until target)
+    const ring=el('circle',{cx:termX,cy:ty,r:15,fill:'none',stroke:w.color,'stroke-width':3,opacity:0});
+    g.appendChild(ring);
+    // label
+    const lbl=el('text',{x:termX+34,y:ty+5,'font-size':'14','font-weight':'800',fill:'#cdd8e2','font-family':'Segoe UI, sans-serif'});
+    lbl.textContent=w.label;
+    g.appendChild(lbl);
+    layerTerms.appendChild(g);
+    terminals.push({wire:w, x:termX, y:ty, hole, ring, band, filled:false, node:g});
+  });
+
+  // ---- cable sheath coming from bottom-left ----
+  const sheath=el('g',{});
+  // outer jacket
+  sheath.appendChild(el('path',{d:`M40 844 C 40 770, 70 720, ${cableBaseX} ${cableBaseY+34}`,
+    fill:'none',stroke:'#1c232e','stroke-width':40,'stroke-linecap':'round'}));
+  sheath.appendChild(el('path',{d:`M40 844 C 40 770, 70 720, ${cableBaseX} ${cableBaseY+34}`,
+    fill:'none',stroke:'#2c3744','stroke-width':32,'stroke-linecap':'round'}));
+  // jacket highlight
+  sheath.appendChild(el('path',{d:`M40 844 C 40 770, 70 720, ${cableBaseX} ${cableBaseY+34}`,
+    fill:'none',stroke:'#3d4a59','stroke-width':10,'stroke-linecap':'round',opacity:0.6}));
+  // stripped end ring
+  sheath.appendChild(el('ellipse',{cx:cableBaseX,cy:cableBaseY+30,rx:20,ry:9,fill:'#161d27',stroke:'#3d4a59','stroke-width':2}));
+  svg.insertBefore(sheath, layerWires);
+
+  // ---- cores (draggable wires) ----
+  cores=[];
+  // fan-out origin points along stripped end
+  WIRES.forEach((w,i)=>{
+    const ox=cableBaseX-16+i*8;
+    const oy=cableBaseY+26;
+    // initial loose end position (springy)
+    const ex=cableBaseX-10+i*14;
+    const ey=cableBaseY-70 - i*6 + (i%2?10:-6);
+    const core=makeCore(w,i,ox,oy,ex,ey);
+    cores.push(core);
+  });
+
+  layoutHintText();
+}
+
+/* build one draggable core (insulation path + copper tip + grab handle) */
+function makeCore(w,i,ox,oy,ex,ey){
+  const g=el('g',{class:'core','data-id':w.id});
+  // shadow path
+  const shadow=el('path',{fill:'none',stroke:'#000','stroke-width':9,'stroke-linecap':'round',opacity:0.25,filter:'url(#soft)'});
+  // insulation path
+  const ins=el('path',{fill:'none',stroke:w.color,'stroke-width':9,'stroke-linecap':'round'});
+  // highlight stroke
+  const hi=el('path',{fill:'none',stroke:w.hi,'stroke-width':3,'stroke-linecap':'round',opacity:0.7});
+  // PE stripe overlay
+  let stripe=null;
+  if(w.stripe){
+    stripe=el('path',{fill:'none',stroke:'#ffd23a','stroke-width':9,'stroke-linecap':'round','stroke-dasharray':'6 7'});
+  }
+  // copper tip
+  const tip=el('circle',{r:7,fill:'url(#copper)',stroke:'#7a4a14','stroke-width':1});
+  const tipGlow=el('circle',{r:11,fill:'none',stroke:w.color,'stroke-width':2,opacity:0});
+  // grab handle (the bare wire end) — invisible big hit area
+  const hit=el('circle',{r:24,fill:'transparent',cursor:'grab'});
+  // little tag label that follows tip
+  const tag=el('g',{});
+  tag.appendChild(el('rect',{x:-13,y:-30,width:26,height:17,rx:5,fill:'rgba(8,12,18,.8)'}));
+  const tagt=el('text',{x:0,y:-18,'text-anchor':'middle','font-size':'10','font-weight':'800',fill:'#fff','font-family':'Segoe UI, sans-serif'});
+  tagt.textContent=w.label;tag.appendChild(tagt);
+
+  g.appendChild(shadow);g.appendChild(ins);g.appendChild(hi);
+  if(stripe)g.appendChild(stripe);
+  g.appendChild(tipGlow);g.appendChild(tip);g.appendChild(tag);g.appendChild(hit);
+  layerWires.appendChild(g);
+
+  const core={
+    w, g, ins, hi, shadow, stripe, tip, tipGlow, hit, tag,
+    ox, oy,                 // anchor at cable
+    tx:ex, ty:ey,           // current tip target (where dragging to)
+    x:ex, y:ey,             // current spring position
+    vx:0, vy:0,             // velocity
+    seated:false, dragging:false,
+    idlePhase:Math.random()*6.28
+  };
+
+  // pointer handlers
+  hit.addEventListener('pointerdown',e=>startDrag(e,core));
+  return core;
+}
+
+/* spring physics + bezier rendering each frame */
+function springStep(core, dt){
+  if(core.seated){ // locked into terminal, tiny settle only
+    core.x += (core.tx-core.x)*0.4;
+    core.y += (core.ty-core.y)*0.4;
+  } else if(core.dragging){
+    // follow target stiff but with momentum
+    const k=0.45, damp=0.62;
+    core.vx=(core.vx+(core.tx-core.x)*k)*damp;
+    core.vy=(core.vy+(core.ty-core.y)*k)*damp;
+    core.x+=core.vx; core.y+=core.vy;
+  } else {
+    // idle: wave back to rest pose with light bob
+    core.idlePhase+=0.05;
+    const restX=core.restX, restY=core.restY;
+    const k=0.06, damp=0.8;
+    core.vx=(core.vx+(restX-core.x)*k)*damp;
+    core.vy=(core.vy+(restY-core.y)*k)*damp;
+    core.x+=core.vx+Math.sin(core.idlePhase)*0.35;
+    core.y+=core.vy+Math.cos(core.idlePhase*0.8)*0.3;
+  }
+  renderCore(core);
+}
+
+function renderCore(core){
+  const ox=core.ox, oy=core.oy, tx=core.x, ty=core.y;
+  // control points: bend like a hanging/springing litze
+  const midx=(ox+tx)/2, midy=(oy+ty)/2;
+  // perpendicular sag based on velocity for whippy feel
+  const sag = core.seated?0: (20 + core.vx*1.4);
+  const c1x=ox + (midx-ox)*0.3, c1y=oy - 30;
+  const c2x=tx, c2y=midy + sag;
+  const d=`M ${ox} ${oy} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${tx} ${ty}`;
+  core.ins.setAttribute('d',d);
+  core.hi.setAttribute('d',d);
+  core.shadow.setAttribute('d',d);
+  if(core.stripe) core.stripe.setAttribute('d',d);
+  core.tip.setAttribute('cx',tx);core.tip.setAttribute('cy',ty);
+  core.tipGlow.setAttribute('cx',tx);core.tipGlow.setAttribute('cy',ty);
+  core.hit.setAttribute('cx',tx);core.hit.setAttribute('cy',ty);
+  core.tag.setAttribute('transform',`translate(${tx},${ty})`);
+  core.path_d=d;
+}
+
+/* assign rest positions (idle spread) */
+function assignRest(){
+  cores.forEach((c,i)=>{
+    c.restX=cableBaseX-26+i*16;
+    c.restY=cableBaseY-58 - (i%2?22:0) - i*4;
+  });
+}
+
+/* ---------------- dragging ---------------- */
+let activeCore=null;
+function startDrag(e,core){
+  if(core.seated) return;
+  e.preventDefault();
+  AC();
+  activeCore=core; core.dragging=true;
+  core.hit.setAttribute('cursor','grabbing');
+  core.tipGlow.setAttribute('opacity','0.9');
+  sndPick();
+  try{core.hit.setPointerCapture(e.pointerId);}catch(_){}
+  moveDrag(e);
+}
+function moveDrag(e){
+  if(!activeCore) return;
+  const p=toSvg(e.clientX,e.clientY);
+  activeCore.tx=p.x; activeCore.ty=p.y;
+  // highlight nearest matching terminal (use live pointer pos)
+  const t=matchTerminal(activeCore.tx,activeCore.ty);
+  terminals.forEach(tm=>{
+    const near = (t===tm);
+    tm.ring.setAttribute('opacity', near?'0.95':'0');
+    if(near){ tm.ring.setAttribute('r', 15+Math.sin(performance.now()/120)*2); }
+  });
+}
+function endDrag(e){
+  if(!activeCore) return;
+  const core=activeCore; activeCore=null;
+  core.dragging=false;
+  core.hit.setAttribute('cursor','grab');
+  core.tipGlow.setAttribute('opacity','0');
+  terminals.forEach(tm=>tm.ring.setAttribute('opacity','0'));
+
+  const tm=matchTerminal(core.tx,core.ty);
+  if(tm && tm.wire.id===core.w.id && !tm.filled){
+    seat(core,tm);
+  } else if(tm && tm.wire.id!==core.w.id){
+    // wrong colour terminal
+    wrongDrop(core,tm);
+  } else {
+    // dropped in empty space → springs back
+    sndPick();
+  }
+}
+window.addEventListener('pointermove',moveDrag);
+window.addEventListener('pointerup',endDrag);
+window.addEventListener('pointercancel',endDrag);
+
+/* find terminal under given point within radius */
+function matchTerminal(px,py){
+  let best=null,bd=46*46;
+  terminals.forEach(tm=>{
+    if(tm.filled) return;
+    const dx=tm.x-px, dy=tm.y-py, d=dx*dx+dy*dy;
+    if(d<bd){bd=d;best=tm;}
+  });
+  return best;
+}
+
+let seatedCount=0;
+function seat(core,tm){
+  core.seated=true; tm.filled=true;
+  core.tx=tm.x; core.ty=tm.y;
+  core.tipGlow.setAttribute('opacity','0');
+  // pulse + spark + sound
+  sndSnap();
+  spark(tm.x,tm.y,18,{color:core.w.color,speed:3.5,up:0.5});
+  spark(tm.x,tm.y,8,{color:'#fff',speed:5,size:1.6});
+  toast('✓','#7af0d9',tm.x,tm.y-22);
+  // glow puls on terminal
+  const pulse=el('circle',{cx:tm.x,cy:tm.y,r:13,fill:'none',stroke:core.w.color,'stroke-width':3,opacity:0.9});
+  layerTerms.appendChild(pulse);
+  const t0=performance.now();
+  (function ap(t){
+    const k=Math.min(1,(t-t0)/520);
+    pulse.setAttribute('r',13+k*26);
+    pulse.setAttribute('opacity',0.9*(1-k));
+    if(k<1)requestAnimationFrame(ap); else pulse.remove();
+  })(performance.now());
+  // hide the grab handle so it can't be re-dragged
+  core.hit.setAttribute('pointer-events','none');
+  addXp(15);
+  seatedCount++;
+  updateProgress();
+  if(seatedCount===WIRES.length) setTimeout(triggerWin,500);
+}
+
+function wrongDrop(core,tm){
+  sndBuzz();
+  stage.classList.add('shake');setTimeout(()=>stage.classList.remove('shake'),360);
+  // red flash on terminal + core
+  const flash=el('circle',{cx:tm.x,cy:tm.y,r:18,fill:'none',stroke:'#ff5b5b','stroke-width':3,opacity:0.9});
+  layerTerms.appendChild(flash);
+  let n=0;const iv=setInterval(()=>{flash.setAttribute('opacity', n%2?0.9:0.2);if(++n>5){clearInterval(iv);flash.remove();}},70);
+  toast('Falsche Farbe!','#ff7a7a',tm.x,tm.y-26);
+  // shove core back with velocity for whip-back
+  core.vx=(Math.random()-.5)*18; core.vy=14;
+}
+
+function updateProgress(){
+  document.getElementById('progFill').style.width=(seatedCount/WIRES.length*100)+'%';
+  document.querySelector('#hud .badge').lastChild.textContent='Phase 2';
+}
+
+function layoutHintText(){}
+
+/* =============================================================
+ *  Transition Phase1 -> Phase2
+ * ============================================================= */
+function gotoWiring(){
+  document.getElementById('phaseCross').style.transition='opacity .4s, transform .4s';
+  document.getElementById('phaseCross').style.opacity='0';
+  document.getElementById('phaseCross').style.transform='translateY(20px)';
+  document.getElementById('phaseCross').style.pointerEvents='none';
+  // fade out the phase-1 task header so it doesn't overlap the box
+  const tk=document.getElementById('task');
+  tk.style.transition='opacity .4s'; tk.style.opacity='0';
+  setTimeout(()=>{ tk.style.display='none'; },420);
+  document.querySelector('#hud .badge').lastChild.textContent='Phase 2';
+  buildBoard();
+  assignRest();
+  setTimeout(()=>{ document.getElementById('scene').classList.add('on'); },120);
+}
+
+/* =============================================================
+ *  WIN
+ * ============================================================= */
+function triggerWin(){
+  // turn the distributor "alive": LED green, current pulses along wires
+  const led=svg.__led;
+  led.setAttribute('fill','url(#led)');
+  led.setAttribute('stroke','#1bd9a8');
+  // animate LED glow
+  const lg=el('circle',{cx:330,cy:180,r:7,fill:'none',stroke:'#3affd0','stroke-width':3,opacity:0.9});
+  svg.appendChild(lg);
+  (function lp(t0){let s=performance.now();(function a(t){const k=((t-s)%900)/900;lg.setAttribute('r',7+k*10);lg.setAttribute('opacity',0.8*(1-k));requestAnimationFrame(a);})(performance.now());})();
+
+  // current pulses on each seated core path
+  cores.forEach(c=>{
+    if(c.seated){
+      const pth=el('path',{d:c.path_d,fill:'none',stroke:'none'});
+      svg.appendChild(pth);
+      currentPulses.push({path:pth, t:Math.random(), spd:0.012+Math.random()*0.004});
+    }
+  });
+
+  sndWin();
+  burstConfetti();
+  spark(STAGE_W/2,STAGE_H*0.4,40,{color:'#ffd166',speed:6,up:2});
+
+  setTimeout(()=>{
+    const win=document.getElementById('win');win.classList.add('show');
+    addXp(45);
+    // light stars sequentially
+    const sts=document.querySelectorAll('#stars .st');
+    sts.forEach((s,i)=>setTimeout(()=>{s.classList.add('lit');sndSnap();},300+i*260));
+    // count xp big
+    const xb=document.getElementById('xpBig');let v=0;const tt=performance.now();
+    (function cc(t){const k=Math.min(1,(t-tt)/900);v=Math.round(120*(1-Math.pow(1-k,3)));xb.textContent='+'+v+' XP';if(k<1)requestAnimationFrame(cc);})(performance.now());
+  },650);
+}
+
+document.getElementById('again').onclick=()=>location.reload();
+
+/* =============================================================
+ *  MAIN LOOP
+ * ============================================================= */
+let dust=[];
+function initDust(){
+  for(let i=0;i<22;i++) dust.push({
+    x:Math.random()*STAGE_W,y:Math.random()*STAGE_H,
+    vy:-(0.1+Math.random()*0.25),vx:(Math.random()-.5)*0.2,
+    r:0.5+Math.random()*1.4,a:0.05+Math.random()*0.18,ph:Math.random()*6.28
+  });
+}
+let last=performance.now();
+function loop(t){
+  const dt=Math.min(40,t-last);last=t;
+  // springs
+  for(const c of cores) springStep(c,dt);
+  requestAnimationFrame(loop);
+}
+
+/* dust drawn on the fx canvas too (under sparks)? draw separate light */
+function dustLoop(){
+  // piggyback: draw dust at start of fxLoop instead — simpler: draw here on a faint overlay
+  requestAnimationFrame(dustLoop);
+}
+
+/* =============================================================
+ *  BOOT
+ * ============================================================= */
+function boot(){
+  sizeCanvas();
+  initDust();
+  fxLoop();
+  loop(performance.now());
+  // idle flicker on title fuse handled by CSS-free subtle JS
+}
+window.addEventListener('resize',sizeCanvas);
+
+/* ---- Aufgaben-Box ein-/ausklappbar + Auto-Fade (verdeckt sonst die Spielflaeche) ---- */
+window.__taskHidden=false;
+(function(){
+  const tt=document.getElementById('taskToggle');
+  const tk=document.getElementById('task');
+  if(!tt||!tk) return;
+  function scheduleFade(){ clearTimeout(window.__taskFadeT); window.__taskFadeT=setTimeout(()=>{ if(!window.__taskHidden) tk.classList.add('faded'); },3500); }
+  function apply(){
+    if(window.__taskHidden){
+      clearTimeout(window.__taskFadeT);
+      tk.classList.add('hidden'); tk.classList.remove('faded');
+      tt.textContent='Aufgabe einblenden';
+    } else {
+      tk.classList.remove('hidden','faded');
+      tt.textContent='Aufgabe ausblenden';
+      scheduleFade();
+    }
+  }
+  tt.addEventListener('click',()=>{ window.__taskHidden=!window.__taskHidden; apply(); });
+  tt.addEventListener('pointerenter',()=>{ if(!window.__taskHidden) tk.classList.remove('faded'); });
+  scheduleFade();
+})();
+
+boot();
+
+/* extra: draw dust inside fxLoop by hooking — redefine fxLoop wrapper */
+const _origSpark=spark;
+// add gentle dust into particle render: integrate in fxLoop via separate pass
+(function dustIntegrate(){
+  const draw=()=>{
+    for(const d of dust){
+      d.ph+=0.02; d.y+=d.vy; d.x+=d.vx+Math.sin(d.ph)*0.15;
+      if(d.y<-4){d.y=STAGE_H+4;d.x=Math.random()*STAGE_W;}
+      ctx.globalAlpha=d.a*(0.6+0.4*Math.sin(d.ph));
+      ctx.fillStyle='#ffe9c0';ctx.shadowBlur=4;ctx.shadowColor='#ffd9a0';
+      ctx.beginPath();ctx.arc(d.x,d.y,d.r,0,6.28);ctx.fill();
+    }
+    ctx.shadowBlur=0;ctx.globalAlpha=1;
+    requestAnimationFrame(draw);
+  };
+  draw();
+})();
+
+})();
+</script>
+</body>
+</html>

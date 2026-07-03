@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="light">
+<script>try{var _t=localStorage.getItem("ls-theme");if(_t)document.documentElement.setAttribute("data-theme",_t);}catch(e){}</script>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon_32.png">
+  <link rel="apple-touch-icon" href="appicon_192.png">
+<title>Datenschutz – LernStrom</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{ --bg:#E9F3EE; --ink:#0E3B31; --teal:#0C9488; --teal-d:#0A7A70; --field:#E1EFE9; --muted:#5D7167; --line:#D3E5DD; --card:#FFFFFF; }
+  html[data-theme="dark"]{ --bg:#0B1714; --ink:#EAF4EF; --teal:#3CC9B0; --teal-d:#2DB8A1; --field:#15231F; --muted:#8AA399; --line:#1D322B; --card:#10201C; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--ink);font-family:'Instrument Sans',sans-serif;-webkit-font-smoothing:antialiased;line-height:1.6;transition:background .4s,color .4s;}
+  nav{display:flex;justify-content:space-between;align-items:center;padding:24px 40px;border-bottom:1px solid var(--line);position:sticky;top:0;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(12px);z-index:50;}
+  .logo{font-family:'Fraunces',serif;font-weight:600;font-size:22px;letter-spacing:-.5px;text-decoration:none;color:var(--ink);display:inline-flex;align-items:center;gap:10px;}
+  .logo-mark{width:28px;height:28px;border-radius:8px;display:block;flex-shrink:0;}
+  .nav-right{display:flex;align-items:center;gap:18px;}
+  .back{color:var(--muted);text-decoration:none;font-size:14px;}
+  .back:hover{color:var(--ink);}
+  .theme-toggle{width:40px;height:40px;border:1px solid var(--line);border-radius:50%;background:var(--card);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:border-color .2s,transform .3s;color:var(--ink);}
+  .theme-toggle:hover{border-color:var(--teal);transform:rotate(-18deg);}
+  .theme-toggle svg{width:17px;height:17px;}
+  .theme-toggle .ico-moon{display:none;}
+  html[data-theme="dark"] .theme-toggle .ico-sun{display:none;}
+  html[data-theme="dark"] .theme-toggle .ico-moon{display:block;}
+  .wrap{max-width:780px;margin:0 auto;padding:80px 40px;}
+  .kicker{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;}
+  h1{font-family:'Fraunces',serif;font-weight:500;font-size:clamp(38px,6vw,64px);letter-spacing:-2px;line-height:1.02;margin:16px 0 12px;}
+  .stand{color:var(--muted);font-size:14px;margin-bottom:48px;}
+  .block{margin-bottom:34px;}
+  .block h2{font-family:'Fraunces',serif;font-weight:500;font-size:22px;letter-spacing:-.5px;margin-bottom:12px;}
+  .block p{color:var(--muted);font-size:16px;line-height:1.8;margin-bottom:10px;}
+  .block a{color:var(--ink);}
+  .block ul{color:var(--muted);font-size:16px;line-height:1.8;margin:6px 0 10px 22px;}
+  .block li{margin-bottom:6px;}
+  footer{border-top:1px solid var(--line);padding:32px 40px;max-width:780px;margin:0 auto;display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px;align-items:center;}
+  footer .fnote{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);}
+  .flinks{display:flex;gap:20px;flex-wrap:wrap;}
+  .flinks a{color:var(--muted);text-decoration:none;font-size:13px;}
+  .flinks a:hover{color:var(--ink);}
+  @media(max-width:600px){nav{padding:16px 22px;}.wrap{padding:48px 22px;}footer{padding:24px 22px;}}
+</style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="logo"><img src="appicon_192.png" alt="LernStrom Logo" class="logo-mark">LernStrom</a>
+  <div class="nav-right">
+    <a href="index.html" class="back">← Startseite</a>
+    <button class="theme-toggle" onclick="tt()" aria-label="Hell/Dunkel"><svg class="ico-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M1.5 12h3M19.5 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg><svg class="ico-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a7 7 0 1 0 10.5 10.5z"/></svg></button>
+  </div>
+</nav>
+<div class="wrap">
+  <div class="kicker">Rechtliches</div>
+  <h1>Datenschutz</h1>
+  <div class="stand">Datenschutzerklärung · Stand: 18. Juni 2026</div>
+
+  <div class="block">
+    <h2>1. Verantwortlicher</h2>
+    <p>Verantwortlich für die Bearbeitung von Personendaten im Zusammenhang mit LernStrom (Website lernstrom.ch, Web-App lernstrom.ch/app und die LernStrom-App) ist:</p>
+    <p>Cataldo Distefano<br>Büelwiesstrasse 4<br>9249 Algetshausen<br>Schweiz<br>E-Mail: <a href="mailto:info@lernstrom.ch">info@lernstrom.ch</a></p>
+    <p>Diese Datenschutzerklärung richtet sich nach dem revidierten schweizerischen Datenschutzgesetz (revDSG). Soweit die EU-Datenschutz-Grundverordnung (DSGVO) anwendbar ist, gelten die darin vorgesehenen Rechte sinngemäss.</p>
+  </div>
+
+  <div class="block">
+    <h2>2. Welche Daten wir bearbeiten</h2>
+    <p>Wir bearbeiten nur die Daten, die für den Betrieb der Plattform erforderlich sind:</p>
+    <ul>
+      <li><strong>Kontodaten:</strong> Name (bzw. Anzeigename) und E-Mail-Adresse. Das Passwort wird ausschliesslich verschlüsselt über unseren Authentifizierungsdienst gespeichert; wir haben keinen Zugriff auf das Klartext-Passwort.</li>
+      <li><strong>Lern- und Nutzungsdaten:</strong> Lernfortschritt, erreichte Punkte (XP), Level, Serien (Streak), beantwortete Fragen, Quiz-Verlauf sowie freigeschaltete Zugänge.</li>
+      <li><strong>Zahlungsdaten:</strong> Käufe werden über den Zahlungsdienstleister Stripe abgewickelt. Wir erhalten von Stripe lediglich eine Zahlungsbestätigung mit der zugeordneten E-Mail-Adresse und dem gekauften Produkt – jedoch keine vollständigen Kreditkarten- oder Kontodaten.</li>
+      <li><strong>Technische Daten:</strong> Beim Aufruf der Website bzw. App können technisch bedingt Daten wie IP-Adresse, Datum/Uhrzeit, Geräte- und Browserinformationen verarbeitet werden (z. B. durch unsere Hosting- und Infrastruktur-Dienstleister).</li>
+      <li><strong>Lokale Speicherung:</strong> Im Browser bzw. Gerät werden technisch notwendige Einstellungen gespeichert (z. B. die Wahl des hellen/dunklen Designs). Es werden keine Werbe- oder Tracking-Cookies Dritter gesetzt.</li>
+      <li><strong>Dossier-Inhalte (optional):</strong> Wenn du das Dossier nutzt, speichern wir die von dir hochgeladenen Fotos/PDFs sowie deine Notizen, Lerndokus, Checklisten und Karteikarten in deinem Konto. Diese Inhalte sind privat und nur für dich bestimmt (siehe Abschnitt 9).</li>
+    </ul>
+  </div>
+
+  <div class="block">
+    <h2>3. Zwecke der Bearbeitung</h2>
+    <p>Die Daten werden bearbeitet, um:</p>
+    <ul>
+      <li>das Benutzerkonto bereitzustellen und zu verwalten;</li>
+      <li>den Lernfortschritt zu speichern und anzuzeigen;</li>
+      <li>Käufe abzuwickeln und Zugänge freizuschalten;</li>
+      <li>Support zu leisten und mit dem Nutzer zu kommunizieren;</li>
+      <li>Sicherheit, Stabilität und Missbrauchsverhinderung zu gewährleisten;</li>
+      <li>gesetzliche Pflichten zu erfüllen.</li>
+    </ul>
+  </div>
+
+  <div class="block">
+    <h2>4. Rechtsgrundlagen</h2>
+    <p>Die Bearbeitung stützt sich auf die Erfüllung des Nutzungs- und Kaufvertrags, auf das berechtigte Interesse am sicheren und funktionierenden Betrieb der Plattform, auf die Erfüllung gesetzlicher Pflichten sowie – wo erforderlich – auf die Einwilligung des Nutzers.</p>
+  </div>
+
+  <div class="block">
+    <h2>5. Weitergabe an Dritte / Auftragsbearbeiter</h2>
+    <p>Zur Erbringung des Dienstes setzen wir sorgfältig ausgewählte Dienstleister ein, die in unserem Auftrag Daten bearbeiten:</p>
+    <ul>
+      <li><strong>Google (Firebase):</strong> Hosting der Datenbank, Authentifizierung und Speicherung (Firebase Authentication, Cloud Firestore, Cloud Storage). Anbieter: Google Ireland Ltd. / Google LLC.</li>
+      <li><strong>Stripe:</strong> Abwicklung der Zahlungen. Anbieter: Stripe Payments Europe Ltd. / Stripe, Inc.</li>
+      <li><strong>GitHub Pages:</strong> Hosting der Website lernstrom.ch. Anbieter: GitHub, Inc. (Microsoft).</li>
+      <li><strong>Google Vertex AI:</strong> KI-Funktionen (Texterkennung &amp; Erstellung im Dossier, KI-Profilbild, Auswertung handschriftlicher Rechnungen im Elektrotechnik-Modus). Anbieter: Google Ireland Ltd. / Google LLC.</li>
+      <li><strong>Cloudflare:</strong> Betrieb des KI-Lernassistenten (Chatbot „Theo", Lern-Coach „Carter", KI-Nachhilfe) sowie Schutz-/Infrastrukturfunktionen. Anbieter: Cloudflare, Inc.</li>
+      <li><strong>Replicate:</strong> Erstellung des optionalen, foto-basierten KI-Profilbilds (stilisierte Karikatur). Anbieter: Replicate, Inc.</li>
+      <li><strong>Google reCAPTCHA / App Check:</strong> Schutz vor Missbrauch und automatisierten Anfragen (in der Web-App). Dabei können Geräte-/Nutzungssignale an Google übermittelt werden. Anbieter: Google Ireland Ltd. / Google LLC.</li>
+    </ul>
+    <p>Eine Weitergabe von Personendaten erfolgt darüber hinaus nur, wenn wir gesetzlich dazu verpflichtet sind oder dies zur Durchsetzung unserer Rechte erforderlich ist. Wir verkaufen keine Personendaten.</p>
+  </div>
+
+  <div class="block">
+    <h2>6. Bekanntgabe ins Ausland</h2>
+    <p>Einige der eingesetzten Dienstleister können Daten ausserhalb der Schweiz bzw. der EU/des EWR bearbeiten, insbesondere in den USA. In solchen Fällen sorgen wir für einen angemessenen Schutz, etwa durch geeignete Garantien wie Standardvertragsklauseln. Mit der Nutzung des Dienstes nimmt der Nutzer eine solche Bekanntgabe ins Ausland zur Kenntnis.</p>
+  </div>
+
+  <div class="block">
+    <h2>7. Aufbewahrung und Löschung</h2>
+    <p>Wir bewahren Personendaten nur so lange auf, wie dies für die genannten Zwecke oder aufgrund gesetzlicher Aufbewahrungspflichten erforderlich ist. Konto- und Lerndaten werden bei Löschung des Kontos entfernt; bestimmte Daten (z. B. Zahlungs- bzw. Buchhaltungsnachweise) können aufgrund gesetzlicher Vorgaben länger aufbewahrt werden.</p>
+  </div>
+
+  <div class="block">
+    <h2>8. Datensicherheit</h2>
+    <p>Wir treffen angemessene technische und organisatorische Massnahmen, um Personendaten gegen unbefugten Zugriff, Verlust oder Missbrauch zu schützen. Eine vollständige Sicherheit bei der Datenübertragung über das Internet kann jedoch nicht garantiert werden.</p>
+  </div>
+
+  <div class="block">
+    <h2>9. Dein Dossier (privater Lernordner)</h2>
+    <p>Das Dossier ist dein persönlicher, privater Lernordner. Hochgeladene Fotos und PDFs sowie eigene Notizen, Lerndokus, Checklisten und Karteikarten werden in deinem Konto gespeichert und sind ausschliesslich für dich bestimmt.</p>
+    <p><strong>Wir sehen deine Dossier-Inhalte nicht ein.</strong> Weder Fotos und PDFs noch einzelne Einträge (z. B. Notizen, Lerndokus oder Karteikarten) werden von uns inhaltlich angeschaut. Für die Betriebs- und Nutzungsstatistik ist für den Administrator ausschliesslich die <strong>aggregierte Speichergrösse</strong> sichtbar (Anzahl Dateien, Datenmenge und Dateityp pro Konto) – niemals der Inhalt.</p>
+    <p>KI-Funktionen im Dossier (z. B. „Text auslesen", Erstellen von Checkliste/Lerndoku/Karteikarten) verarbeiten die jeweilige Datei nur zur Erbringung der von dir ausgelösten Funktion über unseren KI-Dienstleister (Google Vertex AI). Die Inhalte werden nicht zu Werbezwecken verwendet und nicht von uns eingesehen.</p>
+    <p>Dossier-Inhalte werden bei Löschung des Kontos bzw. des jeweiligen Eintrags entfernt.</p>
+  </div>
+
+  <div class="block">
+    <h2>10. KI-Profilbild</h2>
+    <p>Du kannst dir optional ein Profilbild von einer KI erstellen lassen – entweder aus Stichworten/Farben oder, falls du möchtest, aus einem Foto, das du hochlädst oder mit der Kamera aufnimmst. Das Bild wird in eine stilisierte, gezeichnete Avatar-Darstellung umgewandelt; es entsteht bewusst kein fotorealistisches Abbild einer realen Person.</p>
+    <p><strong>Dein Foto sehen oder verwerten wir nicht.</strong> Ein hochgeladenes oder aufgenommenes Foto wird ausschliesslich zur Erstellung deines Avatars über unseren KI-Dienstleister (Google Vertex AI) verarbeitet, <strong>nicht dauerhaft gespeichert</strong> und <strong>nicht von LernStrom eingesehen, ausgewertet oder zu Werbezwecken verwendet</strong>. Gespeichert wird nur das von dir ausgewählte, fertige Avatar-Bild in deinem Konto.</p>
+    <p>Die Kamera wird nur verwendet, wenn du das Aufnehmen eines Fotos selbst auslöst. Es findet <strong>keine Gesichtserkennung und keine biometrische Auswertung</strong> statt. Du kannst dein Profilbild jederzeit ändern oder entfernen.</p>
+  </div>
+
+  <div class="block">
+    <h2>11. KI-Lernassistent (Chatbot)</h2>
+    <p>LernStrom bietet KI-Lernassistenten an: den üK-Lernhelfer „Theo", den Lern-Coach „Carter" und die KI-Nachhilfe für die obligatorische Schule. Wenn du eine Frage stellst, wird dein <strong>eingegebener Fragetext</strong> zur Erzeugung der Antwort an unseren KI-Dienstleister (Cloudflare Workers AI) übermittelt. Beim üK-Lernhelfer wird zusätzlich geprüft, ob der entsprechende Zugang gekauft wurde.</p>
+    <p>Die Antworten des üK-Lernhelfers stützen sich auf die bereitgestellten üK-Lernunterlagen. Die Fragen und Antworten werden ausschliesslich zur Erbringung dieser Funktion verarbeitet, <strong>nicht zu Werbezwecken verwendet</strong> und dienen nicht der Profilbildung. Gib bitte keine sensiblen Personendaten in den Chat ein. KI-Antworten können Fehler enthalten und ersetzen keine Fachperson oder amtlichen Unterlagen.</p>
+  </div>
+
+  <div class="block">
+    <h2>12. Ihre Rechte</h2>
+    <p>Im Rahmen des anwendbaren Rechts haben Sie das Recht auf:</p>
+    <ul>
+      <li>Auskunft über die bearbeiteten Personendaten;</li>
+      <li>Berichtigung unrichtiger Daten;</li>
+      <li>Löschung Ihrer Daten;</li>
+      <li>Einschränkung der Bearbeitung sowie Widerspruch;</li>
+      <li>Widerruf einer erteilten Einwilligung (mit Wirkung für die Zukunft);</li>
+      <li>Herausgabe bzw. Übertragung Ihrer Daten, soweit anwendbar.</li>
+    </ul>
+    <p>Zur Ausübung dieser Rechte genügt eine Nachricht an <a href="mailto:info@lernstrom.ch">info@lernstrom.ch</a>. Sie haben zudem das Recht, sich bei der zuständigen Aufsichtsbehörde zu beschweren – in der Schweiz beim Eidgenössischen Datenschutz- und Öffentlichkeitsbeauftragten (EDÖB).</p>
+  </div>
+
+  <div class="block">
+    <h2>13. Konto löschen</h2>
+    <p>Sie können Ihr Konto und die damit verbundenen Daten jederzeit selbst löschen lassen – über die Seite <a href="konto-loeschen.html">Konto löschen</a> oder per Nachricht an <a href="mailto:info@lernstrom.ch">info@lernstrom.ch</a>. Mit der Löschung gehen Lernfortschritt und freigeschaltete Zugänge unwiederbringlich verloren.</p>
+  </div>
+
+  <div class="block">
+    <h2>13. Externe Links</h2>
+    <p>Unsere Seiten können Links zu externen Websites enthalten (z. B. Instagram, Zahlungsseiten). Für deren Inhalte und Datenschutzpraktiken sind ausschliesslich die jeweiligen Anbieter verantwortlich.</p>
+  </div>
+
+  <div class="block">
+    <h2>14. Änderungen</h2>
+    <p>Wir können diese Datenschutzerklärung jederzeit anpassen. Massgebend ist die jeweils auf lernstrom.ch veröffentlichte Fassung.</p>
+  </div>
+</div>
+<footer>
+  <div class="fnote">© 2026 LernStrom</div>
+  <div class="flinks"><a href="impressum.html">Impressum</a><a href="agb.html">AGB</a><a href="datenschutz.html">Datenschutz</a><a href="konto-loeschen.html">Konto löschen</a></div>
+</footer>
+<script>function tt(){var h=document.documentElement;var n=h.getAttribute('data-theme')==='dark'?'light':'dark';h.setAttribute('data-theme',n);try{localStorage.setItem('ls-theme',n);}catch(e){}}</script>
+</body>
+</html>

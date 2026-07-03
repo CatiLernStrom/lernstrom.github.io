@@ -1,0 +1,1 @@
+function r(){try{return JSON.parse(localStorage.getItem("primar_kind")||"null")}catch{return null}}function t(e){e?localStorage.setItem("primar_kind",JSON.stringify({id:e.id,vorname:e.vorname})):localStorage.removeItem("primar_kind")}export{r as g,t as s};

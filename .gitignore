@@ -1,0 +1,10 @@
+
+# grosse Build-Artefakte gehoeren nicht ins Web-Repo
+*.apk
+*.aab
+
+# Repo schlank halten: Social-Bot, Alt-Medien, Zwischendateien, APKs
+social/
+insta/
+app/spiel/sockimg/_work/
+*.apk

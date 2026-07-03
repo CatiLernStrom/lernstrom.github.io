@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>LernStrom — Bürobeleuchtung mit Präsenzmelder</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    background:radial-gradient(circle at 50% 30%, #1a2230 0%, #0c1018 70%, #06080d 100%);
+    font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:#e8edf2;
+    display:flex;align-items:center;justify-content:center;
+    overflow:hidden;
+    user-select:none;-webkit-user-select:none;
+    touch-action:none;
+  }
+  #stage{
+    position:relative;
+    width:390px;height:844px;
+    max-height:100vh;
+    border-radius:34px;
+    overflow:hidden;
+    box-shadow:0 30px 90px rgba(0,0,0,.7), 0 0 0 10px #0a0d13, 0 0 0 12px #1c232e, inset 0 0 60px rgba(0,0,0,.4);
+    background:
+      radial-gradient(120% 60% at 50% -10%, rgba(45,212,191,.08), transparent 60%),
+      linear-gradient(180deg,#3a4250 0%, #2a323e 30%, #20262f 70%, #171c24 100%);
+  }
+  @media (max-height:860px){ #stage{transform:scale(calc(100vh / 860));} }
+
+  #stage::after{
+    content:"";position:absolute;inset:0;border-radius:34px;pointer-events:none;
+    box-shadow:inset 0 0 120px rgba(0,0,0,.5), inset 0 -40px 80px rgba(0,0,0,.45);
+    background:radial-gradient(140% 90% at 50% 120%, rgba(70,80,95,.12), transparent 55%);
+    z-index:60;
+  }
+
+  canvas#fx{position:absolute;inset:0;z-index:40;pointer-events:none;}
+
+  #hud{position:absolute;top:0;left:0;right:0;z-index:50;padding:14px 16px 8px;display:flex;align-items:center;gap:10px;}
+  .badge{
+    display:flex;align-items:center;gap:7px;
+    background:linear-gradient(180deg,#202a37,#161d27);
+    border:1px solid rgba(255,255,255,.07);
+    border-radius:14px;padding:7px 11px;font-size:13px;font-weight:700;
+    box-shadow:0 4px 10px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.05);
+  }
+  .badge .dot{width:9px;height:9px;border-radius:50%;background:#2dd4bf;box-shadow:0 0 8px #2dd4bf;}
+  #xpBadge{color:#ffd166;}
+  #xpBadge .ico{display:inline-block;width:13px;height:13px;
+    background:#ffd166;clip-path:polygon(58% 0,0 60%,42% 60%,42% 100%,100% 40%,58% 40%);
+    filter:drop-shadow(0 0 5px rgba(255,209,102,.6));}
+  .spacer{flex:1;}
+  #mute{
+    width:38px;height:38px;border-radius:12px;cursor:pointer;
+    background:linear-gradient(180deg,#202a37,#161d27);
+    border:1px solid rgba(255,255,255,.07);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 4px 10px rgba(0,0,0,.4);
+  }
+  #mute svg{width:18px;height:18px;}
+  #mute:active{transform:scale(.92);}
+
+  #prog{position:absolute;top:58px;left:16px;right:16px;z-index:50;height:8px;border-radius:6px;
+    background:rgba(0,0,0,.4);overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,.6);}
+  #progFill{height:100%;width:0%;border-radius:6px;
+    background:linear-gradient(90deg,#2dd4bf,#7af0d9);transition:width .5s cubic-bezier(.2,1.3,.4,1);
+    box-shadow:0 0 12px rgba(45,212,191,.7);}
+
+  #steps{position:absolute;top:38px;left:16px;right:16px;z-index:49;display:flex;gap:4px;justify-content:center;pointer-events:none;}
+  #steps .sc{flex:1;height:4px;border-radius:3px;background:rgba(255,255,255,.08);transition:background .4s, box-shadow .4s;}
+  #steps .sc.done{background:linear-gradient(90deg,#2dd4bf,#7af0d9);box-shadow:0 0 8px rgba(45,212,191,.6);}
+  #steps .sc.cur{background:#ffd166;box-shadow:0 0 10px rgba(255,209,102,.7);}
+
+  #task{position:absolute;top:74px;left:0;right:0;z-index:50;text-align:center;pointer-events:none;padding:0 14px;transition:opacity .6s, transform .6s;}
+  #task.faded{opacity:0;transform:translateY(-8px);pointer-events:none;}
+  #task.hidden{opacity:0!important;transform:translateY(-8px);pointer-events:none!important;}
+  #task h1{font-size:15px;font-weight:800;letter-spacing:.3px;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.6);}
+  #task p{font-size:12px;margin-top:3px;color:#9fb0c0;font-weight:600;line-height:1.4;}
+  #taskToggle{position:absolute;top:96px;right:12px;z-index:58;cursor:pointer;
+    font-size:10px;font-weight:800;color:#9fb0c0;background:rgba(10,14,20,.55);
+    border:1px solid rgba(255,255,255,.08);border-radius:11px;padding:4px 9px;
+    -webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);user-select:none;-webkit-user-select:none;}
+  #taskToggle:active{transform:scale(.94);}
+
+  .prep{position:absolute;inset:0;z-index:30;opacity:0;pointer-events:none;transition:opacity .55s;}
+  .prep.on{opacity:1;pointer-events:auto;}
+  .prep svg{position:absolute;inset:0;width:100%;height:100%;display:block;}
+
+  .readout{position:absolute;left:50%;transform:translateX(-50%);bottom:96px;z-index:35;
+    font-size:13px;font-weight:800;color:#fff;background:linear-gradient(180deg,#202a37,#141a23);
+    padding:7px 16px;border-radius:20px;border:1px solid rgba(45,212,191,.3);
+    box-shadow:0 6px 18px rgba(0,0,0,.5);pointer-events:none;text-align:center;min-width:180px;}
+  .readout .big{color:#7af0d9;font-size:16px;}
+  .readout.bad{border-color:#ff6b6b;color:#ffb3b3;}
+  .readout.good{border-color:#2dd4bf;}
+
+  .doHint{position:absolute;left:12px;top:120px;z-index:36;max-width:190px;
+    font-size:11.5px;font-weight:800;color:#fff;text-align:left;line-height:1.4;
+    background:linear-gradient(180deg,rgba(32,42,55,.95),rgba(20,26,35,.95));
+    padding:9px 16px;border-radius:16px;border:1px solid rgba(45,212,191,.4);
+    box-shadow:0 8px 22px rgba(0,0,0,.5), 0 0 22px rgba(45,212,191,.18);
+    pointer-events:none;opacity:0;transition:opacity .4s;}
+  .doHint.on{opacity:1;}
+  .doHint b{color:#7af0d9;}
+
+  .toast{position:absolute;z-index:55;font-weight:900;font-size:15px;pointer-events:none;
+    text-shadow:0 2px 6px rgba(0,0,0,.6);animation:toastUp 1s ease-out forwards;}
+  @keyframes toastUp{0%{opacity:0;transform:translateY(0) scale(.6)}15%{opacity:1;transform:translateY(-6px) scale(1.1)}100%{opacity:0;transform:translateY(-46px) scale(1)}}
+
+  .shake{animation:shakeStage .35s;}
+  @keyframes shakeStage{0%,100%{transform:translate(0,0)}20%{transform:translate(-6px,2px)}40%{transform:translate(6px,-2px)}60%{transform:translate(-4px,1px)}80%{transform:translate(4px,-1px)}}
+
+  .pulseTool{animation:toolPulse 1.1s ease-in-out infinite;}
+  @keyframes toolPulse{0%,100%{filter:drop-shadow(0 0 1px rgba(45,212,191,.3))}50%{filter:drop-shadow(0 0 10px rgba(45,212,191,.95)) drop-shadow(0 0 4px rgba(122,240,217,.9))}}
+
+  #win{position:absolute;inset:0;z-index:70;display:none;flex-direction:column;align-items:center;justify-content:center;
+    background:radial-gradient(circle at 50% 40%, rgba(45,212,191,.18), rgba(6,9,14,.86) 60%);
+    backdrop-filter:blur(2px);}
+  #win.show{display:flex;animation:winIn .5s;}
+  @keyframes winIn{from{opacity:0}to{opacity:1}}
+  #win .card{
+    width:300px;padding:26px 22px 24px;border-radius:24px;text-align:center;
+    background:linear-gradient(180deg,#222d3a,#161d27);
+    border:1px solid rgba(45,212,191,.3);
+    box-shadow:0 30px 70px rgba(0,0,0,.7), 0 0 40px rgba(45,212,191,.2), inset 0 1px 0 rgba(255,255,255,.06);
+    transform:scale(.6);animation:pop .6s cubic-bezier(.2,1.6,.4,1) forwards;
+  }
+  @keyframes pop{to{transform:scale(1)}}
+  #win h2{font-size:22px;font-weight:900;color:#fff;letter-spacing:.5px;}
+  #win .sub{font-size:13px;color:#9fb0c0;margin-top:5px;font-weight:600;}
+  #stars{display:flex;gap:8px;justify-content:center;margin:16px 0 6px;}
+  #stars .st{font-size:34px;color:#2a3340;transform:scale(0);line-height:1;}
+  #stars .st.lit{color:#ffd166;text-shadow:0 0 16px rgba(255,209,102,.8);animation:starPop .5s cubic-bezier(.2,1.8,.4,1) forwards;}
+  @keyframes starPop{0%{transform:scale(0) rotate(-40deg)}70%{transform:scale(1.4) rotate(10deg)}100%{transform:scale(1) rotate(0)}}
+  #xpBig{font-size:30px;font-weight:900;color:#ffd166;margin:8px 0 4px;text-shadow:0 0 18px rgba(255,209,102,.5);}
+  #win .ok{margin-top:16px;padding:12px 0;border-radius:14px;cursor:pointer;font-weight:800;font-size:15px;color:#06281f;
+    background:linear-gradient(180deg,#5cf0d6,#2dd4bf);box-shadow:0 8px 20px rgba(45,212,191,.4);}
+  #win .ok:active{transform:scale(.96);}
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <canvas id="fx"></canvas>
+
+  <div id="hud">
+    <div class="badge"><span class="dot"></span><span id="phaseLbl">Schritt 1</span></div>
+    <div class="spacer"></div>
+    <div class="badge" id="xpBadge"><span class="ico"></span><span id="xpVal">0</span> XP</div>
+    <div id="mute"></div>
+  </div>
+
+  <div id="steps"></div>
+  <div id="prog"><div id="progFill"></div></div>
+
+  <div id="task">
+    <h1 id="taskTitle">Bürobeleuchtung montieren</h1>
+    <p id="taskSub">Rasterleuchten + Präsenzmelder — nach NIN 2025</p>
+  </div>
+  <div id="taskToggle">Aufgabe ausblenden</div>
+
+  <!-- SCENES -->
+  <div class="prep" id="pMount"><svg id="svgMount" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"></svg><div class="doHint" id="hintMount"></div><div class="readout" id="roMount">Leuchten montieren (0/4)</div></div>
+  <div class="prep" id="pChain"><svg id="svgChain" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"></svg><div class="doHint" id="hintChain"></div><div class="readout" id="roChain">Durchverdrahten</div></div>
+  <div class="prep" id="pSensor"><svg id="svgSensor" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"></svg><div class="doHint" id="hintSensor"></div><div class="readout" id="roSensor">Präsenzmelder anschliessen</div></div>
+  <div class="prep" id="pTest"><svg id="svgTest" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"></svg><div class="doHint" id="hintTest"></div><div class="readout" id="roTest">Funktionstest</div></div>
+
+  <!-- WIN -->
+  <div id="win">
+    <div class="card">
+      <h2>BELEUCHTUNG LÄUFT!</h2>
+      <div class="sub">Rasterleuchten mit Präsenz-/Konstantlicht in Betrieb</div>
+      <div id="stars"><span class="st">&#9733;</span><span class="st">&#9733;</span><span class="st">&#9733;</span></div>
+      <div id="xpBig">+0 XP</div>
+      <div class="sub" id="winNote">Leuchten in Reihe &middot; Präsenzmelder &middot; Konstantlicht geregelt</div>
+      <div class="ok" id="again">Nochmal spielen</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+"use strict";
+/* ============================================================= *
+ *  LernStrom — Bürobeleuchtung mit Präsenzmelder (single-file)  *
+ *  CH / NIN 2025: Rasterleuchten an die Decke montieren,        *
+ *  mehrere Leuchten in Reihe durchverdrahten (L/N/PE + DALI/    *
+ *  geschaltet), Präsenzmelder/Konstantlicht-Regler anschliessen *
+ *  und Funktion prüfen.                                          *
+ *  Pure SVG + Canvas FX + WebAudio. Keine Emojis (SVG/CSS).     *
+ * ============================================================= */
+
+const STAGE_W = 390, STAGE_H = 844;
+const SVGNS   = "http://www.w3.org/2000/svg";
+const stage   = document.getElementById('stage');
+const fx      = document.getElementById('fx');
+const ctx     = fx.getContext('2d');
+
+function toSvgFor(svg, clientX, clientY){
+  const r = svg.getBoundingClientRect();
+  return {
+    x: (clientX - r.left) / r.width  * STAGE_W,
+    y: (clientY - r.top ) / r.height * STAGE_H
+  };
+}
+
+/* ===================== AUDIO ===================== */
+let audioCtx=null, muted=true;
+function AC(){ if(!audioCtx){ try{audioCtx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){} } return audioCtx; }
+function tone(freq, dur, type, vol, slideTo){
+  if(muted) return; const c=AC(); if(!c) return;
+  const o=c.createOscillator(), g=c.createGain();
+  o.type=type||'sine'; o.frequency.value=freq;
+  if(slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, c.currentTime+dur);
+  g.gain.value=0.0001;
+  g.gain.exponentialRampToValueAtTime(vol||0.2, c.currentTime+0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime+dur);
+  o.connect(g); g.connect(c.destination);
+  o.start(); o.stop(c.currentTime+dur+0.02);
+}
+function sndClick(){ tone(680,0.07,'triangle',0.25,1200); setTimeout(()=>tone(1500,0.05,'sine',0.12),20); }
+function sndSnap(){ tone(440,0.05,'square',0.18,900); setTimeout(()=>tone(1320,0.12,'triangle',0.22),30); }
+function sndDrill(){ if(muted)return; const c=AC(); if(!c)return;
+  const o=c.createOscillator(),g=c.createGain(); o.type='sawtooth';o.frequency.value=140;
+  o.frequency.linearRampToValueAtTime(220,c.currentTime+0.3);
+  g.gain.value=0.0001;g.gain.exponentialRampToValueAtTime(0.16,c.currentTime+0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+0.34);
+  o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+0.36);
+}
+function sndLight(){ tone(1200,0.08,'sine',0.18,1800); setTimeout(()=>tone(2000,0.12,'triangle',0.14),40); }
+function sndPick(){ tone(520,0.05,'sine',0.14,720); }
+function sndWin(){ [523,659,784,1047,1319].forEach((f,i)=>setTimeout(()=>tone(f,0.3,'triangle',0.2),i*110)); }
+
+const muteBtn=document.getElementById('mute');
+const ICON_MUTE='<svg viewBox="0 0 24 24" fill="none" stroke="#9fb0c0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9v6h4l5 4V5L9 9H5z" fill="#9fb0c0"/><line x1="17" y1="9" x2="22" y2="14"/><line x1="22" y1="9" x2="17" y2="14"/></svg>';
+const ICON_SND='<svg viewBox="0 0 24 24" fill="none" stroke="#2dd4bf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9v6h4l5 4V5L9 9H5z" fill="#2dd4bf"/><path d="M16 8a5 5 0 0 1 0 8"/><path d="M19 5a9 9 0 0 1 0 14"/></svg>';
+muteBtn.innerHTML=ICON_MUTE;
+muteBtn.onclick=function(){
+  muted=!muted; this.innerHTML=muted?ICON_MUTE:ICON_SND;
+  if(!muted){ AC(); tone(880,0.06,'sine',0.15); }
+};
+
+/* ===================== FX ENGINE ===================== */
+function sizeCanvas(){
+  const r=stage.getBoundingClientRect();
+  const dpr=window.devicePixelRatio||1;
+  fx.width=STAGE_W*dpr; fx.height=STAGE_H*dpr;
+  fx.style.width=r.width+'px'; fx.style.height=r.height+'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+let particles=[];
+function spark(x,y,n,opt){
+  opt=opt||{};
+  for(let i=0;i<n;i++){
+    const a=Math.random()*Math.PI*2, sp=(opt.speed||3)*(0.4+Math.random());
+    particles.push({
+      x,y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp - (opt.up||0),
+      life:1, decay:0.012+Math.random()*0.02,
+      size:(opt.size||2.4)*(0.6+Math.random()),
+      color:opt.color|| (Math.random()<.5?'#ffd166':'#cfd6de'),
+      grav:opt.grav!=null?opt.grav:0.06, glow:opt.glow!==false
+    });
+  }
+}
+let confetti=[];
+function burstConfetti(){
+  const cols=['#2dd4bf','#ffd166','#ff6b6b','#7af0d9','#ffffff','#9aa0a6','#8ab4ff'];
+  for(let i=0;i<140;i++){
+    confetti.push({
+      x:STAGE_W/2+(Math.random()-.5)*60, y:STAGE_H*0.42,
+      vx:(Math.random()-.5)*9, vy:-Math.random()*11-3,
+      g:0.22+Math.random()*0.1, w:5+Math.random()*6, h:8+Math.random()*8,
+      rot:Math.random()*6.28, vr:(Math.random()-.5)*0.4,
+      color:cols[(Math.random()*cols.length)|0], life:1
+    });
+  }
+}
+let dust=[];
+function initDust(){
+  for(let i=0;i<18;i++) dust.push({
+    x:Math.random()*STAGE_W,y:Math.random()*STAGE_H,
+    vy:-(0.1+Math.random()*0.22),vx:(Math.random()-.5)*0.2,
+    r:0.5+Math.random()*1.3,a:0.04+Math.random()*0.12,ph:Math.random()*6.28
+  });
+}
+function fxLoop(){
+  ctx.clearRect(0,0,STAGE_W,STAGE_H);
+  for(const d of dust){
+    d.ph+=0.02; d.y+=d.vy; d.x+=d.vx+Math.sin(d.ph)*0.15;
+    if(d.y<-4){d.y=STAGE_H+4;d.x=Math.random()*STAGE_W;}
+    ctx.globalAlpha=d.a*(0.6+0.4*Math.sin(d.ph));
+    ctx.fillStyle='#cfd6de';ctx.shadowBlur=4;ctx.shadowColor='#aeb8c4';
+    ctx.beginPath();ctx.arc(d.x,d.y,d.r,0,6.28);ctx.fill();
+  }
+  ctx.shadowBlur=0;ctx.globalAlpha=1;
+  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i];
+    p.vy+=p.grav; p.x+=p.vx; p.y+=p.vy; p.life-=p.decay;
+    if(p.life<=0){particles.splice(i,1);continue;}
+    ctx.globalAlpha=Math.max(0,p.life);
+    if(p.glow){ctx.shadowBlur=10;ctx.shadowColor=p.color;}else ctx.shadowBlur=0;
+    ctx.fillStyle=p.color;
+    ctx.beginPath();ctx.arc(p.x,p.y,p.size*p.life+0.4,0,6.28);ctx.fill();
+  }
+  ctx.shadowBlur=0;
+  for(let i=confetti.length-1;i>=0;i--){
+    const c=confetti[i];
+    c.vy+=c.g;c.x+=c.vx;c.y+=c.vy;c.rot+=c.vr;c.vx*=0.99;
+    if(c.y>STAGE_H+30){confetti.splice(i,1);continue;}
+    ctx.save();ctx.translate(c.x,c.y);ctx.rotate(c.rot);
+    ctx.globalAlpha=1;ctx.fillStyle=c.color;
+    ctx.fillRect(-c.w/2,-c.h/2,c.w,c.h);
+    ctx.restore();
+  }
+  ctx.globalAlpha=1;
+  requestAnimationFrame(fxLoop);
+}
+
+function toast(text,color,x,y){
+  const t=document.createElement('div');
+  t.className='toast';t.textContent=text;t.style.color=color||'#7af0d9';
+  const r=stage.getBoundingClientRect();
+  t.style.left=(x/STAGE_W*r.width)+'px';
+  t.style.top =(y/STAGE_H*r.height)+'px';
+  t.style.transform='translate(-50%,0)';
+  stage.appendChild(t);
+  setTimeout(()=>t.remove(),1000);
+}
+function shakeStage(){ stage.classList.add('shake');setTimeout(()=>stage.classList.remove('shake'),360); }
+
+/* ===================== SVG helpers ===================== */
+function el(tag,attrs){
+  const e=document.createElementNS(SVGNS,tag);
+  for(const k in attrs) e.setAttribute(k,attrs[k]);
+  return e;
+}
+const COMMON_DEFS = `
+  <linearGradient id="ceil" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#586271"/><stop offset="1" stop-color="#3a4350"/>
+  </linearGradient>
+  <linearGradient id="lumBody" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#e9eef4"/><stop offset="1" stop-color="#b9c2cd"/>
+  </linearGradient>
+  <linearGradient id="lumOn" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#fff7df"/><stop offset="1" stop-color="#ffe9a8"/>
+  </linearGradient>
+  <linearGradient id="steel" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#d7dde4"/><stop offset="0.5" stop-color="#8d97a3"/><stop offset="1" stop-color="#4b5560"/>
+  </linearGradient>
+  <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="rgba(255,239,170,.85)"/><stop offset="1" stop-color="rgba(255,239,170,0)"/>
+  </radialGradient>
+  <linearGradient id="wallShade" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="rgba(40,52,66,.55)"/><stop offset="0.55" stop-color="rgba(20,28,37,0)"/><stop offset="1" stop-color="rgba(8,12,17,.6)"/>
+  </linearGradient>
+  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#bfe4f2"/><stop offset="0.6" stop-color="#8fc4dd"/><stop offset="1" stop-color="#6fa7c4"/>
+  </linearGradient>
+  <radialGradient id="winGlow" cx="0.5" cy="0.25" r="0.7">
+    <stop offset="0" stop-color="rgba(190,225,240,.6)"/><stop offset="1" stop-color="rgba(190,225,240,0)"/>
+  </radialGradient>
+  <linearGradient id="floorShade" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="rgba(60,72,88,.35)"/><stop offset="1" stop-color="rgba(6,9,14,.7)"/>
+  </linearGradient>
+  <filter id="ds" x="-30%" y="-30%" width="160%" height="160%">
+    <feDropShadow dx="0" dy="5" stdDeviation="5" flood-color="#000" flood-opacity="0.5"/>
+  </filter>`;
+function addDefs(svg){ const d=el('defs',{}); d.innerHTML=COMMON_DEFS; svg.appendChild(d); }
+
+/* suspended ceiling grid (Rasterdecke) drawn at top */
+function addCeiling(svg){
+  svg.appendChild(el('rect',{x:0,y:0,width:390,height:160,fill:'url(#ceil)'}));
+  // T-grid lines
+  for(let i=0;i<=6;i++){
+    svg.appendChild(el('line',{x1:i*65,y1:0,x2:i*65,y2:160,stroke:'#2a323d','stroke-width':2,opacity:0.5}));
+  }
+  svg.appendChild(el('line',{x1:0,y1:80,x2:390,y2:80,stroke:'#2a323d','stroke-width':2,opacity:0.5}));
+  svg.appendChild(el('line',{x1:0,y1:160,x2:390,y2:160,stroke:'#222a33','stroke-width':3}));
+}
+
+/* decorative office room: back wall, window (daylight), floor + desk silhouettes.
+   Purely cosmetic — drawn behind all interactive elements, no IDs/handlers. */
+function addRoom(svg){
+  // back wall (y 160..640)
+  svg.appendChild(el('rect',{x:0,y:160,width:390,height:480,fill:'#1b2530'}));
+  svg.appendChild(el('rect',{x:0,y:160,width:390,height:480,fill:'url(#wallShade)'}));
+  // perspective side-wall hints (left & right) converging toward centre
+  svg.appendChild(el('polygon',{points:'0,160 44,210 44,610 0,640',fill:'#141c25',opacity:0.6}));
+  svg.appendChild(el('polygon',{points:'390,160 346,210 346,610 390,640',fill:'#141c25',opacity:0.6}));
+  // window on the back wall — daylight reference for Konstantlicht
+  svg.appendChild(el('rect',{x:108,y:330,width:174,height:150,rx:4,fill:'url(#sky)'}));
+  svg.appendChild(el('rect',{x:108,y:330,width:174,height:150,rx:4,fill:'none',stroke:'#5a6675','stroke-width':4}));
+  svg.appendChild(el('line',{x1:195,y1:330,x2:195,y2:480,stroke:'#5a6675','stroke-width':4}));
+  svg.appendChild(el('line',{x1:108,y1:405,x2:282,y2:405,stroke:'#5a6675','stroke-width':4}));
+  // window glow spilling into the room
+  svg.appendChild(el('rect',{x:96,y:330,width:198,height:240,fill:'url(#winGlow)',opacity:0.5}));
+  // floor (y 640..844)
+  svg.appendChild(el('rect',{x:0,y:640,width:390,height:204,fill:'#10161e'}));
+  svg.appendChild(el('rect',{x:0,y:640,width:390,height:204,fill:'url(#floorShade)'}));
+  svg.appendChild(el('line',{x1:0,y1:640,x2:390,y2:640,stroke:'#2a323d','stroke-width':3}));
+  // floor perspective seams toward a central vanishing point
+  for(let i=0;i<=6;i++){
+    const fx0=i*65, fx1=110+(i-3)*40;
+    svg.appendChild(el('line',{x1:fx0,y1:640,x2:fx1,y2:844,stroke:'#1c242e','stroke-width':1.4,opacity:0.5}));
+  }
+  // desk silhouettes on the floor (cosmetic furniture)
+  svg.appendChild(el('rect',{x:26,y:690,width:120,height:14,rx:3,fill:'#1f2a36'}));
+  svg.appendChild(el('rect',{x:34,y:704,width:10,height:70,fill:'#1a232e'}));
+  svg.appendChild(el('rect',{x:128,y:704,width:10,height:70,fill:'#1a232e'}));
+  svg.appendChild(el('rect',{x:244,y:690,width:120,height:14,rx:3,fill:'#1f2a36'}));
+  svg.appendChild(el('rect',{x:252,y:704,width:10,height:70,fill:'#1a232e'}));
+  svg.appendChild(el('rect',{x:346,y:704,width:10,height:70,fill:'#1a232e'}));
+  // monitors on desks
+  svg.appendChild(el('rect',{x:60,y:662,width:42,height:26,rx:2,fill:'#243140',stroke:'#33424f','stroke-width':1}));
+  svg.appendChild(el('rect',{x:286,y:662,width:42,height:26,rx:2,fill:'#243140',stroke:'#33424f','stroke-width':1}));
+}
+
+function showDoHint(id,html,ms){
+  const e=document.getElementById(id); if(!e) return;
+  e.innerHTML=html; e.classList.add('on');
+  if(ms){ setTimeout(()=>e.classList.remove('on'),ms); }
+}
+function hideDoHint(id){ const e=document.getElementById(id); if(e) e.classList.remove('on'); }
+
+/* ===================== GAME STATE + XP ===================== */
+const XP_MAX = 100000;
+let xp=0, xpTarget=0, _xpAnimRunning=false;
+const xpVal=document.getElementById('xpVal');
+function addXp(n){
+  n = Math.round((Number(n)||0)*0.5); // XP global -50% (Roadmap)
+  xpTarget = Math.max(0, Math.min(XP_MAX, xpTarget + n));
+  if(_xpAnimRunning) return;
+  _xpAnimRunning=true;
+  let from=xp, t0=performance.now();
+  (function anim(t){
+    const k=Math.min(1,(t-t0)/450);
+    xp=Math.round(from+(xpTarget-from)*(1-Math.pow(1-k,3)));
+    xp=Math.max(0,Math.min(XP_MAX,xp));
+    xpVal.textContent=xp;
+    if(k<1 && xp!==xpTarget){ requestAnimationFrame(anim); }
+    else { xp=xpTarget; xpVal.textContent=xp; _xpAnimRunning=false; }
+  })(t0);
+}
+
+/* ===================== STEP orchestration ===================== */
+const STEP_LIST = ['mount','chain','sensor','test'];
+const STEP_TITLES = {
+  mount: ['Rasterleuchten montieren','Setze die LED-Panels ins Deckenraster (4 Stueck)'],
+  chain: ['Leuchten durchverdrahten','L / N / PE von Leuchte zu Leuchte in Reihe schlaufen'],
+  sensor:['Praesenzmelder anschliessen','Melder + Konstantlicht steuern die Leuchtengruppe'],
+  test:  ['Funktionstest','Praesenz + Tageslicht pruefen, dann WIN']
+};
+let stepIdx=0;
+const stepsBar=document.getElementById('steps');
+function buildStepsBar(){
+  stepsBar.innerHTML='';
+  STEP_LIST.forEach(()=>{ const d=document.createElement('div'); d.className='sc'; stepsBar.appendChild(d); });
+}
+function setHud(step){
+  const chips=stepsBar.children;
+  for(let i=0;i<chips.length;i++){
+    chips[i].className='sc'+(i<stepIdx?' done':i===stepIdx?' cur':'');
+  }
+  document.getElementById('phaseLbl').textContent='Schritt '+(stepIdx+1)+'/'+STEP_LIST.length;
+  const t=STEP_TITLES[step];
+  document.getElementById('taskTitle').textContent=t[0];
+  document.getElementById('taskSub').textContent=t[1];
+  document.getElementById('progFill').style.width=(stepIdx/(STEP_LIST.length-1)*100)+'%';
+}
+
+const SCENE_OF = { mount:'pMount', chain:'pChain', sensor:'pSensor', test:'pTest' };
+function showScene(step){
+  Object.values(SCENE_OF).forEach(id=>{ document.getElementById(id).classList.remove('on'); });
+  const tk=document.getElementById('task');
+  tk.style.display=''; tk.style.opacity='';
+  tk.classList.remove('faded');
+  clearTimeout(window.__taskFadeT);
+  if(window.__taskHidden){ tk.classList.add('hidden'); }
+  else { tk.classList.remove('hidden'); window.__taskFadeT=setTimeout(()=>tk.classList.add('faded'),3500); }
+  const cur=document.getElementById(SCENE_OF[step]);
+  setTimeout(()=>cur.classList.add('on'),60);
+}
+function gotoStep(name){
+  stepIdx=STEP_LIST.indexOf(name);
+  setHud(name);
+  showScene(name);
+  BUILDERS[name]();
+}
+window.__goto=function(n){ try{gotoStep(n);}catch(e){console.log('goto err',e);} };
+function nextStep(){
+  const ni=stepIdx+1;
+  if(ni>=STEP_LIST.length) return;
+  gotoStep(STEP_LIST[ni]);
+}
+
+/* Dev-Sprungleiste (nur mit ?dev) */
+if(typeof location!=='undefined' && /dev/.test(location.search) && document.body){
+  const bar=document.createElement('div');
+  bar.style.cssText='position:fixed;bottom:4px;left:4px;right:4px;z-index:99999;display:flex;flex-wrap:wrap;gap:3px;justify-content:center;';
+  STEP_LIST.forEach((s,i)=>{ const b=document.createElement('button'); b.textContent=(i+1)+'·'+s;
+    b.style.cssText='font-size:10px;font-weight:700;padding:4px 7px;background:#11202c;color:#7af0d9;border:1px solid #2dd4bf;border-radius:7px;cursor:pointer;';
+    b.onclick=()=>gotoStep(s); bar.appendChild(b); });
+  document.body.appendChild(bar);
+}
+
+/* Positions of the 4 luminaires (row), reused across scenes */
+const LUM_Y = 226;          // top of luminaire bodies
+const LUM_X = [34,122,210,298];  // left edge of each panel
+const LUM_W = 78, LUM_H = 50;
+function lumCx(i){ return LUM_X[i]+LUM_W/2; }
+
+function drawPanel(svg,i,on){
+  const x=LUM_X[i], y=LUM_Y;
+  const g=el('g',{filter:'url(#ds)'});
+  g.appendChild(el('rect',{x:x,y:y,width:LUM_W,height:LUM_H,rx:4,fill:on?'url(#lumOn)':'url(#lumBody)',stroke:'#7e8896','stroke-width':1.5}));
+  // diffuser ribs
+  for(let r=0;r<5;r++) g.appendChild(el('line',{x1:x+6,y1:y+9+r*9,x2:x+LUM_W-6,y2:y+9+r*9,stroke:on?'#f0d98a':'#cfd6de','stroke-width':1,opacity:0.7}));
+  svg.appendChild(g);
+  if(on){
+    svg.appendChild(el('ellipse',{cx:x+LUM_W/2,cy:y+LUM_H+44,rx:62,ry:48,fill:'url(#glow)',opacity:0.55}));
+  }
+  return g;
+}
+
+/* ===================== STEP 1 — Rasterleuchten montieren ===================== */
+const svgMount=document.getElementById('svgMount');
+const roMount=document.getElementById('roMount');
+const NEED_LUM=4;
+function buildMount(){
+  svgMount.innerHTML=''; addDefs(svgMount); addCeiling(svgMount); addRoom(svgMount);
+  // ghost slots where panels belong
+  LUM_X.forEach((x)=>{
+    svgMount.appendChild(el('rect',{x:x,y:LUM_Y,width:LUM_W,height:LUM_H,rx:4,fill:'none',stroke:'#ffd166','stroke-width':1.6,'stroke-dasharray':'6 5',opacity:0.5}));
+  });
+
+  let placed=0;
+  roMount.classList.remove('good');
+  roMount.innerHTML='Leuchten setzen: <span class="big">0/'+NEED_LUM+'</span>';
+  showDoHint('hintMount','<b>Schritt 1:</b> Tippe die 4 Rasterfelder — je ein LED-Panel ins Deckenraster einsetzen.',4400);
+
+  LUM_X.forEach((x,i)=>{
+    const g=el('g',{cursor:'pointer'});
+    const ring=el('rect',{x:x-3,y:LUM_Y-3,width:LUM_W+6,height:LUM_H+6,rx:6,fill:'none',stroke:'#ffd166','stroke-width':2,class:'pulseTool'});
+    g.appendChild(ring);
+    const hit=el('rect',{x:x-8,y:LUM_Y-8,width:LUM_W+16,height:LUM_H+16,fill:'transparent'});
+    g.appendChild(hit);
+    svgMount.appendChild(g);
+    let done=false;
+    hit.addEventListener('pointerdown',()=>{
+      if(done) return; done=true; AC(); sndDrill();
+      ring.classList.remove('pulseTool'); ring.setAttribute('opacity','0');
+      spark(lumCx(i),LUM_Y+LUM_H/2,12,{color:'#cfd6de',speed:2.5});
+      setTimeout(()=>{
+        drawPanel(svgMount,i,false);
+        sndSnap();
+        placed++;
+        addXp(8);
+        toast('Panel eingesetzt','#7af0d9',lumCx(i),LUM_Y-14);
+        roMount.innerHTML='Leuchten setzen: <span class="big">'+placed+'/'+NEED_LUM+'</span>';
+        if(placed===NEED_LUM){
+          roMount.classList.add('good'); roMount.textContent='4 Rasterleuchten montiert';
+          hideDoHint('hintMount');
+          spark(195,LUM_Y,20,{color:'#2dd4bf',speed:4,up:1});
+          setTimeout(()=>nextStep(),900);
+        }
+      },170);
+    });
+  });
+}
+
+/* ===================== STEP 2 — Leuchten in Reihe durchverdrahten ===================== */
+const svgChain=document.getElementById('svgChain');
+const roChain=document.getElementById('roChain');
+function buildChain(){
+  svgChain.innerHTML=''; addDefs(svgChain); addCeiling(svgChain); addRoom(svgChain);
+  LUM_X.forEach((x,i)=>drawPanel(svgChain,i,false));
+  // supply feed marker on the left (from Unterverteilung)
+  svgChain.appendChild(el('circle',{cx:18,cy:LUM_Y+LUM_H/2,r:6,fill:'url(#steel)',stroke:'#2a3340','stroke-width':1}));
+  svgChain.appendChild(el('text',{x:8,y:LUM_Y-8,'font-size':'8','font-weight':'700',fill:'#7af0d9'})).textContent='Einspeisung UV';
+
+  // three wire cores legend — shown on a Klemmenleiste/Werkbank in the lower work zone
+  svgChain.appendChild(el('rect',{x:18,y:700,width:200,height:96,rx:10,fill:'rgba(24,32,42,.9)',stroke:'rgba(255,255,255,.08)','stroke-width':1}));
+  svgChain.appendChild(el('text',{x:30,y:692,'font-size':'9','font-weight':'800',fill:'#7af0d9'})).textContent='Klemmenleiste / Adern';
+  const cores=[{c:'#1c2530',n:'L (braun/schwarz)'},{c:'#2f6fd1',n:'N (blau)'},{c:'#3aa635',n:'PE (gelb-gruen)'}];
+  cores.forEach((co,i)=>{
+    svgChain.appendChild(el('rect',{x:34,y:716+i*26,width:18,height:12,rx:2,fill:co.c,stroke:'#0e151d','stroke-width':1}));
+    svgChain.appendChild(el('text',{x:60,y:726+i*26,'font-size':'11','font-weight':'700',fill:'#cdd8e2'})).textContent=co.n;
+  });
+
+  // segments to wire: feed->L0, L0->L1, L1->L2, L2->L3  (4 hops)
+  const xsLeft=[18, lumCx(0), lumCx(1), lumCx(2)];
+  const xsRight=[lumCx(0), lumCx(1), lumCx(2), lumCx(3)];
+  const NEED_SEG=xsLeft.length;
+  let wired=0;
+  roChain.classList.remove('good');
+  roChain.innerHTML='Leitungen schlaufen: <span class="big">0/'+NEED_SEG+'</span>';
+  showDoHint('hintChain','<b>Schritt 2:</b> Tippe jede Strecke — die <b>Durchschlaufklemme</b> jeder Leuchte weiterverbinden (L/N/PE).',5200);
+
+  const wireY=LUM_Y+LUM_H/2;
+  for(let s=0;s<NEED_SEG;s++){
+    const xa=xsLeft[s], xb=xsRight[s];
+    const g=el('g',{cursor:'pointer'});
+    // ghost dashed line
+    const ghost=el('line',{x1:xa,y1:wireY,x2:xb,y2:wireY,stroke:'#ffd166','stroke-width':1.6,'stroke-dasharray':'6 5',opacity:0.55,class:'pulseTool'});
+    g.appendChild(ghost);
+    const hit=el('rect',{x:Math.min(xa,xb),y:wireY-16,width:Math.abs(xb-xa),height:32,fill:'transparent'});
+    g.appendChild(hit);
+    svgChain.appendChild(g);
+    let done=false;
+    hit.addEventListener('pointerdown',()=>{
+      if(done) return; done=true; AC(); sndPick();
+      ghost.classList.remove('pulseTool'); ghost.setAttribute('opacity','0');
+      // draw 3 cores stacked (L/N/PE)
+      [{c:'#1c2530',dy:-4},{c:'#2f6fd1',dy:0},{c:'#3aa635',dy:4}].forEach((co)=>{
+        const ln=el('line',{x1:xa,y1:wireY+co.dy,x2:xa,y2:wireY+co.dy,stroke:co.c,'stroke-width':3,'stroke-linecap':'round'});
+        svgChain.appendChild(ln);
+        let t0=performance.now();
+        (function a(t){
+          const k=Math.min(1,(t-t0)/420);
+          ln.setAttribute('x2', xa+(xb-xa)*k);
+          if(k<1) requestAnimationFrame(a);
+        })(performance.now());
+      });
+      setTimeout(()=>{
+        sndSnap();
+        spark(xb,wireY,7,{color:'#7af0d9',speed:2});
+        wired++;
+        addXp(7);
+        roChain.innerHTML='Leitungen schlaufen: <span class="big">'+wired+'/'+NEED_SEG+'</span>';
+        if(wired===NEED_SEG){
+          roChain.classList.add('good'); roChain.textContent='Alle Leuchten in Reihe (durchgeschlauft)';
+          hideDoHint('hintChain');
+          setTimeout(()=>nextStep(),950);
+        }
+      },440);
+    });
+  }
+}
+
+/* ===================== STEP 3 — Präsenzmelder / Konstantlicht ===================== */
+const svgSensor=document.getElementById('svgSensor');
+const roSensor=document.getElementById('roSensor');
+function buildSensor(){
+  svgSensor.innerHTML=''; addDefs(svgSensor); addCeiling(svgSensor); addRoom(svgSensor);
+  LUM_X.forEach((x,i)=>drawPanel(svgSensor,i,false));
+  // wired chain backdrop
+  const wireY=LUM_Y+LUM_H/2;
+  svgSensor.appendChild(el('line',{x1:18,y1:wireY,x2:lumCx(3),y2:wireY,stroke:'#3aa635','stroke-width':2,opacity:0.5}));
+
+  // presence/constant-light detector in the ceiling (middle)
+  const dx=195, dy=180;
+  svgSensor.appendChild(el('circle',{cx:dx,cy:dy,r:16,fill:'url(#steel)',stroke:'#2a3340','stroke-width':2}));
+  svgSensor.appendChild(el('circle',{cx:dx,cy:dy,r:8,fill:'#16202b',stroke:'#7e8ea0','stroke-width':1.5}));
+  svgSensor.appendChild(el('circle',{cx:dx,cy:dy,r:3,fill:'#2dd4bf'}));
+  svgSensor.appendChild(el('text',{x:dx,y:dy-22,'text-anchor':'middle','font-size':'9','font-weight':'800',fill:'#7af0d9'})).textContent='Praesenz / Konstantlicht';
+
+  // three terminals to connect on the detector: L (perm), geschaltete Last to lamps, PE
+  const terms=[
+    {x:108,y:690,c:'#1c2530',n:'L Dauerphase',need:'in'},
+    {x:282,y:690,c:'#ffd166',n:'Schaltausgang -> Leuchten',need:'out'},
+    {x:195,y:770,c:'#3aa635',n:'PE gelb-gruen',need:'pe'}
+  ];
+  let connected=0;
+  const NEED_T=terms.length;
+  roSensor.classList.remove('good');
+  roSensor.innerHTML='Anschluesse: <span class="big">0/'+NEED_T+'</span>';
+  showDoHint('hintSensor','<b>Schritt 3:</b> Melder anklemmen — <b>Dauerphase</b> rein, <b>Schaltausgang</b> auf die Leuchtengruppe, <b>PE</b>. Konstantlicht regelt nach Tageslicht.',6200);
+
+  terms.forEach((tm)=>{
+    const g=el('g',{cursor:'pointer'});
+    g.appendChild(el('rect',{x:tm.x-26,y:tm.y-16,width:52,height:32,rx:8,fill:'rgba(34,45,58,.85)',stroke:'rgba(255,255,255,.08)','stroke-width':1}));
+    g.appendChild(el('rect',{x:tm.x-8,y:tm.y-6,width:16,height:12,rx:2,fill:tm.c,stroke:'#0e151d','stroke-width':1}));
+    g.appendChild(el('text',{x:tm.x,y:tm.y+30,'text-anchor':'middle','font-size':'9','font-weight':'700',fill:'#cdd8e2'})).textContent=tm.n;
+    const ring=el('rect',{x:tm.x-30,y:tm.y-20,width:60,height:40,rx:10,fill:'none',stroke:'#ffd166','stroke-width':2,class:'pulseTool'});
+    g.appendChild(ring);
+    const hit=el('rect',{x:tm.x-32,y:tm.y-22,width:64,height:44,fill:'transparent'});
+    g.appendChild(hit);
+    svgSensor.appendChild(g);
+    let done=false;
+    hit.addEventListener('pointerdown',()=>{
+      if(done) return; done=true; AC(); sndSnap();
+      ring.classList.remove('pulseTool'); ring.setAttribute('stroke','#3aff8f');
+      // draw a wire from terminal up to the detector
+      const path=el('path',{d:'M '+tm.x+' '+(tm.y-16)+' C '+tm.x+' '+(dy+260)+' '+dx+' '+(dy+200)+' '+dx+' '+(dy+16),
+        fill:'none',stroke:tm.c,'stroke-width':4,'stroke-linecap':'round'});
+      svgSensor.appendChild(path);
+      const len=path.getTotalLength();
+      path.setAttribute('stroke-dasharray',len); path.setAttribute('stroke-dashoffset',len);
+      let t0=performance.now();
+      (function a(t){const k=Math.min(1,(t-t0)/520);path.setAttribute('stroke-dashoffset',len*(1-k));if(k<1)requestAnimationFrame(a);})(performance.now());
+      spark(tm.x,tm.y,8,{color:'#7af0d9',speed:2});
+      connected++;
+      addXp(10);
+      roSensor.innerHTML='Anschluesse: <span class="big">'+connected+'/'+NEED_T+'</span>';
+      if(connected===NEED_T){
+        roSensor.classList.add('good'); roSensor.textContent='Melder verdrahtet — Schaltausgang auf Leuchtengruppe';
+        hideDoHint('hintSensor');
+        spark(dx,dy,20,{color:'#2dd4bf',speed:4,up:1});
+        setTimeout(()=>nextStep(),1000);
+      }
+    });
+  });
+}
+
+/* ===================== STEP 4 — Funktionstest ===================== */
+const svgTest=document.getElementById('svgTest');
+const roTest=document.getElementById('roTest');
+function buildTest(){
+  svgTest.innerHTML=''; addDefs(svgTest); addCeiling(svgTest); addRoom(svgTest);
+  const panels=LUM_X.map((x,i)=>drawPanel(svgTest,i,false));
+  // detector dot
+  svgTest.appendChild(el('circle',{cx:195,cy:180,r:14,fill:'url(#steel)',stroke:'#2a3340','stroke-width':2}));
+  svgTest.appendChild(el('circle',{cx:195,cy:180,r:6,fill:'#16202b'}));
+  const detDot=el('circle',{cx:195,cy:180,r:3,fill:'#2dd4bf'});
+  svgTest.appendChild(detDot);
+
+  // two test actions: walk in (presence -> ON), bright daylight (constant light dims)
+  const items=[
+    {key:'presence', txt:'Praesenz: Person betritt Raum -> Licht EIN', y:672},
+    {key:'daylight', txt:'Konstantlicht: viel Tageslicht -> dimmt ab', y:752}
+  ];
+  let done=0;
+  roTest.classList.remove('good');
+  roTest.innerHTML='Tests: <span class="big">0/'+items.length+'</span>';
+  showDoHint('hintTest','<b>Schritt 4:</b> Tippe beide Test-Tasten und beobachte die Leuchten.',4200);
+
+  function setPanels(on,dim){
+    panels.forEach((g,i)=>{
+      const rect=g.querySelector('rect');
+      rect.setAttribute('fill', on?'url(#lumOn)':'url(#lumBody)');
+      rect.setAttribute('opacity', dim?0.55:1);
+    });
+    // glow ellipses
+    svgTest.querySelectorAll('.testGlow').forEach(e=>e.remove());
+    if(on){
+      LUM_X.forEach((x,i)=>{
+        const gl=el('ellipse',{cx:x+LUM_W/2,cy:LUM_Y+LUM_H+44,rx:62,ry:48,fill:'url(#glow)',opacity:dim?0.25:0.55,class:'testGlow'});
+        svgTest.appendChild(gl);
+      });
+    }
+  }
+
+  items.forEach((it)=>{
+    const g=el('g',{cursor:'pointer'});
+    g.appendChild(el('rect',{x:54,y:it.y,width:282,height:64,rx:12,fill:'rgba(34,45,58,.75)',stroke:'rgba(255,255,255,.08)','stroke-width':1}));
+    g.appendChild(el('text',{x:74,y:it.y+38,'font-size':'12','font-weight':'700',fill:'#cdd8e2'})).textContent=it.txt;
+    const ring=el('rect',{x:52,y:it.y-2,width:286,height:68,rx:14,fill:'none',stroke:'#ffd166','stroke-width':2,class:'pulseTool'});
+    g.appendChild(ring);
+    const hit=el('rect',{x:54,y:it.y,width:282,height:64,fill:'transparent'});
+    g.appendChild(hit);
+    svgTest.appendChild(g);
+    let pressed=false;
+    hit.addEventListener('pointerdown',()=>{
+      if(pressed) return; pressed=true; AC();
+      ring.classList.remove('pulseTool'); ring.setAttribute('stroke','#3aff8f');
+      if(it.key==='presence'){
+        sndLight(); detDot.setAttribute('fill','#ffd166'); setPanels(true,false);
+        toast('Praesenz erkannt — Licht EIN','#ffd166',195,LUM_Y-14);
+      } else {
+        sndClick(); setPanels(true,true);
+        toast('Tageslicht hoch — gedimmt','#7af0d9',195,LUM_Y-14);
+      }
+      spark(195,it.y+30,8,{color:'#3aff8f',speed:2});
+      done++;
+      addXp(8);
+      roTest.innerHTML='Tests: <span class="big">'+done+'/'+items.length+'</span>';
+      if(done===items.length){
+        roTest.classList.add('good'); roTest.textContent='Beleuchtung funktioniert nach NIN';
+        hideDoHint('hintTest');
+        setTimeout(()=>triggerWin(),800);
+      }
+    });
+  });
+}
+
+/* ===================== WIN ===================== */
+function triggerWin(){
+  document.getElementById('progFill').style.width='100%';
+  sndWin(); burstConfetti();
+  spark(STAGE_W/2,STAGE_H*0.4,40,{color:'#ffd166',speed:6,up:2});
+  setTimeout(()=>{
+    const win=document.getElementById('win'); win.classList.add('show');
+    addXp(40);
+    const sts=document.querySelectorAll('#stars .st');
+    sts.forEach((s,i)=>setTimeout(()=>{s.classList.add('lit');sndSnap();},300+i*260));
+    const xb=document.getElementById('xpBig'); let v=0; const tt=performance.now();
+    (function cc(t){const k=Math.min(1,(t-tt)/900);v=Math.round(110*(1-Math.pow(1-k,3)));xb.textContent='+'+v+' XP';if(k<1)requestAnimationFrame(cc);})(performance.now());
+  },650);
+}
+document.getElementById('again').onclick=()=>location.reload();
+
+/* ===================== BUILDERS registry + boot ===================== */
+const BUILDERS = {
+  mount: buildMount,
+  chain: buildChain,
+  sensor:buildSensor,
+  test:  buildTest
+};
+
+function boot(){
+  sizeCanvas();
+  initDust();
+  buildStepsBar();
+  fxLoop();
+  gotoStep('mount');
+}
+window.addEventListener('resize',sizeCanvas);
+
+/* ---- Aufgaben-Box ein-/ausklappbar ---- */
+window.__taskHidden=false;
+(function(){
+  const tt=document.getElementById('taskToggle');
+  const tk=document.getElementById('task');
+  if(!tt||!tk) return;
+  function apply(){
+    if(window.__taskHidden){
+      clearTimeout(window.__taskFadeT);
+      tk.classList.add('hidden'); tk.classList.remove('faded');
+      tt.textContent='Aufgabe einblenden';
+    } else {
+      tk.classList.remove('hidden','faded');
+      tt.textContent='Aufgabe ausblenden';
+      clearTimeout(window.__taskFadeT);
+      window.__taskFadeT=setTimeout(()=>tk.classList.add('faded'),3500);
+    }
+  }
+  tt.addEventListener('click',()=>{ window.__taskHidden=!window.__taskHidden; apply(); });
+  tt.addEventListener('pointerenter',()=>{ if(!window.__taskHidden){ tk.classList.remove('faded'); } });
+})();
+
+boot();
+
+})();
+</script>
+</body>
+</html>

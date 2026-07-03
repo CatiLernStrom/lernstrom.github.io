@@ -1,0 +1,2525 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>LernStrom · Motorensteuerungen</title>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{margin:0;background:radial-gradient(130% 100% at 50% 0%,#15222e 0%,#0b1017 70%);
+    color:#e8edf2;font-family:'Segoe UI',system-ui,sans-serif;overflow:hidden}
+  /* ---- Hell-Modus (klassisch, Schaltpläne auf Weiss) ---- */
+  body.light{background:#eef1f4;color:#1a2530}
+  body.light header.top{background:linear-gradient(180deg,#ffffff,#e7edf2);border-bottom:1px solid rgba(0,0,0,.12);box-shadow:0 4px 14px rgba(0,0,0,.12)}
+  body.light header.top h1{background:linear-gradient(180deg,#0f6f60,#13413a);-webkit-background-clip:text;background-clip:text;color:transparent}
+  body.light .btn{color:#13413a;background:linear-gradient(180deg,#ffffff,#eef3f6);border:1px solid rgba(0,0,0,.16)}
+  body.light .btn:hover{border-color:#0f9b85}
+  body.light .btn.on,body.light .btn.run{background:linear-gradient(180deg,#d6f5ee,#bfeee3);border-color:#0f9b85;color:#0c5d50}
+  body.light .palette{background:linear-gradient(180deg,#f4f7f9,#e9eef2);border-right:1px solid rgba(0,0,0,.1)}
+  body.light .palette h3{color:#0f8a76}
+  body.light .pitem{background:linear-gradient(180deg,#ffffff,#eef3f6);border:1px solid rgba(0,0,0,.12);color:#1a2530}
+  body.light .pitem .sym text{fill:#27424f}
+  body.light .panel{background:rgba(255,255,255,.94);border:1px solid rgba(0,0,0,.14);color:#1a2530}
+  body.light .panel h4{color:#0f8a76}
+  body.light .togBtn{color:#13413a;background:linear-gradient(180deg,#fff,#eef3f6);border:1px solid rgba(0,0,0,.16)}
+  body.light .modeband{background:rgba(15,155,133,.12);border:1px solid rgba(15,155,133,.4);color:#0c5d50}
+  body.light .sheetbar{background:linear-gradient(180deg,#e7edf2,#dde4ea);border-top:1px solid rgba(0,0,0,.12)}
+  body.light .sheettab{color:#52677a;background:linear-gradient(180deg,#f1f5f8,#e3eaef)}
+  body.light .sheettab.active{color:#0c5d50;background:linear-gradient(180deg,#d6f5ee,#bfeee3);border-color:#0f9b85}
+  body.light .ctxnote,body.light .sheethelp{color:#5b6e7e}
+  body.light .mbanner{background:rgba(217,119,6,.12);border-bottom:1px solid rgba(217,119,6,.3);color:#5a4a20}
+  .icn{display:inline-block;vertical-align:-2px;width:13px;height:13px}
+  header.top{display:flex;align-items:center;gap:14px;padding:10px 16px;
+    background:linear-gradient(180deg,#172230,#101824);border-bottom:1px solid rgba(255,255,255,.07);
+    box-shadow:0 6px 20px rgba(0,0,0,.35);position:relative;z-index:5}
+  .brand{font-size:10.5px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;
+    color:#7af0d9;background:rgba(45,212,191,.10);border:1px solid rgba(45,212,191,.28);
+    padding:4px 12px;border-radius:20px;white-space:nowrap}
+  header.top h1{font-size:18px;font-weight:900;margin:0;letter-spacing:.3px;
+    background:linear-gradient(180deg,#eafffb,#7af0d9);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .spacer{flex:1}
+  .btn{font-family:inherit;font-size:12px;font-weight:700;color:#cfe; cursor:pointer;
+    background:linear-gradient(180deg,#1c2a3a,#13202c);border:1px solid rgba(255,255,255,.12);
+    padding:7px 12px;border-radius:10px;transition:.15s;white-space:nowrap}
+  .btn:hover{border-color:rgba(45,212,191,.5);box-shadow:0 0 14px rgba(45,212,191,.18)}
+  .btn.on{background:linear-gradient(180deg,#0e3b35,#0a2b27);border-color:#2dd4bf;color:#7af0d9}
+  .btn.run{background:linear-gradient(180deg,#0e3b35,#0a2b27);border-color:#2dd4bf;color:#7af0d9}
+  .btn.danger:hover{border-color:#f87171;box-shadow:0 0 14px rgba(248,113,113,.2);color:#fca5a5}
+  .app{display:flex;height:calc(100vh - 82px - 40px)}
+  .palette{width:190px;background:linear-gradient(180deg,#101a26,#0c141d);
+    border-right:1px solid rgba(255,255,255,.07);overflow-y:auto;padding:10px;flex-shrink:0}
+  .palette h3{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#7af0d9;margin:14px 4px 6px;opacity:.85}
+  .palette h3:first-child{margin-top:2px}
+  .pitem{display:flex;align-items:center;gap:8px;padding:7px 8px;margin:4px 0;border-radius:9px;cursor:grab;
+    background:linear-gradient(180deg,#17222f,#111a24);border:1px solid rgba(255,255,255,.07);transition:.13s;font-size:11.5px;font-weight:600}
+  .pitem:hover{border-color:rgba(45,212,191,.45);transform:translateX(2px)}
+  .pitem .sym{width:30px;height:26px;flex-shrink:0}
+  .stage{flex:1;position:relative;overflow:hidden}
+  #svg{width:100%;height:100%;display:block;cursor:default;touch-action:none}
+  .stage.run #svg{cursor:pointer}
+  /* Hinweis-/Was-muss-ich-tun-Box: oben RECHTS (unter dem Sim-Panel),
+     auf-/zuklappbar, damit sie die Zeichenflaeche nicht verdeckt. */
+  .hint{position:absolute;right:10px;top:236px;width:212px;font-size:11px;color:#7e93a6;
+    background:rgba(8,14,20,.86);border:1px solid rgba(255,255,255,.1);border-radius:11px;
+    padding:0;backdrop-filter:blur(6px);z-index:4}
+  .hint .hintHead{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;cursor:pointer}
+  .hint .hintHead b{font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:#7af0d9;font-weight:800}
+  .hint .hintToggle{font-family:inherit;font-size:11px;font-weight:700;color:#cfe;cursor:pointer;
+    background:linear-gradient(180deg,#1c2a3a,#13202c);border:1px solid rgba(255,255,255,.12);
+    padding:2px 8px;border-radius:8px;line-height:1.3}
+  .hint .hintBody{padding:0 10px 9px;line-height:1.5}
+  .hint.collapsed .hintBody{display:none}
+  body.light .hint{background:rgba(255,255,255,.94);border:1px solid rgba(0,0,0,.14);color:#5b6e7e}
+  body.light .hint .hintHead b{color:#0f8a76}
+  body.light .hint .hintToggle{color:#13413a;background:linear-gradient(180deg,#fff,#eef3f6);border:1px solid rgba(0,0,0,.16)}
+  .panel{position:absolute;right:10px;top:10px;width:212px;background:rgba(12,20,28,.92);
+    border:1px solid rgba(255,255,255,.1);border-radius:13px;padding:12px;backdrop-filter:blur(6px);font-size:12px}
+  .panel h4{margin:0 0 8px;font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:#7af0d9}
+  .stat{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+  .stat:last-child{border:0}
+  .stat b{font-weight:800}
+  .led{display:inline-block;width:10px;height:10px;border-radius:50%;background:#33424f;box-shadow:0 0 0 1px rgba(0,0,0,.4) inset}
+  .led.r{background:#2ee6a6;box-shadow:0 0 9px #2ee6a6}
+  .led.l{background:#4db6ff;box-shadow:0 0 9px #4db6ff}
+  .led.fault{background:#ff5757;box-shadow:0 0 9px #ff5757}
+  select,input{font-family:inherit}
+  .toast{position:absolute;left:50%;top:14px;transform:translateX(-50%);background:rgba(10,30,26,.95);
+    border:1px solid #2dd4bf;color:#aef5e6;padding:8px 16px;border-radius:11px;font-size:12.5px;font-weight:700;
+    opacity:0;transition:.25s;pointer-events:none;z-index:9;box-shadow:0 8px 30px rgba(0,0,0,.5)}
+  .toast.show{opacity:1}
+  .ctxnote{font-size:10.5px;color:#7e93a6;line-height:1.5;margin-top:6px}
+  .modeband{font-size:11px;font-weight:800;letter-spacing:.5px;padding:4px 10px;border-radius:8px;
+    background:rgba(45,212,191,.12);border:1px solid rgba(45,212,191,.3);color:#7af0d9}
+  .mbanner{display:flex;align-items:center;gap:8px;font-size:11.5px;color:#cbd9e6;
+    background:rgba(251,191,36,.08);border-bottom:1px solid rgba(251,191,36,.18);padding:5px 16px}
+  .palette.collapsed{width:0;padding:0;overflow:hidden;border-right:0}
+  .palette{transition:width .18s,padding .18s}
+  .panel.collapsed .panelBody{display:none}
+  .panel.collapsed{width:auto}
+  .panelHead{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .togBtn{font-family:inherit;font-size:11px;font-weight:700;color:#cfe;cursor:pointer;
+    background:linear-gradient(180deg,#1c2a3a,#13202c);border:1px solid rgba(255,255,255,.12);
+    padding:5px 9px;border-radius:9px;white-space:nowrap}
+  .togBtn:hover{border-color:rgba(45,212,191,.5)}
+  /* untere Blatt-Tabs */
+  .sheetbar{display:flex;align-items:stretch;height:40px;background:linear-gradient(180deg,#0e1722,#0a121b);
+    border-top:1px solid rgba(255,255,255,.07);padding:0 10px;gap:6px}
+  .sheettab{display:flex;align-items:center;gap:8px;padding:0 16px;font-size:12px;font-weight:700;color:#9fb3c4;
+    cursor:pointer;border:1px solid transparent;border-bottom:0;border-radius:9px 9px 0 0;align-self:flex-end;
+    background:linear-gradient(180deg,#141f2b,#0e1822);transition:.13s;margin-bottom:-1px;height:32px}
+  .sheettab:hover{color:#cfe;border-color:rgba(45,212,191,.3)}
+  .sheettab.active{color:#7af0d9;background:linear-gradient(180deg,#0e3b35,#0a2b27);
+    border-color:#2dd4bf;box-shadow:0 -3px 12px rgba(45,212,191,.15)}
+  .sheettab .dotnum{font-size:10px;opacity:.7}
+  .sheethelp{margin-left:auto;align-self:center;font-size:10.5px;color:#5d7487}
+  @media(max-width:760px){
+    .palette{position:absolute;z-index:20;height:100%;box-shadow:6px 0 24px rgba(0,0,0,.5)}
+    header.top h1{font-size:15px}
+  }
+  /* ---- Drucken: immer A4 Querformat, nur das Schema ---- */
+  @page{ size:A4 landscape; margin:8mm; }
+  #printArea{ display:none; }
+  @media print{
+    html,body{ height:auto; overflow:visible; background:#fff !important; color:#000 !important; }
+    header.top,.mbanner,.palette,.sheetbar,.panel,.hint,.toast{ display:none !important; }
+    .app{ display:none !important; }
+    #printArea{ display:block !important; width:100%; }
+    #printArea svg{ width:100%; height:auto; display:block; }
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <span class="brand">LernStrom</span>
+  <button class="btn" id="btnPal" onclick="togglePalette()" title="Palette ein-/ausklappen"><svg class="icn" viewBox="0 0 16 16"><path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button>
+  <h1>Motorensteuerungen</h1>
+  <span class="modeband" id="modeBand">Modus: Bearbeiten</span>
+  <div class="spacer"></div>
+  <button class="btn" id="btnTheme" onclick="toggleTheme()" title="Hell/Dunkel"><svg class="icn" viewBox="0 0 16 16"><circle cx="8" cy="8" r="3.4" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3 3l1.4 1.4M11.6 11.6 13 13M13 3l-1.4 1.4M4.4 11.6 3 13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg> Hell</button>
+  <button class="btn" id="btnMode" onclick="toggleMode()"><svg class="icn" viewBox="0 0 16 16"><polygon points="3,2 14,8 3,14" fill="currentColor"/></svg> Einschalten</button>
+  <button class="btn" onclick="clearAll()">Leeren</button>
+  <button class="btn" onclick="saveLocal()">Speichern</button>
+  <button class="btn" onclick="openLoad()">Laden</button>
+  <button class="btn" onclick="printSchema()"><svg class="icn" viewBox="0 0 16 16"><path d="M4 6V2h8v4M4 12H2V7h12v5h-2M4 10h8v4H4z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg> Drucken</button>
+</header>
+
+<div class="mbanner"><svg class="icn" viewBox="0 0 16 16" style="margin-right:4px"><rect x="4" y="1.5" width="8" height="13" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.3"/><line x1="6.7" y1="12.5" x2="9.3" y2="12.5" stroke="currentColor" stroke-width="1.3"/></svg> Auf dem Handy eingeschränkt — bestes Zeichen-Erlebnis auf Laptop/Tablet.</div>
+
+<div class="app">
+  <aside class="palette" id="palette"></aside>
+  <div class="stage" id="stage">
+    <svg id="svg" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div class="panel" id="simPanel">
+      <div class="panelHead"><h4 style="margin:0">Simulation</h4>
+        <button class="togBtn" id="btnPanel" onclick="togglePanel()">–</button></div>
+      <div class="panelBody">
+      <div class="stat"><span>Motor</span><b id="sMotor">Stillstand</b></div>
+      <div class="stat"><span>Drehrichtung</span><span><span class="led" id="ledR"></span> R &nbsp; <span class="led" id="ledL"></span> L</span></div>
+      <div class="stat"><span>Hauptschütz Q1</span><b id="sK1">aus</b></div>
+      <div class="stat"><span>Hauptschütz Q2</span><b id="sK2">aus</b></div>
+      <div class="stat"><span>Überlast (MSR)</span><span><span class="led" id="ledF"></span> <b id="sF">ok</b></span></div>
+      <div class="ctxnote" id="ctxnote">Bearbeiten-Modus: Bauteile ziehen, Klemmen verbinden.</div>
+      </div>
+    </div>
+    <div class="hint" id="hint">
+      <div class="hintHead" onclick="toggleHint()"><b>Was muss ich tun?</b>
+        <button class="hintToggle" id="btnHint" onclick="event.stopPropagation();toggleHint()" title="Hinweis auf-/zuklappen">–</button></div>
+      <div class="hintBody" id="hintBody"></div>
+    </div>
+    <div class="toast" id="toast"></div>
+  </div>
+</div>
+
+<div class="sheetbar" id="sheetbar"></div>
+<div id="printArea"></div>
+
+<script>
+/* ============================================================
+   LernStrom · Motorensteuerungen — Stromlaufschema + Simulation
+   ------------------------------------------------------------
+   - Drei Blätter (Tabs unten): 1 Hauptstromkreis, 2/3 Steuerstromkreis.
+     GEMEINSAME Simulation über alle Blätter (Spule auf Blatt 2 schaltet
+     die Hauptkontakte auf Blatt 1).
+   - Schaltplan-Konventionen: Kreuzen != verbinden. Verbindung nur an
+     Klemmen oder bewussten Verbindungspunkten (Dots). Ein Klick auf eine
+     bestehende Leitung erzeugt einen Dot, von dem weitergezeichnet wird.
+   - Bauteil klick: drehen (90 Grad / Schalter nur 180 Grad-Spiegelung) + löschen.
+   - Labels immer ausserhalb + links.
+   - Zeichnen snappt auf die Strompfade 0-9.
+   - Motor: Klemmbrett Stern ODER Dreieck, PE immer vorhanden.
+   - Sim: Union-Find. Spule erregt -> Kontakte folgen. Selbsthaltung per
+     Fixpunkt-Iteration. K1=Rechts/K2=Links. Verriegelung. MSR-Trip.
+   - Persistenz: localStorage 'lernstrom_motor'.
+   ============================================================ */
+const SVG_NS="http://www.w3.org/2000/svg";
+const svg=document.getElementById('svg');
+let MODE='edit';               // 'edit' | 'run'
+let SHEET=1;                   // 1=Haupt, 2/3=Steuer
+let comps=[];                  // Bauteile (jedes hat .sheet)
+let wires=[];                  // {id,sheet,a:{c,p},b:{c,p}}
+let dots=[];                   // bewusste Verbindungspunkte {id,sheet,onWire,t,x,y}
+let nextId=1;
+let view={x:0,y:0,k:1};        // pan/zoom (pro Sitzung gemeinsam)
+let drag=null;                 // aktives Ziehen
+let wireStart=null;            // beim Verdrahten
+let toggleStates={};           // Taster gedrückt? + Überlast-Latch je comp
+let SCHEMA_NAME='';            // Name im Schriftfeld (z.B. „Pumpensteuerung")
+let THEME='light';            // 'light' (Default, klassisch auf Weiss) | 'dark'
+function tColor(darkVal,lightVal){ return THEME==='light'? lightVal : darkVal; }
+
+/* ============================================================
+   BLATT-GEOMETRIE  (an PDF-Vorlage angelehnt, Querformat)
+   Welt-Koordinaten je Blatt; Blätter werden NICHT nebeneinander
+   gerendert, sondern je nach aktivem Tab umgeschaltet.
+   ============================================================ */
+const SHEET_W=1180, SHEET_H=720;     // Zeichenfläche je Blatt
+const RULER_Y=14, RULER_H=26;        // Spaltenleiste oben
+const TITLE_Y=SHEET_H-44;            // Schriftfeld oben-Kante
+const PATH_X0=70, PATH_X9=1140;      // linke/rechte Begrenzung des Pfad-Rasters
+// 10 Strompfad-Mittellinien (Spalten 0..9). Snap erfolgt auf diese X-Werte.
+function pathX(i){ return PATH_X0 + (PATH_X9-PATH_X0)*(i+0.5)/10; }
+function pathBounds(i){ return [PATH_X0+(PATH_X9-PATH_X0)*i/10, PATH_X0+(PATH_X9-PATH_X0)*(i+1)/10]; }
+function nearestPathX(x){ let best=0,bd=1e9; for(let i=0;i<10;i++){const d=Math.abs(pathX(i)-x);if(d<bd){bd=d;best=i;}} return pathX(best); }
+function nearestPathIdx(x){ let best=0,bd=1e9; for(let i=0;i<10;i++){const d=Math.abs(pathX(i)-x);if(d<bd){bd=d;best=i;}} return best; }
+/* BUG-FIX 1 — Andockpunkte entlang des Pfades VERTEILEN.
+   Statt alle Leiter auf die Pfad-MITTE zu snappen (Überlappung, "L1 mit L1"
+   ging nicht), bekommt jeder an dieselbe Schiene angeschlossene Leiter im
+   gewünschten Strompfad einen EIGENEN x-Slot. Der Pfad wird in Drittel
+   geteilt (Slot-Zentren), bei Bedarf feiner. Die elektrische Knoten-Identität
+   bleibt unberührt: railKey() ignoriert x — Verbindung/Simulation brechen
+   nicht. Verschiedene x machen zwei gleichnamige Schienen-Enden zu separaten
+   Endpunkten, damit L1<->L1 verdrahtet werden kann.
+   `alsoOccupied` (optionaler Endpunkt {rail,x}) ist das gerade in Arbeit
+   befindliche Start-Ende, das noch nicht in `wires` steht — es wird zusätzlich
+   als belegt gewertet, damit das neue Ende einen anderen Slot bekommt. */
+function railSlotX(name, desiredX, alsoOccupied){
+  const idx=nearestPathIdx(desiredX);
+  // BUG 10: Im Steuerstromkreis (Blatt 2/3) gehen L+ und N MITTIG in den
+  // Strompfad (keine Verteil-Slots) -> saubere, zentrierte senkrechte
+  // Steuerleitung je Pfad. Nur der Hauptstromkreis verteilt (L1/L2/L3 separat).
+  if(SHEET!==1) return Math.round(pathX(idx));
+  const [lo,hi]=pathBounds(idx);
+  // belegte x-Werte aller Enden DERSELBEN Schiene im selben Pfad
+  const used=[];
+  wires.forEach(w=>{ if((w.sheet||1)!==SHEET) return; [w.a,w.b].forEach(e=>{
+    if(e.rail!==name || e.x==null) return;
+    if(nearestPathIdx(e.x)===idx) used.push(e.x);
+  });});
+  if(alsoOccupied && alsoOccupied.rail===name && alsoOccupied.x!=null
+     && nearestPathIdx(alsoOccupied.x)===idx) used.push(alsoOccupied.x);
+  // Kandidaten-Slots: zunehmend feinere Unterteilung (Drittel, dann mehr)
+  for(const n of [3,5,7,9,11]){
+    for(let k=0;k<n;k++){
+      const cand=Math.round(lo+(hi-lo)*(k+0.5)/n);
+      if(!used.some(u=>Math.abs(u-cand)<6)) return cand;
+    }
+  }
+  return Math.round(pathX(idx)); // Fallback (sollte praktisch nie nötig sein)
+}
+// Schienen-Y je Blatt
+const HS={ L1:78, L2:96, L3:114, N:140, PE:160 };          // Blatt 1
+const CS={ Lplus:78, N:TITLE_Y-46 };                       // Blatt 2/3
+
+/* ---------- Bauteil-Definitionen ----------
+   Jede def: pins (relative Koordinaten + Name), sym(g,comp,sim).
+   sheetCat ordnet das Bauteil dem passenden Blatt zu (für Palette/Snap).
+*/
+function pin(id,x,y){return {id,x,y};}
+
+/* Grundeinheit-Skalierung: alle Bauteile ~5% groesser (mehr Platz, Labels
+   passen). Wirkt auf Bauteilgroesse (def.w/h), Klemmenpositionen (pins) UND
+   die Symbolzeichnung (sg-Gruppe wird mit UNIT skaliert). Snap/Layout bleiben
+   stimmig, weil die Zentrierung def.w/2 mitwaechst. */
+const UNIT=1.05;
+
+/* Freie Geräte-Bezeichnung: existiert die Eigenschaft (auch leer "") -> genau
+   diese verwenden (der User beschriftet selbst); fehlt sie ganz (z.B. Palette-
+   Vorschau) -> Default zur Orientierung. So ist die Default-Bezeichnung beim
+   platzierten Bauteil leer/entfernbar, aber in der Palette weiterhin sichtbar.
+   Die KLEMMENZIFFERN (1/2, A1/A2, U1/V1/W1 …) sind separat im Symbol und NICHT
+   betroffen. */
+function tagOf(c,def){ return (c && Object.prototype.hasOwnProperty.call(c,'tag')) ? (c.tag||'') : def; }
+function nameOf(c,def){ return (c && Object.prototype.hasOwnProperty.call(c,'name')) ? (c.name||'') : def; }
+
+const DEFS={
+  /* ---- Hauptstromkreis (Blatt 1) ---- */
+  mss:{ label:'Motorschutzschalter Q', cat:'Hauptstrom', sheet:1, w:84,h:64,
+    pins:[pin('1',12,0),pin('3',42,0),pin('5',72,0),pin('2',12,64),pin('4',42,64),pin('6',72,64)],
+    sym:(g,c,s)=>{ g.innerHTML=symMSS(tagOf(c,'Q1'), stateOf(c,s,'q')); } },
+  mainK:{ label:'Hauptschütz-Kontakte Q', cat:'Hauptstrom', sheet:1, w:84,h:64, contactor:true,
+    pins:[pin('1',12,0),pin('3',42,0),pin('5',72,0),pin('2',12,64),pin('4',42,64),pin('6',72,64)],
+    sym:(g,c,s)=>{ g.innerHTML=symMainK(c.coilRef||'Q1', closedForContact(c,s)); } },
+  msr:{ label:'Motorschutzrelais F (Bimetall)', cat:'Hauptstrom', sheet:1, w:84,h:46,
+    pins:[pin('2',12,0),pin('4',42,0),pin('6',72,0),pin('1',12,46),pin('3',42,46),pin('5',72,46)],
+    sym:(g,c,s)=>{ g.innerHTML=symMSR(tagOf(c,'F2'), stateOf(c,s,'tripped')); } },
+  motor:{ label:'Motor M 3~ (Klemmbrett)', cat:'Hauptstrom', sheet:1, w:120,h:120,
+    /* BUG 2: untere Klemmen W2/U2/V2 sind eigene, anschliessbare Pins — so kann
+       der Nutzer die Stern-/Dreieck-Brücken selbst frei verdrahten (am besten mit
+       Klemmbrett-Modus „keine Brücke"). Reihenfolge unten = W2 U2 V2 (CH-Norm). */
+    pins:[pin('U1',16,0),pin('V1',46,0),pin('W1',76,0),pin('PE',106,0),
+          pin('W2',16,38),pin('U2',46,38),pin('V2',76,38)],
+    sym:(g,c,s)=>{ g.innerHTML=symMotor(tagOf(c,'M1'), s? s.motor: {run:false,dir:0}, c.starMode||'stern'); } },
+  heater:{ label:'Heizeinsatz / Last', cat:'Hauptstrom', sheet:1, w:60,h:80,
+    pins:[pin('1',30,0),pin('2',30,80)],
+    sym:(g,c,s)=>{ g.innerHTML=symHeater(tagOf(c,'E1'), closedHot(c,s)); } },
+
+  /* ---- Steuerstromkreis (Blatt 2/3) ---- */
+  btnNO:{ label:'Taster EIN S (Schliesser 3/4)', cat:'Steuerstrom', sheet:2, w:48,h:60,
+    pins:[pin('a',24,0),pin('b',24,60)],
+    sym:(g,c,s)=>{ g.innerHTML=symBtn(false, pressed(c,s), tagOf(c,'S1'), '3','4'); } },
+  btnNC:{ label:'Taster AUS S (Öffner 1/2)', cat:'Steuerstrom', sheet:2, w:48,h:60,
+    pins:[pin('a',24,0),pin('b',24,60)],
+    sym:(g,c,s)=>{ g.innerHTML=symBtn(true, pressed(c,s), tagOf(c,'S0'), '1','2'); } },
+  notaus:{ label:'Not-Aus S (Pilz, Öffner)', cat:'Steuerstrom', sheet:2, w:54,h:62,
+    pins:[pin('a',27,0),pin('b',27,62)],
+    sym:(g,c,s)=>{ g.innerHTML=symNotAus(tagOf(c,'S0'), pressed(c,s)); } },
+  endschalter:{ label:'Endschalter S (Position)', cat:'Steuerstrom', sheet:2, w:54,h:62,
+    pins:[pin('a',27,0),pin('b',27,62)],
+    sym:(g,c,s)=>{ g.innerHTML=symEnd(tagOf(c,'S3'), c.nc?true:false, pressed(c,s)); } },
+  wahl:{ label:'Wahlschalter S (Betriebsart)', cat:'Steuerstrom', sheet:2, w:54,h:62,
+    pins:[pin('a',27,0),pin('b',27,62)],
+    sym:(g,c,s)=>{ g.innerHTML=symWahl(tagOf(c,'S4'), toggleStates['sel_'+c.id]); } },
+  thermostat:{ label:'Thermostat (Temperatur)', cat:'Steuerstrom', sheet:2, w:54,h:62,
+    pins:[pin('a',27,0),pin('b',27,62)],
+    sym:(g,c,s)=>{ g.innerHTML=symSensor(tagOf(c,'B1'), 'temp', toggleStates['sel_'+c.id]); } },
+  waechter:{ label:'Strömungswächter', cat:'Steuerstrom', sheet:2, w:54,h:62,
+    pins:[pin('a',27,0),pin('b',27,62)],
+    sym:(g,c,s)=>{ g.innerHTML=symSensor(tagOf(c,'B2'), 'flow', toggleStates['sel_'+c.id]); } },
+  schwimmer:{ label:'Schwimmerschalter (Niveau)', cat:'Steuerstrom', sheet:2, w:54,h:62,
+    pins:[pin('a',27,0),pin('b',27,62)],
+    sym:(g,c,s)=>{ g.innerHTML=symSensor(tagOf(c,'B3'), 'float', toggleStates['sel_'+c.id]); } },
+  coil:{ label:'Schütz/Relais-Spule (A1/A2)', cat:'Steuerstrom', sheet:2, w:48,h:60, coil:true,
+    pins:[pin('A1',24,0),pin('A2',24,60)],
+    sym:(g,c,s)=>{ g.innerHTML=symCoil(nameOf(c,'K1'), coilEnergized(c,s)); } },
+  timer:{ label:'Zeitrelais K (anzugverzögert)', cat:'Steuerstrom', sheet:2, w:48,h:60, coil:true,
+    pins:[pin('A1',24,0),pin('A2',24,60)],
+    sym:(g,c,s)=>{ g.innerHTML=symTimer(nameOf(c,'K3'), coilEnergized(c,s)); } },
+  auxNO:{ label:'Hilfskontakt Schliesser (13/14)', cat:'Steuerstrom', sheet:2, w:48,h:60,
+    pins:[pin('a',24,0),pin('b',24,60)],
+    sym:(g,c,s)=>{ g.innerHTML=symAux(false,c.coilRef||'Q1', closedForContact(c,s), c.term); } },
+  auxNC:{ label:'Hilfskontakt Öffner (21/22)', cat:'Steuerstrom', sheet:2, w:48,h:60,
+    pins:[pin('a',24,0),pin('b',24,60)],
+    sym:(g,c,s)=>{ g.innerHTML=symAux(true,c.coilRef||'Q1', closedForContact(c,s), c.term); } },
+  msrAux:{ label:'MSR Hilfskontakt Öffner (95/96)', cat:'Steuerstrom', sheet:2, w:48,h:60,
+    pins:[pin('a',24,0),pin('b',24,60)],
+    sym:(g,c,s)=>{ g.innerHTML=symMsrAux(tagOf(c,'F2'), stateOf(c,s,'open')); } },
+  lampG:{ label:'Meldeleuchte H (grün)', cat:'Steuerstrom', sheet:2, w:48,h:60,
+    pins:[pin('a',24,0),pin('b',24,60)],
+    sym:(g,c,s)=>{ g.innerHTML=symLamp(tagOf(c,'H1'),'#16c060', closedHot(c,s)); } },
+  lampR:{ label:'Meldeleuchte H (rot)', cat:'Steuerstrom', sheet:2, w:48,h:60,
+    pins:[pin('a',24,0),pin('b',24,60)],
+    sym:(g,c,s)=>{ g.innerHTML=symLamp(tagOf(c,'H2'),'#ff3b3b', closedHot(c,s)); } },
+  lampB:{ label:'Meldeleuchte H (blau)', cat:'Steuerstrom', sheet:2, w:48,h:60,
+    pins:[pin('a',24,0),pin('b',24,60)],
+    sym:(g,c,s)=>{ g.innerHTML=symLamp(tagOf(c,'H3'),'#2e8bff', closedHot(c,s)); } },
+  horn:{ label:'Alarmhorn / Hupe', cat:'Steuerstrom', sheet:2, w:48,h:60,
+    pins:[pin('a',24,0),pin('b',24,60)],
+    sym:(g,c,s)=>{ g.innerHTML=symHorn(tagOf(c,'P1'), closedHot(c,s)); } },
+
+  /* ===== NEU: Steuerungstechnik-Symbolsatz (2.Lj, PDF-genau) ===== */
+  /* -- Taster / Schalter (Befehlsgeräte) -- */
+  austaster:{ label:'Aus-Taster S22 (Öffner 1/2)', cat:'Befehlsgeräte', sheet:2, w:48,h:60,
+    pins:[pin('1',24,0),pin('2',24,60)],
+    sym:(g,c,s)=>{ g.innerHTML=symTaster(true, pressed(c,s), tagOf(c,'S22'),'1','2'); } },
+  eintaster:{ label:'Ein-Taster S23 (Schliesser 3/4)', cat:'Befehlsgeräte', sheet:2, w:48,h:60,
+    pins:[pin('3',24,0),pin('4',24,60)],
+    sym:(g,c,s)=>{ g.innerHTML=symTaster(false, pressed(c,s), tagOf(c,'S23'),'3','4'); } },
+  schluesseltaster:{ label:'Schlüsseltaster S24 (3/4)', cat:'Befehlsgeräte', sheet:2, w:48,h:60,
+    pins:[pin('3',24,0),pin('4',24,60)],
+    sym:(g,c,s)=>{ g.innerHTML=symKey(tagOf(c,'S24'), pressed(c,s)); } },
+  notausS21:{ label:'Not-Aus-Schalter S21 (1/2)', cat:'Befehlsgeräte', sheet:2, w:54,h:60,
+    pins:[pin('1',27,0),pin('2',27,60)],
+    sym:(g,c,s)=>{ g.innerHTML=symNotAus2(tagOf(c,'S21'), pressed(c,s)); } },
+  niveauNC:{ label:'Niveauschalter B21 (Öffner 1/2)', cat:'Befehlsgeräte', sheet:2, w:54,h:60,
+    pins:[pin('1',27,0),pin('2',27,60)],
+    sym:(g,c,s)=>{ g.innerHTML=symNiveau(tagOf(c,'B21'), true, sel(c)); } },
+  niveauNO:{ label:'Niveauschalter B21 (Schliesser 3/4)', cat:'Befehlsgeräte', sheet:2, w:54,h:60,
+    pins:[pin('3',27,0),pin('4',27,60)],
+    sym:(g,c,s)=>{ g.innerHTML=symNiveau(tagOf(c,'B21'), false, sel(c)); } },
+  endNO:{ label:'Endschalter B22 (Schliesser 3/4)', cat:'Befehlsgeräte', sheet:2, w:54,h:60,
+    pins:[pin('3',27,0),pin('4',27,60)],
+    sym:(g,c,s)=>{ g.innerHTML=symEnd2(tagOf(c,'B22'), false, pressed(c,s)); } },
+  endNC:{ label:'Endschalter B22 (Öffner 1/2)', cat:'Befehlsgeräte', sheet:2, w:54,h:60,
+    pins:[pin('1',27,0),pin('2',27,60)],
+    sym:(g,c,s)=>{ g.innerHTML=symEnd2(tagOf(c,'B22'), true, pressed(c,s)); } },
+  handAuto:{ label:'Hand-0-Auto-Umschalter', cat:'Befehlsgeräte', sheet:2, w:54,h:60,
+    pins:[pin('1',27,0),pin('a',11,60),pin('b',43,60)],
+    sym:(g,c,s)=>{ g.innerHTML=symHandAuto(tagOf(c,'S5'), handPos(c)); } },
+
+  /* -- Motorschutzrelais-Kontakte F (Bimetall) -- */
+  fAusloese:{ label:'MSR Auslösekontakt (95/96)', cat:'Befehlsgeräte', sheet:2, w:48,h:60,
+    pins:[pin('a',24,0),pin('b',24,60)],
+    sym:(g,c,s)=>{ g.innerHTML=symFKontakt(tagOf(c,'F11'), true, stateOf(c,s,'open'),'95','96'); } },
+  fAlarm:{ label:'MSR Alarmkontakt (97/98)', cat:'Befehlsgeräte', sheet:2, w:48,h:60,
+    pins:[pin('a',24,0),pin('b',24,60)],
+    sym:(g,c,s)=>{ g.innerHTML=symFKontakt(tagOf(c,'F11'), false, stateOf(c,s,'open'),'97','98'); } },
+
+  /* -- Relais / Spulen -- */
+  relaisAllg:{ label:'Relais/Schütz allg. (A1/A2)', cat:'Relais', sheet:2, w:48,h:60, coil:true,
+    pins:[pin('A1',24,0),pin('A2',24,60)],
+    sym:(g,c,s)=>{ g.innerHTML=symRelais(nameOf(c,'K1'), coilEnergized(c,s)); } },
+  relaisAnzug:{ label:'Relais anzugverzögert K3 (A1/A2)', cat:'Relais', sheet:2, w:48,h:60, coil:true,
+    pins:[pin('A1',24,0),pin('A2',24,60)],
+    sym:(g,c,s)=>{ g.innerHTML=symRelaisAnzug(nameOf(c,'K3'), coilEnergized(c,s)); } },
+  relaisRueck:{ label:'Relais rückfallverzögert K2 (A1/A2)', cat:'Relais', sheet:2, w:48,h:60, coil:true,
+    pins:[pin('A1',24,0),pin('A2',24,60)],
+    sym:(g,c,s)=>{ g.innerHTML=symRelaisRueck(nameOf(c,'K2'), coilEnergized(c,s)); } },
+  schrittrelais:{ label:'Schrittschaltrelais K4 (A1/A2)', cat:'Relais', sheet:2, w:48,h:60, coil:true,
+    pins:[pin('A1',24,0),pin('A2',24,60)],
+    sym:(g,c,s)=>{ g.innerHTML=symSchritt(nameOf(c,'K4'), coilEnergized(c,s)); } },
+
+  /* -- Zeit-Kontakte (verzögert) -- */
+  kAnzugNO:{ label:'Anzugverz. Schliesser K3 (5/6)', cat:'Relais', sheet:2, w:48,h:60,
+    pins:[pin('a',24,0),pin('b',24,60)],
+    sym:(g,c,s)=>{ g.innerHTML=symDelayContact(c.coilRef||'K3', false, closedForContact(c,s),'5','6','on'); } },
+  kAnzugNC:{ label:'Anzugverz. Öffner K3', cat:'Relais', sheet:2, w:48,h:60,
+    pins:[pin('a',24,0),pin('b',24,60)],
+    sym:(g,c,s)=>{ g.innerHTML=symDelayContact(c.coilRef||'K3', true, closedForContact(c,s),'','','on'); } },
+  kRueckNC:{ label:'Rückfallverz. Öffner K2 (7/8)', cat:'Relais', sheet:2, w:48,h:60,
+    pins:[pin('a',24,0),pin('b',24,60)],
+    sym:(g,c,s)=>{ g.innerHTML=symDelayContact(c.coilRef||'K2', true, closedForContact(c,s),'7','8','off'); } },
+  kRueckNO:{ label:'Rückfallverz. Schliesser K2', cat:'Relais', sheet:2, w:48,h:60,
+    pins:[pin('a',24,0),pin('b',24,60)],
+    sym:(g,c,s)=>{ g.innerHTML=symDelayContact(c.coilRef||'K2', false, closedForContact(c,s),'','','off'); } },
+
+  /* -- Sensorik / Steuergeräte (eigene Speisung L/N) -- */
+  schaltuhr:{ label:'Schaltuhr P1 (L/N/1/2/3)', cat:'Sensorik', sheet:2, w:62,h:72,
+    pins:[pin('L',14,0),pin('N',14,72),pin('1',46,0),pin('2',46,72),pin('3',60,72)],
+    sym:(g,c,s)=>{ g.innerHTML=symSchaltuhr(tagOf(c,'P1'), sel(c)); } },
+  bewegungsmelder:{ label:'Bewegungsmelder B1 (L/N/3/4)', cat:'Sensorik', sheet:2, w:62,h:72,
+    pins:[pin('L',14,0),pin('N',14,72),pin('3',46,0),pin('4',46,72)],
+    sym:(g,c,s)=>{ g.innerHTML=symBeweg(tagOf(c,'B1'), sel(c)); } },
+  daemmerung:{ label:'Dämmerungsschalter B2 (1/2)', cat:'Sensorik', sheet:2, w:62,h:72,
+    pins:[pin('L',16,0),pin('N',16,72),pin('1',46,0),pin('2',46,72)],
+    sym:(g,c,s)=>{ g.innerHTML=symDaemmer(tagOf(c,'B2'), sel(c)); } },
+
+  /* -- Sicherungen -- */
+  schmelz:{ label:'Schmelzsicherung F1 (10A/DII)', cat:'Sensorik', sheet:2, w:48,h:60,
+    pins:[pin('a',24,0),pin('b',24,60)],
+    sym:(g,c,s)=>{ g.innerHTML=symSchmelz(tagOf(c,'F1'), c.rating||'10A'); } },
+  lsschalter:{ label:'Leitungsschutzschalter F2 (13A C)', cat:'Sensorik', sheet:2, w:48,h:60,
+    pins:[pin('a',24,0),pin('b',24,60)],
+    sym:(g,c,s)=>{ g.innerHTML=symLS(tagOf(c,'F2'), c.rating||'13A C'); } },
+
+  /* -- Meldeeinrichtung (PDF-genau, oberer Strich mittig) -- */
+  betriebsleuchte:{ label:'Betriebsleuchte P26', cat:'Meldung', sheet:2, w:48,h:60,
+    pins:[pin('a',24,0),pin('b',24,60)],
+    sym:(g,c,s)=>{ g.innerHTML=symLeuchte(tagOf(c,'P26'),'#2ee6a6', closedHot(c,s), false); } },
+  leuchtmelder:{ label:'Leuchtmelder P27 (blinkend)', cat:'Meldung', sheet:2, w:48,h:60,
+    pins:[pin('a',24,0),pin('b',24,60)],
+    sym:(g,c,s)=>{ g.innerHTML=symLeuchte(tagOf(c,'P27'),'#f6d365', closedHot(c,s), true); } },
+  alarmhorn:{ label:'Alarmhorn P28', cat:'Meldung', sheet:2, w:48,h:60,
+    pins:[pin('a',24,0),pin('b',24,60)],
+    sym:(g,c,s)=>{ g.innerHTML=symAlarmhorn(tagOf(c,'P28'), closedHot(c,s)); } },
+};
+
+/* Grundeinheit ~5% groesser: Bauteilgroesse + Klemmenpositionen skalieren.
+   Die Symbolzeichnung selbst wird beim Rendern via scale(UNIT) angepasst, so
+   dass Klemmen, Zeichnung und Rotation-Zentrum (def.w/2) zusammenpassen. */
+Object.values(DEFS).forEach(d=>{
+  d.w=Math.round(d.w*UNIT); d.h=Math.round(d.h*UNIT);
+  d.pins=d.pins.map(p=>pin(p.id, p.x*UNIT, p.y*UNIT));
+});
+
+/* ============ Symbol-Grafiken (SVG strings) ============ */
+/* Farben sind theme-abhängig: dunkler Modus = leuchtende Töne,
+   Hell-Modus = klassische dunkle Tinte auf weissem Blatt. */
+let ON,OFF,WIRE,HOT,FAULT,BOX;
+function applyThemeColors(){
+  if(THEME==='light'){ ON='#0f9b6e'; OFF='#3a4d5a'; WIRE='#27424f'; HOT='#0a8f78'; FAULT='#d62b2b'; BOX='#ffffff'; }
+  else { ON='#2ee6a6'; OFF='#5e7184'; WIRE='#7e93a6'; HOT='#2dd4bf'; FAULT='#ff5757'; BOX='#11202c'; }
+}
+applyThemeColors();
+const PE_COL='#caa800';   // Schutzleiter-Farbe (gelb-grün, PE-Leitungen)
+/* Aderfarben je Leiter (CH/EU). Neue Leitungen erhalten beim Andocken an eine
+   Schiene/einen Pin die zum Leiter passende Farbe (analog zur PE-Einfärbung).
+   L1 braun, L2 schwarz, L3 grau, N blau, PE gelb-grün. L+ (Steuerphase) wird
+   wie L1 braun gezeichnet. */
+const ADER_COL={ L1:'#8a5a2b', L2:'#1a1a1a', L3:'#9aa0a6', N:'#2b6cd9', PE:PE_COL, 'L+':'#8a5a2b' };
+function railColor(name){ return ADER_COL[name]||null; }
+/* Aderfarbe für eine neu erzeugte Leitung aus ihren beiden Endpunkten ableiten.
+   Priorität: ein expliziter Schienen-Endpunkt (rail) gibt die Leiterfarbe vor;
+   PE schlägt alles (Schutzleiter immer gelb-grün). Liefert null = Standardfarbe. */
+function wireColorFor(a,b){
+  const ra=a&&a.rail, rb=b&&b.rail;
+  // PE schlägt alles: Schienen-PE ODER eine PE-Klemme (z.B. Motor-PE)
+  if(ra==='PE'||rb==='PE'||(a&&a.p==='PE')||(b&&b.p==='PE')) return PE_COL;
+  if(ra && railColor(ra)) return railColor(ra);
+  if(rb && railColor(rb)) return railColor(rb);
+  return null;
+}
+function inkLbl(){ return THEME==='light'? '#3a4d5a' : '#9fb3c4'; }
+function inkTag(){ return THEME==='light'? '#0c5d50' : '#aef5e6'; }
+function lbl(x,y,t,s){return `<text x="${x}" y="${y}" font-size="${s||9}" fill="${inkLbl()}" font-weight="700" text-anchor="middle">${t}</text>`;}
+// Label LINKS aussen vom Bauteil (Bezeichner nach Norm)
+function lblLeft(t,yy,size){ return `<text x="-8" y="${yy}" font-size="${size||10}" fill="${inkTag()}" font-weight="800" text-anchor="end">${t}</text>`; }
+
+/* Ein einzelner Hauptkontakt-Strich (CH-Schemasymbol, vgl. symbole.html).
+   Schliesser (NO): fester Anschluss OBEN (y=top), beweglicher diagonaler
+   Kontaktarm hinged am UNTEREN Klemmpunkt (y=bot), öffnet schräg nach
+   OBEN-RECHTS (nie nach unten). Geschlossen = senkrechte Verbindung. */
+function mainContact(x,top,bot,closed,col){
+  // Hauptkontakt = Schliesser (NO), PDF-genaue Geometrie (Arm oeffnet oben-links)
+  return pdfContact(x, top, bot, closed, col, 'no');
+}
+// Motorschutzschalter Q (CH, IEC): je Pol Schaltkontakt + thermischer (Bimetall-
+// Rechteck) UND magnetischer (Halbkreis) Ueberstromausloeser, gemeinsame
+// gestrichelte Ausloese-Kopplung ueber alle 3 Pole. Klemmen 1/3/5 oben, 2/4/6 unten.
+function symMSS(tag,on){const c=on?ON:OFF;
+  let s=`<rect x="2" y="6" width="80" height="54" rx="6" fill="${BOX}" stroke="${c}" stroke-width="1.4" stroke-dasharray="5 3"/>`;
+  for(let i=0;i<3;i++){const x=12+i*30;
+    // Anschluss-Stiche
+    s+=`<line x1="${x}" y1="0" x2="${x}" y2="14" stroke="${WIRE}" stroke-width="2"/>`;
+    s+=`<line x1="${x}" y1="50" x2="${x}" y2="64" stroke="${WIRE}" stroke-width="2"/>`;
+    // Schaltkontakt (Schliesser) — oeffnet bei Ausloesung
+    s+=pdfContact(x,14,28,on,c,'no');
+    // Pol-Strich durch die Ueberstromausloeser + untere Klemme
+    s+=`<line x1="${x}" y1="28" x2="${x}" y2="50" stroke="${c}" stroke-width="2"/>`;
+    s+=`<circle cx="${x}" cy="50" r="2.2" fill="${c}"/>`;
+    // thermischer Ueberstromausloeser: Bimetall-Rechteck in Serie
+    s+=`<rect x="${x-5}" y="29" width="10" height="8" fill="${BOX}" stroke="${c}" stroke-width="1.6"/>`;
+    s+=`<path d="M ${x-2.5} 30.5 q 2.5 2.5 0 5" fill="none" stroke="${c}" stroke-width="1.3"/>`;
+    // magnetischer Schnellausloeser: Halbkreis in Serie
+    s+=`<path d="M ${x-5} 48 a 5 5 0 0 0 10 0" fill="none" stroke="${c}" stroke-width="1.6"/>`;
+  }
+  // gemeinsame mechanische Ausloese-Kopplung (gestrichelt ueber alle 3 Pole)
+  s+=`<line x1="12" y1="41" x2="72" y2="41" stroke="${c}" stroke-width="1.1" stroke-dasharray="4 3"/>`;
+  s+=`<text x="6" y="12" font-size="7" fill="${inkLbl()}" font-weight="700">1 3 5</text>`;
+  s+=`<text x="6" y="62" font-size="7" fill="${inkLbl()}" font-weight="700">2 4 6</text>`;
+  s+=lblLeft(tag,40); return s;}
+
+// Hauptkontakte des Schützes Q — 3 Schliesser mit gemeinsamer mechanischer
+// Kopplung. BUG 9: falscher Kasten-Rahmen entfernt; Proportionen an das echte
+// IEC-Schaltzeichen (wie MSS/MSR) angeglichen: schlanke Kontakte + gestrichelte
+// Koppellinie über die drei beweglichen Kontaktarme.
+function symMainK(name,closed){const c=closed?HOT:OFF;
+  let s='';
+  for(let i=0;i<3;i++){let x=12+i*30;
+    s+=`<line x1="${x}" y1="0" x2="${x}" y2="16" stroke="${WIRE}" stroke-width="2"/>`;
+    s+=`<line x1="${x}" y1="48" x2="${x}" y2="64" stroke="${WIRE}" stroke-width="2"/>`;
+    s+=mainContact(x,16,48,closed,c);
+  }
+  // gemeinsame mechanische Kopplung (gestrichelt) auf Höhe der Kontakt-Drehpunkte
+  s+=`<line x1="12" y1="41" x2="72" y2="41" stroke="${c}" stroke-width="1.1" stroke-dasharray="4 3"/>`;
+  s+=`<text x="6" y="13" font-size="7" fill="${inkLbl()}" font-weight="700">1 3 5</text>`;
+  s+=`<text x="6" y="62" font-size="7" fill="${inkLbl()}" font-weight="700">2 4 6</text>`;
+  s+=lblLeft(name,40); return s;}
+
+// Motorschutzrelais / Bimetall-Ueberlastrelais F (CH, IEC): je Pol ein
+// thermisches Heizelement (Rechteck mit Bimetall-Streifen) + gemeinsame
+// gestrichelte Ausloese-Kopplung. Trip -> FAULT-Farbe (latcht in der Logik).
+function symMSR(tag,tripped){const c=tripped?FAULT:OFF;
+  const el=tripped?FAULT:ON; const ln=tripped?FAULT:'#6f8497';
+  let s=`<rect x="2" y="2" width="80" height="42" rx="6" fill="${BOX}" stroke="${c}" stroke-width="1.5"/>`;
+  for(let i=0;i<3;i++){const x=12+i*30;
+    // Anschluss-Stiche + Klemmen
+    s+=`<line x1="${x}" y1="0" x2="${x}" y2="8" stroke="${WIRE}" stroke-width="2"/>`;
+    s+=`<line x1="${x}" y1="38" x2="${x}" y2="46" stroke="${WIRE}" stroke-width="2"/>`;
+    s+=`<circle cx="${x}" cy="8" r="2" fill="${el}"/><circle cx="${x}" cy="38" r="2" fill="${el}"/>`;
+    // Pol-Striche zum Heizelement
+    s+=`<line x1="${x}" y1="8" x2="${x}" y2="12" stroke="${ln}" stroke-width="2"/>`;
+    s+=`<line x1="${x}" y1="34" x2="${x}" y2="38" stroke="${ln}" stroke-width="2"/>`;
+    // thermisches Heizelement (Bimetall) — genormtes Rechteck-Sinnbild
+    s+=`<rect x="${x-5}" y="12" width="10" height="22" fill="${BOX}" stroke="${el}" stroke-width="1.7"/>`;
+    // Bimetall-Streifen (S-Kurve) im Element
+    s+=`<path d="M ${x} 14 q 5 4 0 8 q -5 4 0 8" fill="none" stroke="${el}" stroke-width="1.5"/>`;
+  }
+  // gemeinsame mechanische Ausloese-Kopplung (gestrichelt ueber alle 3 Pole)
+  s+=`<line x1="12" y1="35" x2="72" y2="35" stroke="${ln}" stroke-width="1.1" stroke-dasharray="4 3"/>`;
+  s+=lblLeft(tag,26); return s;}
+
+function symHeater(tag,hot){const c=hot?ON:OFF;
+  let s=`<line x1="30" y1="0" x2="30" y2="14" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<line x1="30" y1="66" x2="30" y2="80" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<rect x="14" y="14" width="32" height="52" rx="3" fill="${hot?(THEME=='light'?'#ffe3c2':'#2a1c10'):BOX}" stroke="${c}" stroke-width="1.8"/>`;
+  s+=`<line x1="22" y1="22" x2="22" y2="58" stroke="${c}" stroke-width="1.4"/><line x1="30" y1="22" x2="30" y2="58" stroke="${c}" stroke-width="1.4"/><line x1="38" y1="22" x2="38" y2="58" stroke="${c}" stroke-width="1.4"/>`;
+  s+=lblLeft(tag,42); return s;}
+
+function symMotor(tag,m,mode){const run=m&&m.run;const col=run?(m.dir>0?ON:'#4db6ff'):OFF;
+  // Klemmbrett oben (U1 V1 W1 PE), Brücken je nach Stern/Dreieck, dann Motorkreis
+  // (CH-Klemmenbrett vgl. symbole.html: Klemmen als Ringe, Wicklungen diagonal)
+  let s='';
+  // Anschluss-Stiche
+  for(let i=0;i<3;i++){let x=16+i*30;
+    s+=`<line x1="${x}" y1="0" x2="${x}" y2="20" stroke="${WIRE}" stroke-width="2"/>`;
+    // BUG 3: Klemmenbeschriftung U1/V1/W1 LINKS neben den Anschluss-Stich (nicht
+    // mehr auf der Linie -> lesbar) und auf gleiche Höhe wie Schütz/MSR (y≈13).
+    s+=`<text x="${x-4}" y="13" font-size="8.5" fill="${inkLbl()}" font-weight="800" text-anchor="end">${['U1','V1','W1'][i]}</text>`;
+  }
+  s+=`<line x1="106" y1="0" x2="106" y2="20" stroke="#f6d365" stroke-width="2"/>`+`<text x="102" y="13" font-size="8.5" fill="#f6d365" font-weight="800" text-anchor="end">PE</text>`;
+  // Klemmbrett-Kasten
+  s+=`<rect x="6" y="20" width="108" height="24" rx="3" fill="${BOX}" stroke="${OFF}" stroke-width="1.2"/>`;
+  const xu1=16,xv1=46,xw1=76;
+  // obere Klemmen-Ringe U1/V1/W1
+  s+=`<circle cx="${xu1}" cy="26" r="3" fill="none" stroke="${OFF}" stroke-width="1.2"/><circle cx="${xv1}" cy="26" r="3" fill="none" stroke="${OFF}" stroke-width="1.2"/><circle cx="${xw1}" cy="26" r="3" fill="none" stroke="${OFF}" stroke-width="1.2"/>`;
+  // untere Klemmen-Ringe (Klemmenbrett-Reihe 2: W2 U2 V2 nach CH-Norm)
+  s+=`<circle cx="${xu1}" cy="38" r="3" fill="none" stroke="${OFF}" stroke-width="1.2"/><circle cx="${xv1}" cy="38" r="3" fill="none" stroke="${OFF}" stroke-width="1.2"/><circle cx="${xw1}" cy="38" r="3" fill="none" stroke="${OFF}" stroke-width="1.2"/>`;
+  // untere Klemmenziffern W2 U2 V2 (Teil des Symbols, nicht das freie Label)
+  s+=`<text x="${xu1}" y="52" font-size="6.5" fill="${inkLbl()}" font-weight="700" text-anchor="middle">W2</text>`;
+  s+=`<text x="${xv1}" y="52" font-size="6.5" fill="${inkLbl()}" font-weight="700" text-anchor="middle">U2</text>`;
+  s+=`<text x="${xw1}" y="52" font-size="6.5" fill="${inkLbl()}" font-weight="700" text-anchor="middle">V2</text>`;
+  // Brücken-Darstellung (untere Reihe: links=W2, mitte=U2, rechts=V2)
+  const br='#9fb3c4';
+  if(mode==='dreieck'){
+    // Dreieck: U1-W2 / V1-U2 / W1-V2 — da W2/U2/V2 direkt UNTER U1/V1/W1 sitzen,
+    // sind das genau DREI SENKRECHTE Brücken (reales Klemmbrett-Bild, norm-konform,
+    // konsistent mit der Simulation). Als kleine Klemmlaschen gezeichnet.
+    [xu1,xv1,xw1].forEach(x=>{ s+=`<line x1="${x}" y1="29" x2="${x}" y2="35" stroke="${br}" stroke-width="2.4" stroke-linecap="round"/>`; });
+    s+=`<polygon points="56,10 64,10 60,17" fill="none" stroke="${col}" stroke-width="1.2"/>`; // Δ-Kennung
+  } else if(mode==='keine'){
+    // keine Brücke: U2/V2/W2 offen — der User verdrahtet selbst (Lehr-Variante)
+    s+=`<text x="60" y="16" font-size="8" fill="${OFF}" font-weight="800" text-anchor="middle">offen</text>`;
+  } else {
+    // Stern: W2-U2-V2 gebrückt — EINE waagrechte Leiste über die untere Reihe.
+    s+=`<line x1="${xu1}" y1="38" x2="${xw1}" y2="38" stroke="${br}" stroke-width="2.4" stroke-linecap="round"/>`;
+    s+=`<text x="60" y="16" font-size="9" fill="${col}" font-weight="800" text-anchor="middle">Y</text>`;
+  }
+  // Motorkreis
+  s+=`<line x1="60" y1="42" x2="60" y2="50" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<circle cx="60" cy="84" r="30" fill="${BOX}" stroke="${col}" stroke-width="2"/>`;
+  s+=`<text x="60" y="80" font-size="20" font-weight="900" fill="${col}" text-anchor="middle">M</text>`;
+  s+=`<text x="60" y="96" font-size="11" font-weight="800" fill="${col}" text-anchor="middle">3~</text>`;
+  if(run){ const d=m.dir>0; const path=d?'M 60 56 A 26 26 0 0 1 84 80':'M 60 56 A 26 26 0 0 0 36 80';
+    s+=`<g><animateTransform attributeName="transform" type="rotate" from="0 60 84" to="${d?360:-360} 60 84" dur="1.4s" repeatCount="indefinite"/>`+
+       `<path d="${path}" fill="none" stroke="${col}" stroke-width="2.4"/>`+
+       `<polygon points="${d?'82,72 90,82 78,84':'38,72 30,82 42,84'}" fill="${col}"/></g>`;
+  }
+  // PE zum Motorgehäuse
+  s+=`<line x1="106" y1="20" x2="106" y2="84" stroke="#f6d365" stroke-width="1.4" stroke-dasharray="1 2"/>`;
+  s+=`<line x1="88" y1="84" x2="106" y2="84" stroke="#f6d365" stroke-width="1.4" stroke-dasharray="1 2"/>`;
+  s+=lblLeft(tag,84); return s;}
+
+/* Generischer Kontakt im Steuerkreis. NO/Öffner gleiche Geometrie:
+   Festpunkt oben (top), beweglicher Arm vom UNTEREN Klemmpunkt (bot), öffnet
+   schräg nach oben-rechts. Öffner zusätzlich mit Querbalken (Brücke) markiert.*/
+/* Generischer Kontakt im Steuerkreis (CH-Schemasymbol). Festpunkt oben (top),
+   beweglicher diagonaler Arm vom UNTEREN Klemmpunkt (bot), öffnet nach
+   oben-rechts (nie nach unten). Öffner zusätzlich mit Querbalken markiert. */
+function ctlContact(top,bot,closed,col,nc){
+  // delegiert an die PDF-genaue Kontaktgeometrie (Achse x=24)
+  return pdfContact(24, top, bot, closed, col, nc?'nc':'no');}
+
+/* Taster S — EIN integriertes Symbol (CH, Bild 203709/203757):
+   diagonaler Kontaktarm + gestrichelte Tasterbetätigung (Querstrich/Pfeil). */
+function symBtn(nc,press,tag,t1,t2){
+  const closed = nc ? !press : press;
+  const c=closed?HOT:OFF;
+  let s=`<line x1="24" y1="0" x2="24" y2="14" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<line x1="24" y1="46" x2="24" y2="60" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=ctlContact(14,46,closed,c,nc);
+  // Tasterbetätigung: gestrichelter senkrechter Stössel mit T-Querstrich (Handdruck)
+  const ac=press?HOT:'#8aa';
+  s+=`<line x1="30" y1="30" x2="38" y2="30" stroke="${ac}" stroke-width="1.4" stroke-dasharray="3 2"/>`;
+  s+=`<line x1="38" y1="24" x2="38" y2="36" stroke="${ac}" stroke-width="1.6"/>`;
+  s+=`<text x="10" y="13" font-size="8" fill="${inkLbl()}" font-weight="700">${t1||'3'}</text>`;
+  s+=`<text x="10" y="58" font-size="8" fill="${inkLbl()}" font-weight="700">${t2||'4'}</text>`;
+  s+=lblLeft(tag||(nc?'S0':'S1'),32);
+  return s;}
+
+function symNotAus(tag,press){const closed=!press;const c=closed?HOT:OFF;
+  let s=`<line x1="27" y1="0" x2="27" y2="14" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<line x1="27" y1="48" x2="27" y2="62" stroke="${WIRE}" stroke-width="2"/>`;
+  let s2=pdfContact(27,14,48,closed,c,'nc');
+  // Pilzkopf (rot)
+  s2+=`<path d="M 14 9 a 13 6 0 0 1 26 0" fill="${press?'#ff5757':'#c0392b'}" stroke="#7a1d12" stroke-width="1"/>`;
+  s+=s2+lblLeft(tag,34); return s;}
+
+function symEnd(tag,nc,act){const closed = nc?!act:act; const c=closed?HOT:OFF;
+  let s=`<line x1="27" y1="0" x2="27" y2="14" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<line x1="27" y1="48" x2="27" y2="62" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=pdfContact(27,14,48,closed,c,nc?'nc':'no');
+  // Betätigungsstössel/Rolle
+  s+=`<circle cx="42" cy="31" r="3" fill="none" stroke="${OFF}" stroke-width="1.4"/>`;
+  s+=`<line x1="35" y1="31" x2="39" y2="31" stroke="${OFF}" stroke-width="1.3"/>`;
+  s+=lblLeft(tag,34); return s;}
+
+function symWahl(tag,on){const c=on?HOT:OFF;
+  let s=`<line x1="27" y1="0" x2="27" y2="14" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<line x1="27" y1="48" x2="27" y2="62" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=pdfContact(27,14,48,on,c,'no');
+  s+=`<line x1="27" y1="31" x2="40" y2="22" stroke="${OFF}" stroke-width="1.4"/>`; // Stellungs-Pfeil/Griff
+  s+=`<circle cx="40" cy="22" r="1.6" fill="${OFF}"/>`;
+  s+=lblLeft(tag,34); return s;}
+
+function symSensor(tag,kind,on){const c=on?HOT:OFF;
+  let s=`<line x1="27" y1="0" x2="27" y2="14" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<line x1="27" y1="48" x2="27" y2="62" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=pdfContact(27,14,48,on,c,'no');
+  // Fühler-Kästchen mit Sinnbild
+  s+=`<rect x="35" y="24" width="13" height="13" rx="2" fill="${BOX}" stroke="${OFF}" stroke-width="1.1"/>`;
+  if(kind==='temp') s+=`<line x1="41.5" y1="27" x2="41.5" y2="34" stroke="#f6d365" stroke-width="1.4"/><circle cx="41.5" cy="34" r="1.6" fill="#f6d365"/>`;
+  else if(kind==='flow') s+=`<path d="M37 30.5 h8 M43 28 l2 2.5 -2 2.5" fill="none" stroke="#4db6ff" stroke-width="1.2"/>`;
+  else s+=`<path d="M37 33 q2 -2 4 0 t4 0" fill="none" stroke="#4db6ff" stroke-width="1.2"/>`;
+  s+=lblLeft(tag,34); return s;}
+
+function symCoil(name,en){const c=en?ON:OFF;
+  let s=`<line x1="24" y1="0" x2="24" y2="14" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<line x1="24" y1="46" x2="24" y2="60" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<rect x="6" y="14" width="36" height="32" rx="2" fill="${en?(THEME=='light'?'#d6f5ee':'#0e3b35'):BOX}" stroke="${c}" stroke-width="2"/>`;
+  if(en) s+=`<rect x="6" y="14" width="36" height="32" rx="2" fill="none" stroke="${ON}" stroke-width="2" opacity="0.5"><animate attributeName="opacity" values="0.2;0.8;0.2" dur="0.9s" repeatCount="indefinite"/></rect>`;
+  s+=`<text x="44" y="13" font-size="8" fill="${inkLbl()}" font-weight="700">A1</text>`+`<text x="44" y="58" font-size="8" fill="${inkLbl()}" font-weight="700">A2</text>`;
+  s+=lblLeft(name,34);
+  return s;}
+
+function symTimer(name,en){const c=en?ON:OFF;
+  let s=`<line x1="24" y1="0" x2="24" y2="14" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<line x1="24" y1="46" x2="24" y2="60" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<rect x="6" y="14" width="36" height="32" rx="2" fill="${en?(THEME=='light'?'#d6f5ee':'#0e3b35'):BOX}" stroke="${c}" stroke-width="2"/>`;
+  // anzugverzögert: gefüllter Halbkreis links im Rechteck (Norm-Sinnbild)
+  s+=`<path d="M6 14 a16 16 0 0 0 0 32 z" fill="${c}" opacity="0.55"/>`;
+  if(en) s+=`<rect x="6" y="14" width="36" height="32" rx="2" fill="none" stroke="${ON}" stroke-width="2" opacity="0.5"><animate attributeName="opacity" values="0.2;0.8;0.2" dur="0.9s" repeatCount="indefinite"/></rect>`;
+  s+=`<text x="44" y="13" font-size="8" fill="${inkLbl()}" font-weight="700">A1</text>`+`<text x="44" y="58" font-size="8" fill="${inkLbl()}" font-weight="700">A2</text>`;
+  s+=lblLeft(name,34);
+  return s;}
+
+function symAux(nc,name,closed,term){const c=closed?HOT:OFF;
+  let s=`<line x1="24" y1="0" x2="24" y2="16" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<line x1="24" y1="44" x2="24" y2="60" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=ctlContact(16,44,closed,c,nc);
+  const lab = term || (nc?'21/22':'13/14');
+  s+=`<text x="38" y="33" font-size="8" fill="${inkLbl()}" font-weight="700">${lab}</text>`;
+  s+=lblLeft(name,32);
+  return s;}
+
+function symMsrAux(tag,open){const c=open?FAULT:HOT;
+  let s=`<line x1="24" y1="0" x2="24" y2="16" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<line x1="24" y1="44" x2="24" y2="60" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=ctlContact(16,44,!open,c,true);
+  s+=`<text x="38" y="33" font-size="8" fill="${inkLbl()}" font-weight="700">95/96</text>`;
+  s+=lblLeft(tag,32);
+  return s;}
+
+function symLamp(tag,glow,on){const c=on?glow:OFF;
+  let s=`<line x1="24" y1="0" x2="24" y2="9" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<line x1="24" y1="51" x2="24" y2="60" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<circle cx="24" cy="30" r="13" fill="${on?glow:BOX}" fill-opacity="${on?0.35:1}" stroke="${c}" stroke-width="1.8"/>`;
+  s+=`<line x1="15" y1="21" x2="33" y2="39" stroke="${c}" stroke-width="1.5"/><line x1="33" y1="21" x2="15" y2="39" stroke="${c}" stroke-width="1.5"/>`;
+  s+=`<text x="40" y="20" font-size="8" fill="${inkLbl()}" font-weight="700">X1</text><text x="40" y="44" font-size="8" fill="${inkLbl()}" font-weight="700">X2</text>`;
+  s+=lblLeft(tag,33); return s;}
+
+function symHorn(tag,on){const c=on?ON:OFF;
+  let s=`<line x1="24" y1="0" x2="24" y2="14" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<line x1="24" y1="46" x2="24" y2="60" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<path d="M12 22 h10 l12 -7 v22 l-12 -7 h-10 z" fill="${on?(THEME=='light'?'#d6f5ee':'#0e3b35'):BOX}" stroke="${c}" stroke-width="1.6"/>`;
+  if(on) s+=`<path d="M37 22 q4 8 0 16" fill="none" stroke="${c}" stroke-width="1.4"/>`;
+  s+=lblLeft(tag,33); return s;}
+
+/* ============================================================
+   NEU: Steuerungs-/Motor-Symbolsatz (Steuerungstechnik 2.Lj)
+   Geometrie 1:1 aus den PDF-Vorlagen (pymupdf get_drawings,
+   Steuerungstechnik Lehrer 2026 S.15 / S.1) — saubere Linien.
+   Optik-Referenz: freigegebene galerie2-SVGs (nur Referenz).
+   Konvention wie Bestand: Kontaktachse mittig, fester Punkt oben,
+   beweglicher Arm vom UNTEREN Klemmpunkt, öffnet nach oben-rechts.
+   ============================================================ */
+/* Standard-Kontakt (NO/NC) auf der Achse x=ax — Geometrie 1:1 aus der
+   Vektor-PDF (Steuerungstechnik Lehrer 2026, S.15) extrahiert via
+   get_drawings. Normalisiert: Klemmenabstand top..bot = H, Kontaktdrehpunkt
+   (Knick) bei ~23% von unten, Kontaktmitte (Betätigungslinie) in der Mitte.
+   ---------------------------------------------------------------------------
+   SCHLIESSER (NO, type='no'): fester Stummel kurz vom OBEREN Pol herunter;
+     beweglicher Arm vom UNTEREN Pol senkrecht hoch bis zum Knick, dann
+     diagonal nach oben-LINKS — endet mit deutlichem Spalt unter/neben dem
+     Festkontakt (im Ruhezustand OFFEN). Geschlossen = senkrecht durch.
+   ÖFFNER (NC, type='nc'): fester Kontakt oben mit kurzem waagrechtem Fuss
+     (L-Steg) der nach RECHTS zeigt; beweglicher Arm vom UNTEREN Pol senkrecht
+     hoch bis zum Knick, dann diagonal nach oben-RECHTS bis er den Fuss berührt
+     (im Ruhezustand GESCHLOSSEN). Betätigt = Arm löst sich (öffnet).
+   Die Bewegung betrifft NUR den Kontaktarm; col faerbt ihn (Betaetigung rot
+   ueber den Aufrufer). */
+function pdfContact(ax,top,bot,closed,col,type){
+  const H=bot-top;
+  const piv=bot-H*0.23;               // Knick (Drehpunkt des Arms)
+  const mid=top+H*0.5;                // Hoehe Festkontakt/Betaetigungslinie
+  let s=`<circle cx="${ax}" cy="${top}" r="2.2" fill="${col}"/><circle cx="${ax}" cy="${bot}" r="2.2" fill="${col}"/>`;
+  if(type==='nc'){
+    // Fester Kontakt: Stummel von oben bis Mitte, dann L-Fuss nach rechts
+    s+=`<line x1="${ax}" y1="${top}" x2="${ax}" y2="${mid}" stroke="${col}" stroke-width="2"/>`;
+    s+=`<line x1="${ax}" y1="${mid}" x2="${ax+8}" y2="${mid}" stroke="${col}" stroke-width="2"/>`;
+    if(closed){
+      // Ruhe: Arm senkrecht hoch, dann diagonal nach oben-rechts an den Fuss
+      s+=`<line x1="${ax}" y1="${bot}" x2="${ax}" y2="${piv}" stroke="${col}" stroke-width="2.6"/>`;
+      s+=`<line x1="${ax}" y1="${piv}" x2="${ax+8}" y2="${mid-2}" stroke="${col}" stroke-width="2.6"/>`;
+    } else {
+      // betaetigt: Arm schwingt nach RECHTS weg vom Festkontakt (oeffnet, dort
+      // ist mehr Platz) — Spalt zum L-Fuss
+      s+=`<line x1="${ax}" y1="${bot}" x2="${ax}" y2="${piv}" stroke="${col}" stroke-width="2.6"/>`;
+      s+=`<line x1="${ax}" y1="${piv}" x2="${ax+12}" y2="${mid+3}" stroke="${col}" stroke-width="2.6"/>`;
+    }
+  } else {
+    // SCHLIESSER: fester Stummel kurz vom oberen Pol herunter
+    s+=`<line x1="${ax}" y1="${top}" x2="${ax}" y2="${mid-3}" stroke="${col}" stroke-width="2"/>`;
+    if(closed){
+      // geschlossen: Arm senkrecht durch
+      s+=`<line x1="${ax}" y1="${bot}" x2="${ax}" y2="${piv}" stroke="${col}" stroke-width="2.6"/>`;
+      s+=`<line x1="${ax}" y1="${piv}" x2="${ax}" y2="${mid-3}" stroke="${col}" stroke-width="2.6"/>`;
+    } else {
+      // Ruhe OFFEN: Arm senkrecht hoch, dann diagonal nach oben-LINKS, Spalt
+      s+=`<line x1="${ax}" y1="${bot}" x2="${ax}" y2="${piv}" stroke="${col}" stroke-width="2.6"/>`;
+      s+=`<line x1="${ax}" y1="${piv}" x2="${ax-10}" y2="${mid-4}" stroke="${col}" stroke-width="2.6"/>`;
+    }
+  }
+  return s;
+}
+// Rueckwaerts-kompatibler Wrapper: nc(bool) -> type
+function stdContact(ax,top,bot,closed,col,nc){
+  return pdfContact(ax,top,bot,closed,col, nc?'nc':'no');
+}
+// gestrichelte mechanische Kopplung Aktuator<->Kontakt (PDF: kurze Striche)
+function mechLink(x1,x2,y,col){ return `<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="${col}" stroke-width="1.4" stroke-dasharray="3 2"/>`; }
+// Aktuator: Drucktaster (T-Steg, PDF S22/S23)
+function actBtn(x,y,col){ return `<line x1="${x}" y1="${y-5}" x2="${x}" y2="${y+5}" stroke="${col}" stroke-width="1.8"/>`; }
+// Aktuator: Pilz / Zugknopf Not-Aus (PDF S21: D-Schale + V-Raste)
+function actMushroom(x,y,col){
+  let s=`<path d="M ${x} ${y-5} a 5 5 0 0 0 0 10" fill="none" stroke="${col}" stroke-width="1.8"/>`;
+  // V-Raste (rastend) mittig auf der Kopplung
+  s+=`<path d="M ${x+9} ${y-3} l 3 6 l 3 -6" fill="none" stroke="${col}" stroke-width="1.4"/>`;
+  return s;
+}
+// Aktuator: Schlüssel (PDF S24: kleiner Kreis + Bart-Dreieck)
+function actKey(x,y,col){
+  let s=`<circle cx="${x}" cy="${y-4}" r="2.6" fill="none" stroke="${col}" stroke-width="1.5"/>`;
+  s+=`<path d="M ${x-2.7} ${y-2} L ${x+2.7} ${y-2} L ${x+1.7} ${y+4} L ${x-1.7} ${y+4} Z" fill="none" stroke="${col}" stroke-width="1.5"/>`;
+  return s;
+}
+// Aktuator: Schwimmer / Niveau (PDF B21: liegende Ellipse auf Stiel)
+function actFloat(x,y,col){
+  let s=`<ellipse cx="${x}" cy="${y}" rx="6" ry="2.6" fill="none" stroke="${col}" stroke-width="1.6"/>`;
+  s+=`<line x1="${x}" y1="${y-2.6}" x2="${x}" y2="${y-6}" stroke="${col}" stroke-width="1.4"/>`;
+  return s;
+}
+// Aktuator: Thermisch / Bimetall-Bügel (PDF F11/F2): senkrechter Balken mit
+// zwei kurzen Füssen nach rechts (oben+unten) — IEC-Sinnbild thermische
+// Auslösung, 1:1 aus der Vektor-PDF (S.15, F11 95/96).
+function actThermal(x,y,col){
+  let s=`<line x1="${x}" y1="${y-7}" x2="${x}" y2="${y+7}" stroke="${col}" stroke-width="1.7"/>`;
+  s+=`<line x1="${x}" y1="${y-3.5}" x2="${x+5}" y2="${y-3.5}" stroke="${col}" stroke-width="1.7"/>`;
+  s+=`<line x1="${x}" y1="${y+3.5}" x2="${x+5}" y2="${y+3.5}" stroke="${col}" stroke-width="1.7"/>`;
+  return s;
+}
+// Betätigungsmarke Endschalter/Grenztaster — PDF B22: schmales Nocken-Dreieck,
+// Spitze nach LINKS, sitzt direkt am Kontaktpunkt (1:1 aus Vektor-PDF). Das
+// Dreieck ist im PDF mit dem beweglichen Kontaktarm verbunden und wandert beim
+// Betätigen MIT — daher wird es an die aktuelle Arm-Spitze (tx,ty) gehängt.
+function actLimit(tx,ty,col){
+  // Dreieck: linke Spitze + zwei Punkte rechts oben/unten, an der Arm-Spitze
+  return `<path d="M ${tx-9} ${ty} L ${tx} ${ty-6} L ${tx} ${ty+6} Z" fill="none" stroke="${col}" stroke-width="1.6"/>`;
+}
+
+/* ---- Taster / Schalter (Blatt 2/3) ---- */
+// Aus-Taster S22 (Öffner 1/2), Ein-Taster S23 (Schliesser 3/4)
+function symTaster(nc,press,tag,t1,t2){
+  const closed = nc ? !press : press;
+  const c=closed?HOT:OFF; const ax=24;
+  let s=`<line x1="${ax}" y1="0" x2="${ax}" y2="14" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<line x1="${ax}" y1="46" x2="${ax}" y2="60" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=stdContact(ax,14,46,closed,c,nc);
+  const ac=press?HOT:OFF;
+  s+=actBtn(ax-22,30,ac)+mechLink(ax-22,ax,30,ac);
+  s+=`<text x="10" y="13" font-size="8" fill="${inkLbl()}" font-weight="700">${t1}</text>`;
+  s+=`<text x="10" y="58" font-size="8" fill="${inkLbl()}" font-weight="700">${t2}</text>`;
+  s+=lblLeft(tag,32); return s;}
+
+// Schlüsseltaster S24 (Schliesser 3/4)
+function symKey(tag,press){const closed=press;const c=closed?HOT:OFF;const ax=24;
+  let s=`<line x1="${ax}" y1="0" x2="${ax}" y2="14" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<line x1="${ax}" y1="46" x2="${ax}" y2="60" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=stdContact(ax,14,46,closed,c,false);
+  const ac=press?HOT:OFF;
+  s+=actKey(ax-22,30,ac)+mechLink(ax-18,ax,30,ac);
+  s+=`<text x="10" y="13" font-size="8" fill="${inkLbl()}" font-weight="700">3</text>`;
+  s+=`<text x="10" y="58" font-size="8" fill="${inkLbl()}" font-weight="700">4</text>`;
+  s+=lblLeft(tag,32); return s;}
+
+// Not-Aus-Schalter S21 (Öffner 1/2, rastend, Pilzkopf)
+function symNotAus2(tag,press){const closed=!press;const c=closed?HOT:OFF;const ax=27;
+  let s=`<line x1="${ax}" y1="0" x2="${ax}" y2="14" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<line x1="${ax}" y1="46" x2="${ax}" y2="60" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=stdContact(ax,14,46,closed,c,true);
+  const ac=press?FAULT:OFF;
+  s+=actMushroom(ax-24,30,ac)+mechLink(ax-15,ax,30,ac);
+  s+=`<text x="12" y="13" font-size="8" fill="${inkLbl()}" font-weight="700">1</text>`;
+  s+=`<text x="12" y="58" font-size="8" fill="${inkLbl()}" font-weight="700">2</text>`;
+  s+=lblLeft(tag,33); return s;}
+
+// Niveauschalter/Schwimmer B21 — Öffner(1/2) ODER Schliesser(3/4)
+function symNiveau(tag,nc,act){const closed=nc?!act:act;const c=closed?HOT:OFF;const ax=27;
+  let s=`<line x1="${ax}" y1="0" x2="${ax}" y2="14" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<line x1="${ax}" y1="46" x2="${ax}" y2="60" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=stdContact(ax,14,46,closed,c,nc);
+  const ac=act?HOT:OFF;
+  s+=actFloat(ax-20,30,ac)+mechLink(ax-14,ax,30,ac);
+  const t1=nc?'1':'3', t2=nc?'2':'4';
+  s+=`<text x="12" y="13" font-size="8" fill="${inkLbl()}" font-weight="700">${t1}</text>`;
+  s+=`<text x="12" y="58" font-size="8" fill="${inkLbl()}" font-weight="700">${t2}</text>`;
+  s+=lblLeft(tag,33); return s;}
+
+// Endschalter/Grenztaster B22 — Schliesser(3/4) ODER Öffner(1/2)
+// KORREKTUR: Öffner-Variante mit sauberem Öffner-Detail (Nockendreieck + Steg).
+function symEnd2(tag,nc,act){const closed=nc?!act:act;const c=closed?HOT:OFF;const ax=27;
+  let s=`<line x1="${ax}" y1="0" x2="${ax}" y2="14" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<line x1="${ax}" y1="46" x2="${ax}" y2="60" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=stdContact(ax,14,46,closed,c,nc);
+  // Nocken-Dreieck (Betätigung) — im PDF mit dem beweglichen Kontaktarm
+  // verbunden, wandert MIT. Arm-Spitze exakt wie pdfContact (top=14,bot=46):
+  // H=32, mid=30. Dreieck rechts an die Arm-Spitze gehängt.
+  const ac=act?HOT:OFF;
+  let tx,ty;
+  if(nc){ if(closed){tx=ax+8;ty=28;} else {tx=ax+12;ty=33;} }
+  else  { if(closed){tx=ax;ty=27;}   else {tx=ax-10;ty=26;} }
+  s+=actLimit(tx+9,ty,ac);
+  const t1=nc?'1':'3', t2=nc?'2':'4';
+  s+=`<text x="12" y="13" font-size="8" fill="${inkLbl()}" font-weight="700">${t1}</text>`;
+  s+=`<text x="12" y="58" font-size="8" fill="${inkLbl()}" font-weight="700">${t2}</text>`;
+  s+=lblLeft(tag,33); return s;}
+
+/* ---- Motorschutzrelais-Kontakte F (Bimetall) ---- */
+// Auslösekontakt 95/96 (Öffner) bzw. Alarmkontakt 97/98 (Schliesser)
+function symFKontakt(tag,nc,trip,t1,t2){const closed=nc?!trip:trip;const c=trip?FAULT:(closed?HOT:OFF);const ax=24;
+  let s=`<line x1="${ax}" y1="0" x2="${ax}" y2="14" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<line x1="${ax}" y1="46" x2="${ax}" y2="60" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=stdContact(ax,14,46,closed,c,nc);
+  s+=actThermal(ax-22,30,c)+mechLink(ax-16,ax,30,c);
+  s+=`<text x="6" y="13" font-size="8" fill="${inkLbl()}" font-weight="700">${t1}</text>`;
+  s+=`<text x="6" y="58" font-size="8" fill="${inkLbl()}" font-weight="700">${t2}</text>`;
+  s+=lblLeft(tag,32); return s;}
+
+/* ---- Relais/Spulen (Blatt 2/3) ---- */
+// Relais/Schütz allgemein A1/A2 (Rechteck) — wie Bestand, eigener Eintrag K/Q
+function symRelais(name,en){const c=en?ON:OFF;
+  let s=`<line x1="24" y1="0" x2="24" y2="14" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<line x1="24" y1="46" x2="24" y2="60" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<rect x="6" y="14" width="36" height="32" rx="2" fill="${en?(THEME=='light'?'#d6f5ee':'#0e3b35'):BOX}" stroke="${c}" stroke-width="2"/>`;
+  if(en) s+=`<rect x="6" y="14" width="36" height="32" rx="2" fill="none" stroke="${ON}" stroke-width="2" opacity="0.5"><animate attributeName="opacity" values="0.2;0.8;0.2" dur="0.9s" repeatCount="indefinite"/></rect>`;
+  s+=`<text x="44" y="13" font-size="8" fill="${inkLbl()}" font-weight="700">A1</text><text x="44" y="58" font-size="8" fill="${inkLbl()}" font-weight="700">A2</text>`;
+  s+=lblLeft(name,34); return s;}
+
+// Relais anzugverzögert K3 (Rechteck mit X-Box, PDF K3)
+function symRelaisAnzug(name,en){const c=en?ON:OFF;
+  let s=`<line x1="24" y1="0" x2="24" y2="14" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<line x1="24" y1="46" x2="24" y2="60" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<rect x="6" y="14" width="36" height="32" rx="2" fill="${en?(THEME=='light'?'#d6f5ee':'#0e3b35'):BOX}" stroke="${c}" stroke-width="2"/>`;
+  // X-Box links (PDF: anzugverzögert)
+  s+=`<rect x="6" y="14" width="14" height="32" fill="none" stroke="${c}" stroke-width="1.6"/>`;
+  s+=`<line x1="6" y1="14" x2="20" y2="46" stroke="${c}" stroke-width="1.4"/><line x1="20" y1="14" x2="6" y2="46" stroke="${c}" stroke-width="1.4"/>`;
+  if(en) s+=`<rect x="6" y="14" width="36" height="32" rx="2" fill="none" stroke="${ON}" stroke-width="2" opacity="0.5"><animate attributeName="opacity" values="0.2;0.8;0.2" dur="0.9s" repeatCount="indefinite"/></rect>`;
+  s+=`<text x="44" y="13" font-size="8" fill="${inkLbl()}" font-weight="700">A1</text><text x="44" y="58" font-size="8" fill="${inkLbl()}" font-weight="700">A2</text>`;
+  s+=lblLeft(name,34); return s;}
+
+// Relais rückfallverzögert K2 (Rechteck mit gefüllter Bande, PDF K2)
+function symRelaisRueck(name,en){const c=en?ON:OFF;
+  let s=`<line x1="24" y1="0" x2="24" y2="14" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<line x1="24" y1="46" x2="24" y2="60" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<rect x="6" y="14" width="36" height="32" rx="2" fill="${en?(THEME=='light'?'#d6f5ee':'#0e3b35'):BOX}" stroke="${c}" stroke-width="2"/>`;
+  // gefüllte Bande links (PDF: rückfallverzögert)
+  s+=`<rect x="6" y="14" width="11" height="32" fill="${c}" stroke="${c}" stroke-width="1"/>`;
+  if(en) s+=`<rect x="6" y="14" width="36" height="32" rx="2" fill="none" stroke="${ON}" stroke-width="2" opacity="0.5"><animate attributeName="opacity" values="0.2;0.8;0.2" dur="0.9s" repeatCount="indefinite"/></rect>`;
+  s+=`<text x="44" y="13" font-size="8" fill="${inkLbl()}" font-weight="700">A1</text><text x="44" y="58" font-size="8" fill="${inkLbl()}" font-weight="700">A2</text>`;
+  s+=lblLeft(name,34); return s;}
+
+// Schrittschaltrelais/Stromstossrelais K4 (Rechteck mit Stufen-Marke, PDF K4)
+function symSchritt(name,en){const c=en?ON:OFF;
+  let s=`<line x1="24" y1="0" x2="24" y2="14" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<line x1="24" y1="46" x2="24" y2="60" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<rect x="6" y="14" width="36" height="32" rx="2" fill="${en?(THEME=='light'?'#d6f5ee':'#0e3b35'):BOX}" stroke="${c}" stroke-width="2"/>`;
+  // Stufen-Sinnbild (PDF: Treppe)
+  s+=`<path d="M11 34 h12 v-6 h8" fill="none" stroke="${c}" stroke-width="1.6"/>`;
+  if(en) s+=`<rect x="6" y="14" width="36" height="32" rx="2" fill="none" stroke="${ON}" stroke-width="2" opacity="0.5"><animate attributeName="opacity" values="0.2;0.8;0.2" dur="0.9s" repeatCount="indefinite"/></rect>`;
+  s+=`<text x="44" y="13" font-size="8" fill="${inkLbl()}" font-weight="700">A1</text><text x="44" y="58" font-size="8" fill="${inkLbl()}" font-weight="700">A2</text>`;
+  s+=lblLeft(name,34); return s;}
+
+/* ---- Zeit-Kontakte (verzögerte Hilfskontakte) ---- */
+// rückfallverzögerter Öffner / anzugverzögerter Schliesser usw.
+// delay: 'on' (anzug, Halbkreis öffnet nach unten) | 'off' (rückfall, nach oben)
+function symDelayContact(name,nc,closed,t1,t2,delay){const c=closed?HOT:OFF;const ax=24;
+  let s=`<line x1="${ax}" y1="0" x2="${ax}" y2="16" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<line x1="${ax}" y1="44" x2="${ax}" y2="60" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=stdContact(ax,16,44,closed,c,nc);
+  // Verzögerungs-Marke: Fallschirm/Halbkreis (PDF), Richtung je delay
+  const yc=30, ac=OFF;
+  if(delay==='on') s+=`<path d="M ${ax-12} ${yc} a 6 6 0 0 0 12 0" fill="none" stroke="${ac}" stroke-width="1.6"/>`;
+  else s+=`<path d="M ${ax-12} ${yc} a 6 6 0 0 1 12 0" fill="none" stroke="${ac}" stroke-width="1.6"/>`;
+  s+=`<text x="6" y="13" font-size="8" fill="${inkLbl()}" font-weight="700">${t1}</text>`;
+  s+=`<text x="6" y="58" font-size="8" fill="${inkLbl()}" font-weight="700">${t2}</text>`;
+  s+=lblLeft(name,32); return s;}
+
+/* ---- Schaltuhr / Bewegungsmelder / Dämmerungsschalter ---- */
+// Schaltuhr P1 (Uhr-Sinnbild + Umschaltkontakt L/N/1/2/3)
+function symSchaltuhr(tag,on){const c=on?ON:OFF;
+  // Uhr (Achteck) links, Kontakt rechts
+  let s=`<line x1="14" y1="0" x2="14" y2="14" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<line x1="14" y1="58" x2="14" y2="72" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<text x="4" y="9" font-size="7" fill="${inkLbl()}" font-weight="700">L</text>`;
+  s+=`<text x="4" y="70" font-size="7" fill="${inkLbl()}" font-weight="700">N</text>`;
+  // Achteck-Uhr
+  const cx=14,cy=33,r=13;
+  let pts=''; for(let i=0;i<8;i++){const a=Math.PI/8+i*Math.PI/4;pts+=`${(cx+r*Math.cos(a)).toFixed(1)},${(cy+r*Math.sin(a)).toFixed(1)} `;}
+  s+=`<polygon points="${pts.trim()}" fill="${BOX}" stroke="${c}" stroke-width="1.6"/>`;
+  // Uhr-Zeiger (L-Form)
+  s+=`<line x1="${cx}" y1="${cy}" x2="${cx}" y2="${cy-7}" stroke="${c}" stroke-width="1.4"/>`;
+  s+=`<line x1="${cx}" y1="${cy}" x2="${cx+5}" y2="${cy}" stroke="${c}" stroke-width="1.4"/>`;
+  // Umschaltkontakt rechts: gemeinsamer Pin (1) -> 2 (geschlossen) oder 3
+  const xc=46;
+  s+=`<line x1="${xc}" y1="0" x2="${xc}" y2="18" stroke="${WIRE}" stroke-width="2"/>`;       // 1 oben
+  s+=`<line x1="${xc}" y1="52" x2="${xc}" y2="72" stroke="${WIRE}" stroke-width="2"/>`;       // 2 unten
+  s+=`<line x1="${xc+14}" y1="42" x2="${xc+14}" y2="72" stroke="${WIRE}" stroke-width="2"/>`; // 3 unten-rechts
+  s+=`<circle cx="${xc}" cy="18" r="2.2" fill="${c}"/>`;
+  // Wischer
+  if(on) s+=`<line x1="${xc}" y1="18" x2="${xc}" y2="52" stroke="${HOT}" stroke-width="2.6"/>`;
+  else s+=`<line x1="${xc}" y1="18" x2="${xc+14}" y2="46" stroke="${OFF}" stroke-width="2.4"/>`;
+  s+=`<text x="${xc-9}" y="10" font-size="7" fill="${inkLbl()}" font-weight="700">1</text>`;
+  s+=`<text x="${xc-9}" y="68" font-size="7" fill="${inkLbl()}" font-weight="700">2</text>`;
+  s+=`<text x="${xc+18}" y="68" font-size="7" fill="${inkLbl()}" font-weight="700">3</text>`;
+  s+=lblLeft(tag,36); return s;}
+
+// Bewegungsmelder B1 (Raute mit Strichen + Schliesser L/N/3/4)
+function symBeweg(tag,on){const c=on?ON:OFF;
+  let s=`<line x1="14" y1="0" x2="14" y2="14" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<line x1="14" y1="58" x2="14" y2="72" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<text x="4" y="9" font-size="7" fill="${inkLbl()}" font-weight="700">L</text>`;
+  s+=`<text x="4" y="70" font-size="7" fill="${inkLbl()}" font-weight="700">N</text>`;
+  const cx=14,cy=33;
+  s+=`<polygon points="${cx},${cy-12} ${cx+12},${cy} ${cx},${cy+12} ${cx-12},${cy}" fill="${BOX}" stroke="${c}" stroke-width="1.6"/>`;
+  s+=`<line x1="${cx-4}" y1="${cy-6}" x2="${cx-4}" y2="${cy+6}" stroke="${c}" stroke-width="1.3"/>`;
+  s+=`<line x1="${cx}" y1="${cy-8}" x2="${cx}" y2="${cy+8}" stroke="${c}" stroke-width="1.3"/>`;
+  s+=`<line x1="${cx+4}" y1="${cy-6}" x2="${cx+4}" y2="${cy+6}" stroke="${c}" stroke-width="1.3"/>`;
+  // Schliesser rechts (3/4)
+  const xc=46;
+  s+=`<line x1="${xc}" y1="0" x2="${xc}" y2="18" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<line x1="${xc}" y1="52" x2="${xc}" y2="72" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=stdContact(xc,18,52,on,on?HOT:OFF,false);
+  s+=`<text x="${xc-9}" y="10" font-size="7" fill="${inkLbl()}" font-weight="700">3</text>`;
+  s+=`<text x="${xc-9}" y="68" font-size="7" fill="${inkLbl()}" font-weight="700">4</text>`;
+  s+=lblLeft(tag,36); return s;}
+
+// Dämmerungsschalter B2 (lux-Box + Kontakt 1/2)
+function symDaemmer(tag,on){const c=on?ON:OFF;
+  let s=`<line x1="16" y1="0" x2="16" y2="12" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<line x1="16" y1="54" x2="16" y2="72" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<text x="6" y="8" font-size="7" fill="${inkLbl()}" font-weight="700">L</text>`;
+  s+=`<text x="6" y="70" font-size="7" fill="${inkLbl()}" font-weight="700">N</text>`;
+  s+=`<rect x="2" y="20" width="28" height="26" rx="2" fill="${BOX}" stroke="${c}" stroke-width="1.6"/>`;
+  s+=`<text x="6" y="36" font-size="7.5" fill="${c}" font-weight="800">lux</text>`;
+  // Fotodioden-Pfeile (lichtempfindlich)
+  s+=`<path d="M22 28 l4 4 M24 28 l4 4" stroke="#4db6ff" stroke-width="1.1"/>`;
+  s+=`<path d="M25 33 l2 -1 -0.5 2 z" fill="#4db6ff"/>`;
+  // Kontakt rechts (1/2)
+  const xc=46;
+  s+=`<line x1="${xc}" y1="0" x2="${xc}" y2="18" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<line x1="${xc}" y1="52" x2="${xc}" y2="72" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=stdContact(xc,18,52,on,on?HOT:OFF,false);
+  s+=`<text x="${xc-9}" y="10" font-size="7" fill="${inkLbl()}" font-weight="700">1</text>`;
+  s+=`<text x="${xc-9}" y="68" font-size="7" fill="${inkLbl()}" font-weight="700">2</text>`;
+  s+=lblLeft(tag,36); return s;}
+
+/* ---- Sicherungen ---- */
+// Schmelzsicherung F1 (Rechteck mit Längsstrich, PDF DII)
+function symSchmelz(tag,rating){const c=OFF;const ax=24;
+  let s=`<line x1="${ax}" y1="0" x2="${ax}" y2="16" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<line x1="${ax}" y1="44" x2="${ax}" y2="60" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<rect x="${ax-7}" y="16" width="14" height="28" fill="${BOX}" stroke="${c}" stroke-width="1.8"/>`;
+  s+=`<line x1="${ax}" y1="12" x2="${ax}" y2="48" stroke="${c}" stroke-width="1.6"/>`;
+  s+=`<text x="${ax+10}" y="32" font-size="7" fill="${inkLbl()}" font-weight="700">${rating||'10A'}</text>`;
+  s+=lblLeft(tag,32); return s;}
+
+// Leitungsschutzschalter F2 (Schalter + thermisch-magnetischer Auslöser, PDF C)
+function symLS(tag,rating){const c=OFF;const ax=24;
+  let s=`<line x1="${ax}" y1="0" x2="${ax}" y2="14" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<line x1="${ax}" y1="46" x2="${ax}" y2="60" stroke="${WIRE}" stroke-width="2"/>`;
+  // geschlossener Schaltkontakt (LS ist im Betrieb EIN)
+  s+=stdContact(ax,14,46,true,c,false);
+  // Auslöse-Haken (thermisch) links + Betätigungs-Pfeil (PDF F2)
+  s+=actThermal(ax-22,26,c)+mechLink(ax-16,ax,26,c);
+  s+=`<path d="M ${ax-20} 40 l 8 -3 -2 5 z" fill="${c}"/>`;
+  s+=`<line x1="${ax-12} " y1="38" x2="${ax}" y2="34" stroke="${c}" stroke-width="1.4"/>`;
+  s+=`<text x="${ax+8}" y="11" font-size="7" fill="${inkLbl()}" font-weight="700">${rating||'13A C'}</text>`;
+  s+=lblLeft(tag,32); return s;}
+
+/* ---- Meldeleuchten (KORREKTUR: oberer Anschluss mittig/verlängert) ---- */
+// Betriebsleuchte P26 (Lampe X), Leuchtmelder P27 (blinkend), Alarmhorn P28
+function symLeuchte(tag,glow,on,blink){const c=on?glow:OFF;
+  // oberer Strich sauber/mittig bis zum Kreisrand (User-Korrektur, *_fix)
+  let s=`<line x1="24" y1="0" x2="24" y2="17" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<line x1="24" y1="43" x2="24" y2="60" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<circle cx="24" cy="30" r="13" fill="${on?glow:BOX}" fill-opacity="${on?0.35:1}" stroke="${c}" stroke-width="1.8"/>`;
+  s+=`<line x1="15" y1="21" x2="33" y2="39" stroke="${c}" stroke-width="1.5"/><line x1="33" y1="21" x2="15" y2="39" stroke="${c}" stroke-width="1.5"/>`;
+  if(blink&&on) s+=`<circle cx="24" cy="30" r="13" fill="none" stroke="${glow}" stroke-width="1.8" opacity="0.6"><animate attributeName="opacity" values="0.1;0.9;0.1" dur="0.7s" repeatCount="indefinite"/></circle>`;
+  s+=lblLeft(tag,33); return s;}
+
+function symAlarmhorn(tag,on){const c=on?ON:OFF;
+  // oberer Strich sauber/mittig (User-Korrektur P28 *_fix)
+  let s=`<line x1="24" y1="0" x2="24" y2="17" stroke="${WIRE}" stroke-width="2"/>`;
+  s+=`<line x1="24" y1="43" x2="24" y2="60" stroke="${WIRE}" stroke-width="2"/>`;
+  // Halbkreis-Horn (PDF P28) mittig am Anschluss
+  s+=`<path d="M 11 30 a 13 13 0 0 1 26 0 Z" fill="${on?(THEME=='light'?'#d6f5ee':'#0e3b35'):BOX}" stroke="${c}" stroke-width="1.8"/>`;
+  s+=`<line x1="11" y1="30" x2="37" y2="30" stroke="${c}" stroke-width="1.8"/>`;
+  if(on) s+=`<path d="M40 24 q4 6 0 12" fill="none" stroke="${c}" stroke-width="1.4"/>`;
+  s+=lblLeft(tag,33); return s;}
+
+/* ---- Hand-0-Auto Umschalter (3-Stellung-Wahlschalter, galerie3) ---- */
+// Stellungen: 0 (Mitte/aus), 1=Hand (links), 2=Auto (rechts)
+function symHandAuto(tag,pos){
+  const ax=27;
+  let s=`<line x1="${ax}" y1="0" x2="${ax}" y2="14" stroke="${WIRE}" stroke-width="2"/>`;     // Speise oben
+  s+=`<circle cx="${ax}" cy="14" r="2.4" fill="${pos!==0?HOT:OFF}"/>`;
+  // zwei Ausgänge unten (Hand links / Auto rechts) + Mittel-Aus
+  s+=`<line x1="${ax-16}" y1="46" x2="${ax-16}" y2="60" stroke="${WIRE}" stroke-width="2"/>`;  // Hand (a)
+  s+=`<line x1="${ax+16}" y1="46" x2="${ax+16}" y2="60" stroke="${WIRE}" stroke-width="2"/>`;  // Auto (b)
+  s+=`<circle cx="${ax-16}" cy="46" r="2.2" fill="${pos===1?HOT:OFF}"/>`;
+  s+=`<circle cx="${ax+16}" cy="46" r="2.2" fill="${pos===2?HOT:OFF}"/>`;
+  // Wischer je Stellung
+  if(pos===1) s+=`<line x1="${ax}" y1="14" x2="${ax-16}" y2="46" stroke="${HOT}" stroke-width="2.6"/>`;
+  else if(pos===2) s+=`<line x1="${ax}" y1="14" x2="${ax+16}" y2="46" stroke="${HOT}" stroke-width="2.6"/>`;
+  else s+=`<line x1="${ax}" y1="14" x2="${ax}" y2="38" stroke="${OFF}" stroke-width="2.4"/>`; // 0
+  // Raste / Stellungsmarke (PDF: kleiner Stufenhaken)
+  s+=`<path d="M ${ax-14} 28 h6 v-5 h5" fill="none" stroke="${OFF}" stroke-width="1.4"/>`;
+  s+=`<text x="${ax-22}" y="62" font-size="7" fill="${inkLbl()}" font-weight="700">1</text>`;
+  s+=`<text x="${ax-3}" y="40" font-size="7" fill="${inkLbl()}" font-weight="700">0</text>`;
+  s+=`<text x="${ax+12}" y="62" font-size="7" fill="${inkLbl()}" font-weight="700">2</text>`;
+  s+=lblLeft(tag,33); return s;}
+
+/* ============ Simulationszustand-Helfer ============ */
+let SIM=null;
+function pressed(c,s){return !!toggleStates['btn_'+c.id];}
+// global Wahl-/Sensorzustand (auch für Symbol-Zeichnung) + 3-Stellung Hand-0-Auto
+function sel(c){return !!toggleStates['sel_'+c.id];}
+function handPos(c){ const v=toggleStates['hand_'+c.id]; return (v===1||v===2)?v:0; }
+function stateOf(c,s,key){
+  if(key==='tripped'||key==='open') return !!toggleStates['trip_'+c.id];
+  if(key==='q') return MODE==='run'? (s? s.qClosed: true): true;
+  return false;
+}
+function coilEnergized(c,s){return s? !!s.coils[c.id]: false;}
+// Öffner-Kontaktarten (im Ruhezustand geschlossen, öffnen bei erregter Spule)
+const NC_CONTACT_KINDS=['auxNC','kAnzugNC','kRueckNC'];
+function closedForContact(c,s){
+  const nc = NC_CONTACT_KINDS.includes(c.kind);
+  // TASK 4: Erregt-Zustand über den NAMEN (coilRef) bündeln — egal welche/wie
+  // viele Spulen so heissen, blattübergreifend.
+  const energ = s ? coilEnergizedByName(c.coilRef, s.coils) : false;
+  return nc ? !energ : energ;
+}
+// Spulen-/Relais-Arten (alle erregbaren Bauteile mit A1/A2)
+const COIL_KINDS=['coil','timer','relaisAllg','relaisAnzug','relaisRueck','schrittrelais'];
+// Bauteile mit frei editierbarer Geräte-Bezeichnung (tag). Default startet leer.
+const HAS_TAG=['mss','msr','msrAux','motor','heater','btnNO','btnNC','notaus','endschalter','wahl',
+  'thermostat','waechter','schwimmer','lampG','lampR','lampB','horn',
+  'austaster','eintaster','schluesseltaster','notausS21','niveauNC','niveauNO','endNO','endNC','handAuto',
+  'fAusloese','fAlarm','schaltuhr','bewegungsmelder','daemmerung','schmelz','lsschalter',
+  'betriebsleuchte','leuchtmelder','alarmhorn'];
+/* Kontakt-Bauteile: ihre „Beschriftung" IST der Name des zugehörigen Schütz/
+   Relais (coilRef). Gleicher Name wie eine Spule => derselbe Apparat. So kann
+   der Nutzer JEDEN Kontakt selbst benennen (Task 3) und gleichnamige Kontakte
+   werden von der Spule mitbetätigt (Task 4). */
+const CONTACT_KINDS=['mainK','auxNO','auxNC','kAnzugNO','kAnzugNC','kRueckNO','kRueckNC'];
+// Ist das Bauteil frei beschriftbar? (Geräte-Tag, Spulen-Name oder Kontakt-Bezug)
+function canLabel(c){ return HAS_TAG.includes(c.kind)||COIL_KINDS.includes(c.kind)||CONTACT_KINDS.includes(c.kind); }
+function findCoilByName(name){return comps.find(x=>COIL_KINDS.includes(x.kind)&&(x.name||'K1')===name);}
+/* TASK 4 — Erregt-Zustand pro NAME bündeln: eine Spule „Q21" erregt ALLE
+   Kontakte, deren Bezug (coilRef) „Q21" heisst, blattübergreifend. Mehrere
+   gleichnamige Spulen werden ver-ODER-t (irgendeine erregt => Name erregt). */
+function coilEnergizedByName(name,coils){
+  // BUG 6: „von Hand" betätigtes Schütz/Relais (Test-Modus) erzwingt Erregung —
+  // alle gleichnamigen Kontakte folgen (blattübergreifend).
+  if(name!=null && toggleStates['man_'+name]) return true;
+  if(!coils||name==null) return false;
+  return comps.some(x=>COIL_KINDS.includes(x.kind)&&(x.name||'K1')===name&&coils[x.id]);
+}
+// Last/Leuchte „leuchtet", wenn einer ihrer Pins warm ist (vereinfachte Anzeige)
+function closedHot(c,s){ if(!s||!s.hotPins)return false; return s.hotPins.has(c.id+'|a')||s.hotPins.has(c.id+'|b')||s.hotPins.has(c.id+'|1')||s.hotPins.has(c.id+'|2'); }
+
+/* ============ Blatt-Rahmen zeichnen (PDF-Vorlage 1:1) ============ */
+function drawSheetFrame(parent){
+  const NS=SVG_NS;
+  const add=(tag,attrs)=>{const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);parent.appendChild(e);return e;};
+  const txt=(x,y,t,attrs)=>{const e=add('text',Object.assign({x,y},attrs||{}));e.textContent=t;return e;};
+  const inkLine=tColor('#3c5266','#9aa9b6'), inkText=tColor('#9fb3c4','#3a4d5a');
+  // Aussenrahmen (im Hell-Modus weisses Blatt)
+  add('rect',{x:8,y:8,width:SHEET_W-16,height:SHEET_H-16,fill:tColor('#0b121a','#ffffff'),stroke:tColor('#33485a','#8a99a6'),'stroke-width':1.4,rx:4});
+  // ---- Spaltenleiste 0-9 oben ----
+  add('rect',{x:PATH_X0,y:RULER_Y,width:PATH_X9-PATH_X0,height:RULER_H,fill:tColor('#0e1722','#f3f6f8'),stroke:inkLine,'stroke-width':1});
+  for(let i=0;i<=10;i++){const x=PATH_X0+(PATH_X9-PATH_X0)*i/10;
+    add('line',{x1:x,y1:RULER_Y,x2:x,y2:RULER_Y+RULER_H,stroke:inkLine,'stroke-width':1});}
+  for(let i=0;i<10;i++){ txt(pathX(i),RULER_Y+18,String(i),{fill:inkText,'font-size':14,'font-weight':800,'text-anchor':'middle'}); }
+  // dezente vertikale Pfad-Hilfslinien
+  for(let i=0;i<10;i++){ add('line',{x1:pathX(i),y1:RULER_Y+RULER_H,x2:pathX(i),y2:TITLE_Y-6,stroke:'rgba(120,150,170,.10)','stroke-width':1,'stroke-dasharray':'2 8'}); }
+
+  if(SHEET===1){
+    // ---- Blatt 1: Hauptstromkreis ----
+    // Sicherung F 13A D oben links (dreipolig, Diazed-artig)
+    drawFuse3(parent, 26, HS.L1-8, '13A D');
+    // Sammelschienen
+    add('line',{x1:PATH_X0,y1:HS.L1,x2:PATH_X9,y2:HS.L1,stroke:tColor('#cdd9e3','#1f3540'),'stroke-width':1.6}); txt(40,HS.L1+4,'L1',{fill:tColor('#cdd9e3','#1f3540'),'font-size':11,'font-weight':800,'text-anchor':'end'});
+    add('line',{x1:PATH_X0,y1:HS.L2,x2:PATH_X9,y2:HS.L2,stroke:tColor('#cdd9e3','#1f3540'),'stroke-width':1.6}); txt(40,HS.L2+4,'L2',{fill:tColor('#cdd9e3','#1f3540'),'font-size':11,'font-weight':800,'text-anchor':'end'});
+    add('line',{x1:PATH_X0,y1:HS.L3,x2:PATH_X9,y2:HS.L3,stroke:tColor('#cdd9e3','#1f3540'),'stroke-width':1.6}); txt(40,HS.L3+4,'L3',{fill:tColor('#cdd9e3','#1f3540'),'font-size':11,'font-weight':800,'text-anchor':'end'});
+    // N gestrichelt + N-Trenner links
+    add('line',{x1:PATH_X0,y1:HS.N,x2:PATH_X9,y2:HS.N,stroke:'#9fb3c4','stroke-width':1.4,'stroke-dasharray':'10 6'}); txt(40,HS.N+4,'N',{fill:'#9fb3c4','font-size':11,'font-weight':800,'text-anchor':'end'});
+    drawNTrenner(parent, 46, HS.N);
+    // PE strichpunktiert
+    add('line',{x1:PATH_X0,y1:HS.PE,x2:PATH_X9,y2:HS.PE,stroke:'#f6d365','stroke-width':1.4,'stroke-dasharray':'12 3 2 3'}); txt(40,HS.PE+4,'PE',{fill:'#f6d365','font-size':11,'font-weight':800,'text-anchor':'end'});
+    add('path',{d:`M 50 ${HS.PE} l 6 -5`,stroke:'#f6d365','stroke-width':1.4,fill:'none'});
+  } else if(SHEET===2){
+    // ---- Blatt 2: Steuerstromkreis (Teil 1) ----
+    // Sicherung F 6A B oben links (einpolig LS) — NUR Blatt 2 hat eine Sicherung
+    drawFuse1(parent, 26, CS.Lplus-8, '6A B');
+    add('line',{x1:PATH_X0,y1:CS.Lplus,x2:PATH_X9,y2:CS.Lplus,stroke:tColor('#cdd9e3','#1f3540'),'stroke-width':1.6}); txt(40,CS.Lplus+4,'L+',{fill:tColor('#cdd9e3','#1f3540'),'font-size':11,'font-weight':800,'text-anchor':'end'});
+    add('line',{x1:PATH_X0,y1:CS.N,x2:PATH_X9,y2:CS.N,stroke:'#9fb3c4','stroke-width':1.4,'stroke-dasharray':'10 6'}); txt(40,CS.N+4,'N',{fill:'#9fb3c4','font-size':11,'font-weight':800,'text-anchor':'end'});
+    drawNTrenner(parent, 46, CS.N);
+  } else {
+    // ---- Blatt 3: Steuerstromkreis (Teil 2) — KEINE eigene Sicherung!
+    //      Steuerspannung kommt von Blatt 2; kurze L+ Schiene (Übernahme). ----
+    add('line',{x1:PATH_X0,y1:CS.Lplus,x2:PATH_X9,y2:CS.Lplus,stroke:tColor('#cdd9e3','#1f3540'),'stroke-width':1.6}); txt(40,CS.Lplus+4,'L+',{fill:tColor('#cdd9e3','#1f3540'),'font-size':11,'font-weight':800,'text-anchor':'end'});
+    txt(PATH_X0+6,CS.Lplus-7,'(von Blatt 2)',{fill:'#7e93a6','font-size':9,'font-weight':700});
+    add('line',{x1:PATH_X0,y1:CS.N,x2:PATH_X9,y2:CS.N,stroke:'#9fb3c4','stroke-width':1.4,'stroke-dasharray':'10 6'}); txt(40,CS.N+4,'N',{fill:'#9fb3c4','font-size':11,'font-weight':800,'text-anchor':'end'});
+    drawNTrenner(parent, 46, CS.N);
+  }
+
+  // ---- Schriftfeld unten ----
+  add('line',{x1:8,y1:TITLE_Y,x2:SHEET_W-8,y2:TITLE_Y,stroke:tColor('#33485a','#8a99a6'),'stroke-width':1.2});
+  add('rect',{x:14,y:TITLE_Y+6,width:160,height:30,rx:4,fill:tColor('rgba(45,212,191,.08)','rgba(15,155,133,.08)'),stroke:tColor('rgba(45,212,191,.3)','rgba(15,155,133,.4)'),'stroke-width':1});
+  // BUG 7: Fremd-Credits (EIT / Elektrofachschule St.Gallen) entfernt — eigenes Branding.
+  txt(24,TITLE_Y+25,'LernStrom',{fill:tColor('#7af0d9','#0f8a76'),'font-size':13,'font-weight':800});
+  const circuitTitle = SHEET===1?'Hauptstromkreis':'Steuerstromkreis';
+  txt(SHEET_W/2,TITLE_Y+26, circuitTitle,{fill: tColor('#e8edf2','#16303a'),'font-size':14,'font-weight':800,'text-anchor':'middle'});
+  // Name der Schaltung im Schriftfeld (neben dem Stromkreis-Titel)
+  if(SCHEMA_NAME){ txt(SHEET_W/2,TITLE_Y+12, SCHEMA_NAME,{fill: tColor('#7af0d9','#0c5d50'),'font-size':11,'font-weight':800,'text-anchor':'middle'}); }
+  txt(SHEET_W-20,TITLE_Y+18,'2.Lehrjahr',{fill:tColor('#9fb3c4','#3a4d5a'),'font-size':10,'font-weight':700,'text-anchor':'end'});
+  txt(SHEET_W-20,TITLE_Y+32,'Blatt '+SHEET+' / 3',{fill:tColor('#cdd9e3','#16303a'),'font-size':11,'font-weight':800,'text-anchor':'end'});
+}
+function drawFuse3(parent,x,y,rating){
+  const add=(tag,attrs)=>{const e=document.createElementNS(SVG_NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);parent.appendChild(e);return e;};
+  const t=add('text',{x:x+6,y:y-4,fill:'#9fb3c4','font-size':10,'font-weight':800});t.textContent='F';
+  const r=add('text',{x:x+30,y:y+8,fill:'#9fb3c4','font-size':9,'font-weight':700});r.textContent=rating;
+  for(let i=0;i<3;i++){const yy=HS['L'+(i+1)];
+    add('rect',{x:x,y:yy-6,width:14,height:12,rx:2,fill:'none',stroke:'#9fb3c4','stroke-width':1.2});
+    add('line',{x1:x-8,y1:yy,x2:x,y2:yy,stroke:'#9fb3c4','stroke-width':1.2});
+    add('line',{x1:x+14,y1:yy,x2:x+24,y2:yy,stroke:'#9fb3c4','stroke-width':1.2});
+  }
+}
+function drawFuse1(parent,x,y,rating){
+  const add=(tag,attrs)=>{const e=document.createElementNS(SVG_NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);parent.appendChild(e);return e;};
+  const yy=CS.Lplus;
+  const t=add('text',{x:x+4,y:yy-12,fill:'#9fb3c4','font-size':10,'font-weight':800});t.textContent='F';
+  add('rect',{x:x,y:yy-6,width:16,height:12,rx:2,fill:'none',stroke:'#9fb3c4','stroke-width':1.2});
+  add('line',{x1:x-8,y1:yy,x2:x,y2:yy,stroke:'#9fb3c4','stroke-width':1.2});
+  add('line',{x1:x+16,y1:yy,x2:x+24,y2:yy,stroke:'#9fb3c4','stroke-width':1.2});
+  const r=add('text',{x:x+28,y:yy+4,fill:'#9fb3c4','font-size':9,'font-weight':700});r.textContent=rating;
+}
+function drawNTrenner(parent,x,y){
+  const add=(tag,attrs)=>{const e=document.createElementNS(SVG_NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);parent.appendChild(e);return e;};
+  add('line',{x1:x-6,y1:y-5,x2:x-6,y2:y+5,stroke:'#9fb3c4','stroke-width':1.4});
+  add('line',{x1:x+2,y1:y-5,x2:x+2,y2:y+5,stroke:'#9fb3c4','stroke-width':1.4});
+  add('line',{x1:x+8,y1:y,x2:x+15,y2:y-6,stroke:'#9fb3c4','stroke-width':1.4});
+  add('circle',{cx:x+15,cy:y,r:2.4,fill:'#9fb3c4'});
+}
+
+/* ============ Render ============ */
+function render(){
+  svg.innerHTML='';
+  const g=document.createElementNS(SVG_NS,'g');
+  g.setAttribute('transform',`translate(${view.x},${view.y}) scale(${view.k})`);
+  svg.appendChild(g);
+
+  // Blatt-Rahmen (Vorlage)
+  const bg=document.createElementNS(SVG_NS,'g'); g.appendChild(bg);
+  drawSheetFrame(bg);
+
+  const onSheet=x=>(x.sheet||1)===SHEET;
+  // BUG-FIX L2/L3 (Z-Order/Hit-Test): Die klickbaren Schienen-Linien werden
+  // NICHT mehr VOR den Draehten gerendert. Sonst lag ein vertikal kreuzender
+  // L1-Draht ueber der L2/L3-Schiene und fing per elementFromPoint den Klick ab
+  // -> der neue Anschluss snappte faelschlich auf L1. Loesung: Schienen-Hitlinien
+  // ganz ZULETZT (ueber den Draehten) zeichnen und schmal halten (eigenes
+  // ±4px-Band je Leiter; L1/L2/L3 liegen 18px auseinander -> keine Ueberlappung,
+  // L1/L2/L3 bleiben elektrisch UND visuell getrennt).
+  function drawRailHits(){
+    if(MODE!=='edit') return;
+    const rg=document.createElementNS(SVG_NS,'g'); g.appendChild(rg);
+    const rails = SHEET===1 ? [['L1',HS.L1],['L2',HS.L2],['L3',HS.L3],['N',HS.N],['PE',HS.PE]]
+                            : [['L+',CS.Lplus],['N',CS.N]];
+    rails.forEach(([name,yy])=>{
+      const hit=document.createElementNS(SVG_NS,'line');
+      hit.setAttribute('x1',PATH_X0);hit.setAttribute('y1',yy);hit.setAttribute('x2',PATH_X9);hit.setAttribute('y2',yy);
+      hit.setAttribute('stroke','transparent');
+      // BUG 4: Phasen-Schienen (L1/L2/L3/L+) bekommen ein breiteres Trefferband,
+      // damit man sie EINZELN sicher anklicken kann (vorher landete alles auf L1).
+      // N/PE bleiben schmal, um Klicks auf darunterliegende Bauteile nicht zu stören.
+      const widePhase=(name==='L1'||name==='L2'||name==='L3'||name==='L+');
+      hit.setAttribute('stroke-width', widePhase?14:8);
+      hit.style.cursor='crosshair';
+      hit.addEventListener('click',e=>{e.stopPropagation();
+        const pt=toWorld(e);
+        // eigener, verteilter Andock-x je angeschlossenem Leiter.
+        const x=railSlotX(name, pt.x, wireStart? wireStart.from : null);
+        if(wireStart){ if(!sameEnd(wireStart.from,{rail:name,x})){ const nw={id:nextId++,sheet:SHEET,a:wireStart.from,b:{rail:name,x}}; const col=wireColorFor(nw.a,nw.b); if(col) nw.color=col; wires.push(nw); } wireStart=null; render(); simulate(); }
+        else { wireStart={from:{rail:name,x}, cur:pt}; toast('Schienenanschluss '+name+' — Ziel anklicken'); render(); }
+      });
+      rg.appendChild(hit);
+    });
+  }
+
+  // Drähte (nur aktuelles Blatt)
+  const wg=document.createElementNS(SVG_NS,'g'); g.appendChild(wg);
+  wires.filter(onSheet).forEach(w=>{
+    const a=endpointPos(w.a), b=endpointPos(w.b); if(!a||!b)return;
+    const hot = SIM && SIM.hotPins && (isHot(w.a)&&isHot(w.b));
+    const baseCol = w.color || WIRE;
+    const p=document.createElementNS(SVG_NS,'path');
+    const pts=wirePath(w,a,b);
+    p.setAttribute('d',pointsToD(pts));
+    p.setAttribute('fill','none');
+    p.setAttribute('stroke', hot? HOT: baseCol);
+    p.setAttribute('stroke-width', hot? 3.4: (w.color?2.6:2));
+    p.setAttribute('stroke-linejoin','round');p.setAttribute('stroke-linecap','round');
+    if(hot){p.setAttribute('stroke-dasharray','8 6');
+      const an=document.createElementNS(SVG_NS,'animate');
+      an.setAttribute('attributeName','stroke-dashoffset');an.setAttribute('from','14');an.setAttribute('to','0');
+      an.setAttribute('dur','0.5s');an.setAttribute('repeatCount','indefinite');p.appendChild(an);}
+    p.style.cursor=MODE==='edit'?'pointer':'default';
+    if(MODE==='edit'){
+      // Klick auf Leitung -> Dot setzen & weiterzeichnen ; Rechtsklick -> Menü (Farbe/Wegpunkt/löschen)
+      p.addEventListener('click',e=>{e.stopPropagation();
+        if(wireStart){ // gerade am Zeichnen: auf Leitung treffen = Dot-Verbindung
+          finishWireOnWire(w,e);
+        } else {
+          const pt=toWorld(e); startWireFromWire(w,pt);
+        }
+      });
+      p.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();wireMenu(w,e);});
+    }
+    wg.appendChild(p);
+    // Wegpunkt-Griffe (frei versetzbar) im Edit-Modus
+    if(MODE==='edit' && w.waypoints && w.waypoints.length){
+      w.waypoints.forEach((wp,wi)=>{
+        const h=document.createElementNS(SVG_NS,'rect');
+        h.setAttribute('x',wp.x-4);h.setAttribute('y',wp.y-4);h.setAttribute('width',8);h.setAttribute('height',8);
+        h.setAttribute('rx',2);h.setAttribute('fill',baseCol);h.setAttribute('stroke','#0b1017');h.setAttribute('stroke-width',1);
+        h.style.cursor='move';
+        h.addEventListener('pointerdown',e=>{e.stopPropagation();startWaypointDrag(w,wi,e);});
+        h.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();w.waypoints.splice(wi,1);render();simulate();});
+        wg.appendChild(h);
+      });
+    }
+  });
+
+  // temporärer Draht beim Ziehen
+  if(wireStart && wireStart.cur){
+    const a=endpointPos(wireStart.from);
+    const t=document.createElementNS(SVG_NS,'line');
+    t.setAttribute('x1',a.x);t.setAttribute('y1',a.y);t.setAttribute('x2',wireStart.cur.x);t.setAttribute('y2',wireStart.cur.y);
+    t.setAttribute('stroke',HOT);t.setAttribute('stroke-width',2);t.setAttribute('stroke-dasharray','5 4');wg.appendChild(t);
+  }
+
+  // Verbindungspunkte (Dots) — bewusste Verbindungen
+  const dg=document.createElementNS(SVG_NS,'g'); g.appendChild(dg);
+  dots.filter(onSheet).forEach(d=>{
+    const pos=dotPos(d); if(!pos)return;
+    const hot=SIM&&SIM.hotPins&&SIM.hotPins.has('dot|'+d.id);
+    const c=document.createElementNS(SVG_NS,'circle');
+    c.setAttribute('cx',pos.x);c.setAttribute('cy',pos.y);c.setAttribute('r',4.5);
+    c.setAttribute('fill',hot?HOT:'#2dd4bf');c.setAttribute('stroke','#0b1017');c.setAttribute('stroke-width',1.4);
+    if(MODE==='edit'){c.style.cursor='crosshair';
+      // FIX Wiring: pointerdown startet ODER beendet (Klick-zu-Klick).
+      c.addEventListener('pointerdown',e=>{e.stopPropagation();
+        if(wireStart){ endWireOnDot(d); } else { startWireFromDot(d,e); }
+      });
+      c.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();removeDot(d.id);});
+    }
+    dg.appendChild(c);
+  });
+
+  // Bauteile (nur aktuelles Blatt)
+  comps.filter(onSheet).forEach(c=>{
+    const cg=document.createElementNS(SVG_NS,'g');
+    const rot=c.rot||0;
+    const def=DEFS[c.kind];
+    cg.setAttribute('transform',`translate(${c.x},${c.y}) rotate(${rot} ${def.w/2} ${def.h/2})`);
+    // Symbol (5% groesser: Grundeinheit skaliert, Klemmen folgen automatisch)
+    const sg=document.createElementNS(SVG_NS,'g'); sg.setAttribute('transform','scale('+UNIT+')'); def.sym(sg,c,SIM); cg.appendChild(sg);
+
+    // Frei editierbares Geräte-Label: klickbare Trefferfläche LINKS am Bauteil.
+    // Doppelklick (oder Klick im Bearbeiten-Modus) -> Bezeichnung eingeben.
+    if(MODE==='edit' && canLabel(c)){
+      const lh=document.createElementNS(SVG_NS,'rect');
+      lh.setAttribute('x',-58); lh.setAttribute('y', def.h/2-16);
+      lh.setAttribute('width',56); lh.setAttribute('height',32);
+      lh.setAttribute('fill','transparent'); lh.setAttribute('rx',4);
+      lh.style.cursor='text';
+      lh.classList.add('lblhit');
+      lh.addEventListener('pointerdown',e=>{e.stopPropagation();});
+      lh.addEventListener('click',e=>{e.stopPropagation(); editLabel(c);});
+      cg.appendChild(lh);
+    }
+
+    // Pins (Klemmen = immer Verbindungspunkte)
+    def.pins.forEach(p=>{
+      const dot=document.createElementNS(SVG_NS,'circle');
+      // BUG-FIX Drag: NUR echte Klemmen-Kreise als 'pin' markieren. Symbol-
+      // interne Kreise (Motor-Klemmenringe, Meldeleuchte, Spule …) sind KEINE
+      // Pins und dürfen das Verschieben/Anklicken nicht blockieren.
+      dot.classList.add('pin');
+      dot.setAttribute('cx',p.x);dot.setAttribute('cy',p.y);
+      dot.setAttribute('r',MODE==='edit'?5:3.2);
+      const hot = SIM && SIM.hotPins && SIM.hotPins.has(c.id+'|'+p.id);
+      dot.setAttribute('fill', hot?HOT:(MODE==='edit'?'#1b2b3a':'#22323f'));
+      dot.setAttribute('stroke', hot?HOT:'#3c5266');dot.setAttribute('stroke-width',1.4);
+      if(MODE==='edit'){dot.style.cursor='crosshair';
+        // FIX Wiring: pointerdown startet ODER beendet (Klick-zu-Klick).
+        // Kein Verlass mehr auf pointerup am re-gerenderten Pin-Element.
+        dot.addEventListener('pointerdown',e=>{e.stopPropagation();
+          if(wireStart){ endWire(c,p); } else { startWire(c,p,e); }
+        });
+      }
+      cg.appendChild(dot);
+    });
+
+    cg.style.cursor = MODE==='edit'?'grab':(isClickable(c)?'pointer':'default');
+    cg.addEventListener('pointerdown',e=>{
+      // BUG-FIX Drag: nur echte Pins (Klasse 'pin') sperren das Ziehen; auf allen
+      // anderen Symbolteilen (auch internen Kreisen) startet das Verschieben.
+      if(MODE==='edit'){ if(!(e.target.classList&&e.target.classList.contains('pin'))){ startDrag(c,e);} }
+    });
+    // Klick (ohne Drag) im Edit-Modus -> Kontextmenü drehen/löschen/option
+    if(MODE==='edit'){
+      cg.addEventListener('click',e=>{
+        // Nur echte Klemmen (Klasse 'pin') öffnen KEIN Menü — alle übrigen
+        // Symbolteile (inkl. interner Kreise) rufen das Bauteil-Menü auf
+        // (damit z.B. Motor/Meldeleuchte anschreibbar sind).
+        if(e.target.classList&&e.target.classList.contains('pin'))return;
+        if(e.target.classList&&e.target.classList.contains&&e.target.classList.contains('lblhit'))return;
+        if(drag&&drag.moved)return;
+        e.stopPropagation(); compMenu(c,e);
+      });
+      // Beschriften läuft über das Klick-Kontextmenü (compMenu): „Spulen-Name ändern" /
+      // „Zugehöriges Schütz/Relais" — kein Doppelklick mehr (auf Userwunsch).
+    }
+    if(MODE==='run' && isClickable(c)){
+      // GROSSE HITBOX: jedes schaltbare Bauteil im Einschalten-Modus per Klick/
+      // Touch leicht treffbar. Transparentes, vergroessertes Rechteck ueber dem
+      // Symbol (deckt def.w/h + Rand). Sitzt im cg -> nutzt dieselben Handler.
+      const HB=22;
+      const hb=document.createElementNS(SVG_NS,'rect');
+      hb.setAttribute('x',-HB); hb.setAttribute('y',-HB);
+      hb.setAttribute('width',def.w+2*HB); hb.setAttribute('height',def.h+2*HB);
+      hb.setAttribute('fill','transparent'); hb.setAttribute('rx',8);
+      hb.style.cursor='pointer'; hb.classList.add('runhit');
+      cg.appendChild(hb);
+      const MOMENTARY=['btnNO','btnNC','endschalter','austaster','eintaster','schluesseltaster','endNO','endNC'];
+      const LATCH=['notaus','notausS21'];
+      const SENSOR=['wahl','thermostat','waechter','schwimmer','niveauNC','niveauNO','schaltuhr','bewegungsmelder','daemmerung'];
+      const TRIP=['msr','msrAux','fAusloese','fAlarm'];
+      if(MOMENTARY.includes(c.kind)){
+        cg.addEventListener('pointerdown',e=>{e.stopPropagation();toggleStates['btn_'+c.id]=true;simulate();});
+        const rel=()=>{if(toggleStates['btn_'+c.id]){toggleStates['btn_'+c.id]=false;simulate();}};
+        cg.addEventListener('pointerup',rel);cg.addEventListener('pointerleave',rel);
+      } else if(LATCH.includes(c.kind)){
+        cg.addEventListener('click',e=>{e.stopPropagation();
+          const k='btn_'+c.id; toggleStates[k]=!toggleStates[k]; simulate();
+          toast(toggleStates[k]?'NOT-AUS betätigt — Anlage stromlos':'NOT-AUS entriegelt');});
+      } else if(SENSOR.includes(c.kind)){
+        cg.addEventListener('click',e=>{e.stopPropagation();
+          const k='sel_'+c.id; toggleStates[k]=!toggleStates[k]; simulate();
+          toast((c.tag||'Sensor')+': '+(toggleStates[k]?'aktiv (geschlossen)':'inaktiv'));});
+      } else if(c.kind==='handAuto'){
+        cg.addEventListener('click',e=>{e.stopPropagation();
+          const k='hand_'+c.id; const p=(handPos(c)+1)%3; toggleStates[k]=p; simulate();
+          toast((c.tag||'S5')+': '+(p===1?'Hand':p===2?'Auto':'0 (Aus)'));});
+      } else if(TRIP.includes(c.kind)){
+        cg.addEventListener('click',e=>{e.stopPropagation();
+          const k='trip_'+c.id; toggleStates[k]=!toggleStates[k];
+          syncTrip(toggleStates[k]); simulate();
+          toast(toggleStates[k]?'Überlast ausgelöst — Motorschutz hat abgeschaltet':'Überlast quittiert');});
+      } else if(COIL_KINDS.includes(c.kind) || c.kind==='mainK'){
+        // BUG 6: Schütz/Relais im Test von Hand betätigen (Erregung erzwingen).
+        // mainK schaltet über seinen Bezug (coilRef), Spulen über ihren Namen —
+        // alle gleichnamigen Kontakte folgen.
+        cg.addEventListener('click',e=>{e.stopPropagation();
+          const nm = c.kind==='mainK' ? (c.coilRef||'Q1') : (c.name||'K1');
+          const k='man_'+nm; toggleStates[k]=!toggleStates[k]; simulate();
+          toast('Schütz/Relais '+nm+(toggleStates[k]?' — von Hand EIN':' — von Hand AUS'));});
+      }
+    }
+    g.appendChild(cg);
+    c._g=cg;
+  });
+
+  // Schienen-Klicklinien ZULETZT (ueber Draehten/Bauteilen) -> L2/L3-Hit-Test-Fix
+  drawRailHits();
+}
+
+function syncTrip(v){ comps.forEach(x=>{if(['msr','msrAux','fAusloese','fAlarm'].includes(x.kind)) toggleStates['trip_'+x.id]=v;});}
+function isClickable(c){return ['btnNO','btnNC','notaus','endschalter','wahl','thermostat','waechter','schwimmer','msr','msrAux',
+  'austaster','eintaster','schluesseltaster','notausS21','niveauNC','niveauNO','endNO','endNC','handAuto',
+  'fAusloese','fAlarm','schaltuhr','bewegungsmelder','daemmerung',
+  // BUG 6: Schütz-Kontakte + Spulen/Relais im Test von Hand betätigbar
+  'mainK','coil','timer','relaisAllg','relaisAnzug','relaisRueck','schrittrelais'].includes(c.kind);}
+
+/* ============ Bauteil-Menü: drehen / löschen / Stern-Dreieck ============ */
+async function compMenu(c,e){
+  const def=DEFS[c.kind];
+  // Schalter/Taster/Kontakte: nur 180-Grad-Spiegelung (Kontakt-Arm nie nach unten)
+  const isSwitch = ['btnNO','btnNC','notaus','endschalter','wahl','thermostat','waechter','schwimmer','auxNO','auxNC','msrAux',
+    'austaster','eintaster','schluesseltaster','notausS21','niveauNC','niveauNO','endNO','endNC',
+    'fAusloese','fAlarm','kAnzugNO','kAnzugNC','kRueckNO','kRueckNC'].includes(c.kind);
+  const hasTag = c.tag!==undefined || ['mss','msr','msrAux','motor','heater','btnNO','btnNC','notaus','endschalter','wahl','thermostat','waechter','schwimmer','lampG','lampR','lampB','horn',
+    'austaster','eintaster','schluesseltaster','notausS21','niveauNC','niveauNO','endNO','endNC','handAuto',
+    'fAusloese','fAlarm','schaltuhr','bewegungsmelder','daemmerung','schmelz','lsschalter','betriebsleuchte','leuchtmelder','alarmhorn'].includes(c.kind);
+  const isCoil = COIL_KINDS.includes(c.kind);
+  const isContact = ['mainK','auxNO','auxNC','kAnzugNO','kAnzugNC','kRueckNO','kRueckNC'].includes(c.kind);
+  const starName=m=>m==='dreieck'?'Dreieck':m==='keine'?'keine Brücke':'Stern';
+  // In-Page-Menue (prompt() ist im eingebetteten iframe blockiert)
+  const opts=[{label:'Drehen',value:'rotate'},{label:'Löschen',value:'delete'}];
+  if(c.kind==='motor'){
+    const cur=starName(c.starMode||'stern');
+    opts.push({label:'Klemmbrett: Stern (Y)'+(cur==='Stern'?' (aktuell)':''),value:'star_y'});
+    opts.push({label:'Klemmbrett: Dreieck (Delta)'+(cur==='Dreieck'?' (aktuell)':''),value:'star_d'});
+    opts.push({label:'Klemmbrett: keine Brücke'+(cur==='keine Brücke'?' (aktuell)':''),value:'star_n'});
+  }
+  if(hasTag) opts.push({label:'Beschriftung ändern (leer = entfernen)',value:'label'});
+  if(isCoil) opts.push({label:'Spulen-Name ändern (z.B. Q1, K1)',value:'label'});
+  if(isContact) opts.push({label:'Zugehöriges Schütz/Relais (z.B. Q1)',value:'ref'});
+  const a=await askChoice('Bauteil-Aktion:', opts);
+  if(a===null)return;
+  if(a==='rotate'){ rotateComp(c,isSwitch); }
+  else if(a==='delete'){ deleteComp(c); }
+  else if(a==='star_y'){ c.starMode='stern';   toast('Klemmbrett: Stern (Y) – W2-U2-V2 gebrückt'); }
+  else if(a==='star_d'){ c.starMode='dreieck'; toast('Klemmbrett: Dreieck (Delta) – U1-W2 / V1-U2 / W1-V2'); }
+  else if(a==='star_n'){ c.starMode='keine';   toast('Klemmbrett: keine Brücke (U2/V2/W2 offen)'); }
+  else if(a==='label'){ editLabel(c); return; }
+  else if(a==='ref'){ const t=await askText('Zugehöriges Schütz/Relais (z.B. Q1):', c.coilRef||'Q1'); if(t!==null)c.coilRef=t; }
+  render(); simulate();
+}
+function cycleStar(m){ return m==='stern'?'dreieck':m==='dreieck'?'keine':'stern'; }
+/* Freie Geräte-Bezeichnung setzen/leeren. Spulen/Relais nutzen .name (Sim-
+   Referenz), alle anderen .tag. Leere Eingabe -> Label entfernt (User
+   beschriftet selbst). Wird mit gespeichert/geladen (Teil von comps). */
+/* BUG-FIX (Beschriftung): das Tool läuft in der WebApp in einem <iframe>.
+   In (sandboxed/eingebetteten) iframes wird window.prompt() von modernen
+   Browsern blockiert/ignoriert -> Umbenennen war unmöglich. Daher ein eigener,
+   in-page Text-Dialog (funktioniert immer, auch im iframe). Liefert ein Promise
+   mit dem Text oder null bei Abbruch. */
+function askText(message, def){
+  return new Promise(resolve=>{
+    const ov=document.createElement('div');
+    ov.style.cssText='position:fixed;inset:0;z-index:9999;display:flex;align-items:center;'
+      +'justify-content:center;background:rgba(2,8,12,.55);backdrop-filter:blur(2px)';
+    const isLight=document.body.classList.contains('light');
+    const box=document.createElement('div');
+    box.style.cssText='min-width:280px;max-width:90vw;background:'+(isLight?'#ffffff':'#0e1a24')
+      +';color:'+(isLight?'#1a2530':'#e8edf2')+';border:1px solid '+(isLight?'rgba(0,0,0,.18)':'rgba(45,212,191,.4)')
+      +';border-radius:14px;padding:16px 16px 14px;box-shadow:0 18px 60px rgba(0,0,0,.5);font-family:inherit';
+    const msg=document.createElement('div');
+    msg.textContent=message;
+    msg.style.cssText='font-size:12.5px;line-height:1.5;white-space:pre-line;margin-bottom:10px;font-weight:600';
+    const inp=document.createElement('input');
+    inp.type='text'; inp.value=def||'';
+    inp.style.cssText='width:100%;box-sizing:border-box;font-family:inherit;font-size:14px;font-weight:700;'
+      +'padding:8px 10px;border-radius:9px;border:1px solid '+(isLight?'rgba(0,0,0,.25)':'rgba(255,255,255,.2)')
+      +';background:'+(isLight?'#f4f7f9':'#0a131b')+';color:inherit;outline:none';
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;gap:8px;justify-content:flex-end;margin-top:12px';
+    const mkBtn=(label,primary)=>{ const b=document.createElement('button'); b.textContent=label;
+      b.style.cssText='font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;padding:7px 14px;'
+      +'border-radius:9px;border:1px solid '+(primary?'#2dd4bf':(isLight?'rgba(0,0,0,.2)':'rgba(255,255,255,.18)'))
+      +';color:'+(primary?(isLight?'#0c5d50':'#7af0d9'):'inherit')
+      +';background:'+(primary?(isLight?'#d6f5ee':'#0e3b35'):'transparent'); return b; };
+    const cancel=mkBtn('Abbrechen',false), ok=mkBtn('OK',true);
+    row.appendChild(cancel); row.appendChild(ok);
+    box.appendChild(msg); box.appendChild(inp); box.appendChild(row); ov.appendChild(box);
+    document.body.appendChild(ov);
+    const close=val=>{ if(ov.parentNode) ov.parentNode.removeChild(ov); resolve(val); };
+    ok.addEventListener('click',()=>close(inp.value));
+    cancel.addEventListener('click',()=>close(null));
+    ov.addEventListener('mousedown',e=>{ if(e.target===ov) close(null); });
+    inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){e.preventDefault();close(inp.value);} else if(e.key==='Escape'){e.preventDefault();close(null);} });
+    setTimeout(()=>{ inp.focus(); inp.select(); },30);
+  });
+}
+/* In-Page Ja/Nein-Dialog (Ersatz fuer confirm(), das im iframe blockiert ist).
+   Liefert Promise<boolean>. */
+function askConfirm(message){
+  return new Promise(resolve=>{
+    const ov=document.createElement('div');
+    ov.style.cssText='position:fixed;inset:0;z-index:9999;display:flex;align-items:center;'
+      +'justify-content:center;background:rgba(2,8,12,.55);backdrop-filter:blur(2px)';
+    const isLight=document.body.classList.contains('light');
+    const box=document.createElement('div');
+    box.style.cssText='min-width:280px;max-width:90vw;background:'+(isLight?'#ffffff':'#0e1a24')
+      +';color:'+(isLight?'#1a2530':'#e8edf2')+';border:1px solid '+(isLight?'rgba(0,0,0,.18)':'rgba(45,212,191,.4)')
+      +';border-radius:14px;padding:16px 16px 14px;box-shadow:0 18px 60px rgba(0,0,0,.5);font-family:inherit';
+    const msg=document.createElement('div');
+    msg.textContent=message;
+    msg.style.cssText='font-size:12.5px;line-height:1.5;white-space:pre-line;margin-bottom:6px;font-weight:600';
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;gap:8px;justify-content:flex-end;margin-top:14px';
+    const mkBtn=(label,primary)=>{ const b=document.createElement('button'); b.textContent=label;
+      b.style.cssText='font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;padding:7px 14px;'
+      +'border-radius:9px;border:1px solid '+(primary?'#2dd4bf':(isLight?'rgba(0,0,0,.2)':'rgba(255,255,255,.18)'))
+      +';color:'+(primary?(isLight?'#0c5d50':'#7af0d9'):'inherit')
+      +';background:'+(primary?(isLight?'#d6f5ee':'#0e3b35'):'transparent'); return b; };
+    const cancel=mkBtn('Abbrechen',false), ok=mkBtn('OK',true);
+    row.appendChild(cancel); row.appendChild(ok);
+    box.appendChild(msg); box.appendChild(row); ov.appendChild(box);
+    document.body.appendChild(ov);
+    const close=val=>{ if(ov.parentNode) ov.parentNode.removeChild(ov); resolve(val); };
+    ok.addEventListener('click',()=>close(true));
+    cancel.addEventListener('click',()=>close(false));
+    ov.addEventListener('mousedown',e=>{ if(e.target===ov) close(false); });
+    document.addEventListener('keydown',function esc(e){ if(e.key==='Escape'){close(false);document.removeEventListener('keydown',esc);} else if(e.key==='Enter'){close(true);document.removeEventListener('keydown',esc);} });
+    setTimeout(()=>{ ok.focus(); },30);
+  });
+}
+/* In-Page Auswahl-Dialog (Ersatz fuer die nummerierten prompt()-Menues, die im
+   iframe blockiert sind). options = [{label, value}]. Liefert Promise<value|null>. */
+function askChoice(title, options){
+  return new Promise(resolve=>{
+    const ov=document.createElement('div');
+    ov.style.cssText='position:fixed;inset:0;z-index:9999;display:flex;align-items:center;'
+      +'justify-content:center;background:rgba(2,8,12,.55);backdrop-filter:blur(2px)';
+    const isLight=document.body.classList.contains('light');
+    const box=document.createElement('div');
+    box.style.cssText='min-width:280px;max-width:92vw;max-height:84vh;overflow:auto;background:'+(isLight?'#ffffff':'#0e1a24')
+      +';color:'+(isLight?'#1a2530':'#e8edf2')+';border:1px solid '+(isLight?'rgba(0,0,0,.18)':'rgba(45,212,191,.4)')
+      +';border-radius:14px;padding:14px;box-shadow:0 18px 60px rgba(0,0,0,.5);font-family:inherit';
+    const ttl=document.createElement('div');
+    ttl.textContent=title;
+    ttl.style.cssText='font-size:12.5px;line-height:1.5;white-space:pre-line;margin-bottom:10px;font-weight:700';
+    box.appendChild(ttl);
+    const close=val=>{ if(ov.parentNode) ov.parentNode.removeChild(ov); resolve(val); };
+    options.forEach(o=>{
+      const b=document.createElement('button'); b.textContent=o.label;
+      b.style.cssText='display:block;width:100%;text-align:left;font-family:inherit;font-size:13px;font-weight:700;'
+        +'cursor:pointer;padding:9px 11px;margin-bottom:7px;border-radius:9px;border:1px solid '
+        +(isLight?'rgba(0,0,0,.15)':'rgba(255,255,255,.16)')+';background:'+(isLight?'#f4f7f9':'#0a131b')+';color:inherit';
+      b.addEventListener('mouseenter',()=>{b.style.borderColor='#2dd4bf';});
+      b.addEventListener('mouseleave',()=>{b.style.borderColor=isLight?'rgba(0,0,0,.15)':'rgba(255,255,255,.16)';});
+      b.addEventListener('click',()=>close(o.value));
+      box.appendChild(b);
+    });
+    const cancel=document.createElement('button'); cancel.textContent='Abbrechen';
+    cancel.style.cssText='display:block;width:100%;text-align:center;font-family:inherit;font-size:12px;font-weight:700;'
+      +'cursor:pointer;padding:8px;margin-top:4px;border-radius:9px;border:1px solid '
+      +(isLight?'rgba(0,0,0,.2)':'rgba(255,255,255,.18)')+';background:transparent;color:inherit';
+    cancel.addEventListener('click',()=>close(null));
+    box.appendChild(cancel); ov.appendChild(box);
+    document.body.appendChild(ov);
+    ov.addEventListener('mousedown',e=>{ if(e.target===ov) close(null); });
+    document.addEventListener('keydown',function esc(e){ if(e.key==='Escape'){close(null);document.removeEventListener('keydown',esc);} });
+  });
+}
+function editLabel(c){
+  const isCoil=COIL_KINDS.includes(c.kind);
+  const isContact=CONTACT_KINDS.includes(c.kind);
+  // Kontakte: ihre Bezeichnung IST der Name des zugehörigen Schütz/Relais
+  // (coilRef). Gleicher Name wie die Spule => derselbe Apparat (Task 4).
+  const cur = isCoil ? (c.name||'') : isContact ? (c.coilRef||'') : (c.tag||'');
+  askText(isCoil
+    ? 'Spulen-/Relais-Name (z.B. Q21, K1) — leer lassen zum Entfernen:'
+    : isContact
+    ? 'Bezeichnung des Kontakts = Name des Schütz/Relais (z.B. Q21, K1).\nGleicher Name wie die Spule => gleiches Gerät:'
+    : 'Geräte-Bezeichnung (z.B. F2, S22, B1, H1) — leer lassen zum Entfernen:', cur)
+  .then(t=>{
+    if(t===null)return;               // Abbrechen: unverändert
+    if(isCoil){ c.name=t; } else if(isContact){ c.coilRef=t; } else { c.tag=t; }
+    toast(t? ('Beschriftung: '+t) : 'Beschriftung entfernt');
+    render(); simulate();
+  });
+}
+function rotateComp(c,isSwitch){
+  // allgemein 90 Grad; Schalter/Taster nur 180-Grad-Spiegelung; Kontakt nie nach unten
+  if(isSwitch){ c.rot=(c.rot===180?0:180); }
+  else { c.rot=((c.rot||0)+90)%360; }
+  toast('Gedreht: '+(c.rot)+'°');
+}
+function deleteComp(c){
+  wires=wires.filter(w=>w.a.c!==c.id && w.b.c!==c.id);
+  comps=comps.filter(x=>x.id!==c.id);
+  toast('Bauteil gelöscht');
+}
+
+/* ============ Pin / Geometrie (mit Rotation) ============ */
+function rotPin(c,p){
+  const def=DEFS[c.kind]; const rot=((c.rot||0)*Math.PI)/180;
+  const cx=def.w/2, cy=def.h/2;
+  const dx=p.x-cx, dy=p.y-cy;
+  const x=cx+dx*Math.cos(rot)-dy*Math.sin(rot);
+  const y=cy+dx*Math.sin(rot)+dy*Math.cos(rot);
+  return {x:c.x+x, y:c.y+y};
+}
+function pinPos(ref){const c=comps.find(x=>x.id===ref.c);if(!c)return null;const def=DEFS[c.kind];const p=def.pins.find(p=>p.id===ref.p);if(!p)return null;return rotPin(c,p);}
+function key(ref){return ref.c+'|'+ref.p;}
+function refComp(ref){ return ref.c; }
+// Schienen-Y je Blatt für eine Schienen-Referenz
+// FIX Steuerstromkreis: die Steuer-Schiene heisst im Schema "L+", im CS-Objekt
+// aber "Lplus" -> CS['L+'] war undefined, dadurch bekamen ALLE Leitungen an die
+// Speiseschiene L+ ein y=undefined (Pfad "M x undefined") und das Verbinden im
+// Steuerstromkreis war praktisch unmöglich. Hier den Namen auf den CS-Schlüssel
+// abbilden. N ist in beiden Objekten identisch benannt.
+function railY(name){
+  if(SHEET===1) return HS[name];
+  if(name==='L+') return CS.Lplus;
+  return CS[name];
+}
+function railPos(ref){ return {x:ref.x, y:railY(ref.rail)}; }
+// Endpunkt kann Pin, Dot ODER Schiene sein
+function endpointPos(ref){
+  if(ref.rail!=null){ return railPos(ref); }
+  if(ref.dot!=null){ const d=dots.find(x=>x.id===ref.dot); return d?dotPos(d):null; }
+  return pinPos(ref);
+}
+function isHot(ref){
+  if(!SIM||!SIM.hotPins)return false;
+  if(ref.rail!=null) return SIM.hotPins.has(railKey(ref,SHEET));
+  if(ref.dot!=null) return SIM.hotPins.has('dot|'+ref.dot);
+  return SIM.hotPins.has(key(ref));
+}
+// Rails sind je Blatt eigene Knoten; N auf Blatt 2/3 wird zusätzlich gekoppelt.
+function railKey(ref,sheet){
+  let r=ref.rail;
+  if((sheet||1)!==1 && r==='N') return 'rail|ctlN';   // gemeinsamer Steuer-N (Blatt 2+3)
+  if((sheet||1)!==1 && r==='L+') return 'rail|ctlL';   // gemeinsame L+ (Blatt 2+3)
+  return 'rail|'+(sheet||1)+'|'+r;
+}
+function dotPos(d){
+  const w=wires.find(x=>x.id===d.onWire);
+  if(!w) return (d.x!=null)?{x:d.x,y:d.y}:null;
+  const a=endpointPos(w.a), b=endpointPos(w.b); if(!a||!b)return null;
+  // entlang der orthogonalen Polyline am Parameter t
+  const pts=orthoPath(a,b,compRects([refComp(w.a),refComp(w.b)]));
+  return alongPolyline(pts, d.t);
+}
+function alongPolyline(pts,t){
+  let total=0; const segs=[];
+  for(let i=0;i<pts.length-1;i++){const l=Math.hypot(pts[i+1][0]-pts[i][0],pts[i+1][1]-pts[i][1]);segs.push(l);total+=l;}
+  let target=t*total, acc=0;
+  for(let i=0;i<segs.length;i++){ if(acc+segs[i]>=target){const f=segs[i]?(target-acc)/segs[i]:0;
+    return {x:pts[i][0]+(pts[i+1][0]-pts[i][0])*f, y:pts[i][1]+(pts[i+1][1]-pts[i][1])*f};} acc+=segs[i]; }
+  return {x:pts[pts.length-1][0],y:pts[pts.length-1][1]};
+}
+function closestTOnWire(w,pt){
+  const a=endpointPos(w.a), b=endpointPos(w.b); if(!a||!b)return 0.5;
+  const pts=orthoPath(a,b,compRects([refComp(w.a),refComp(w.b)]));
+  let total=0;const segs=[];
+  for(let i=0;i<pts.length-1;i++){const l=Math.hypot(pts[i+1][0]-pts[i][0],pts[i+1][1]-pts[i][1]);segs.push(l);total+=l;}
+  let bestT=0,bd=1e9,acc=0;
+  for(let i=0;i<pts.length-1;i++){
+    const x1=pts[i][0],y1=pts[i][1],x2=pts[i+1][0],y2=pts[i+1][1];
+    const dx=x2-x1,dy=y2-y1,len2=dx*dx+dy*dy||1;
+    let f=((pt.x-x1)*dx+(pt.y-y1)*dy)/len2; f=Math.max(0,Math.min(1,f));
+    const px=x1+dx*f,py=y1+dy*f; const dd=Math.hypot(pt.x-px,pt.y-py);
+    if(dd<bd){bd=dd;bestT=(acc+segs[i]*f)/(total||1);}
+    acc+=segs[i];
+  }
+  return bestT;
+}
+
+/* ============ Orthogonales Routing mit Hindernisvermeidung ============
+   Leitungen duerfen ueber KEIN Bauteil laufen. compRects liefert ALLE
+   Bauteile des Blatts als Hindernis-Rechtecke (auch die beiden Endpunkt-
+   Bauteile), damit eine Linie nie quer durch ein fremdes Symbol gezogen
+   wird. Die Endpunkt-Bauteile werden NICHT komplett ignoriert (das war die
+   alte Loesung und liess Linien durchs eigene/fremde Symbol laufen) —
+   stattdessen darf nur der kurze Stich, der direkt am Start-/Ziel-Pin
+   anliegt, sein eigenes Bauteil durchstossen (sonst koennte die Linie ihren
+   eigenen Pin nicht verlassen). Das regelt segHitsRect ueber `exempt`. */
+function compRects(skipIds){
+  const PAD=8; const r=[];
+  comps.filter(c=>(c.sheet||1)===SHEET).forEach(c=>{
+    const d=DEFS[c.kind];
+    r.push({x:c.x-PAD,y:c.y-PAD,w:d.w+2*PAD,h:d.h+2*PAD,
+            id:c.id, endpoint: !!(skipIds && skipIds.indexOf(c.id)>=0)});
+  });
+  return r;
+}
+function segHitsRect(x1,y1,x2,y2,r,exempt){
+  const minx=Math.min(x1,x2),maxx=Math.max(x1,x2),miny=Math.min(y1,y2),maxy=Math.max(y1,y2);
+  if(!(maxx>r.x && minx<r.x+r.w && maxy>r.y && miny<r.y+r.h)) return false;
+  // Endpunkt-Bauteil: nur der Stich, der an seinem eigenen Anker (A oder B)
+  // beginnt/endet, darf das Rechteck beruehren (der Pin liegt ja darin).
+  if(r.endpoint && exempt){
+    const onAnchor=(x,y)=>exempt.some(p=>Math.abs(x-p.x)<1 && Math.abs(y-p.y)<1);
+    if(onAnchor(x1,y1)||onAnchor(x2,y2)) return false;
+  }
+  return true;
+}
+function pathClear(pts,rects,exempt){
+  for(let i=0;i<pts.length-1;i++){
+    for(const r of rects){ if(segHitsRect(pts[i][0],pts[i][1],pts[i+1][0],pts[i+1][1],r,exempt)) return false; }
+  }
+  return true;
+}
+// Anzahl Hindernis-Treffer eines Pfades (fuer Fallback-Auswahl: kleinste Zahl).
+function pathHits(pts,rects,exempt){
+  let n=0;
+  for(let i=0;i<pts.length-1;i++){
+    for(const r of rects){ if(segHitsRect(pts[i][0],pts[i][1],pts[i+1][0],pts[i+1][1],r,exempt)) n++; }
+  }
+  return n;
+}
+function orthoPath(A,B,rects){
+  const exempt=[A,B];   // Start-/Ziel-Pin: ihr eigenes Bauteil darf der Stich beruehren
+  const cands=[];
+  // einfache L-Pfade
+  cands.push([[A.x,A.y],[B.x,A.y],[B.x,B.y]]);
+  cands.push([[A.x,A.y],[A.x,B.y],[B.x,B.y]]);
+  // Z-Pfade ueber Zwischen-Linien (Mitte + an jedem Hindernis vorbei)
+  const ys=new Set(), xs=new Set();
+  ys.add((A.y+B.y)/2); xs.add((A.x+B.x)/2);
+  ys.add(A.y-50); ys.add(B.y+50); ys.add(A.y+50); ys.add(B.y-50);
+  rects.forEach(r=>{ ys.add(r.y-16); ys.add(r.y+r.h+16); xs.add(r.x-16); xs.add(r.x+r.w+16); });
+  ys.forEach(o=>{ cands.push([[A.x,A.y],[A.x,o],[B.x,o],[B.x,B.y]]); });
+  xs.forEach(o=>{ cands.push([[A.x,A.y],[o,A.y],[o,B.y],[B.x,B.y]]); });
+  // U-Pfade (zwei Knicke) ueber Kombinationen von x- und y-Stuetzlinien —
+  // erlauben das komplette Umgehen eines im Weg stehenden Bauteils.
+  const xa=[...xs], ya=[...ys];
+  for(const ox of xa){ for(const oy of ya){
+    cands.push([[A.x,A.y],[ox,A.y],[ox,oy],[B.x,oy],[B.x,B.y]]);
+    cands.push([[A.x,A.y],[A.x,oy],[ox,oy],[ox,B.y],[B.x,B.y]]);
+  }}
+  // erster komplett kollisionsfreier Pfad gewinnt
+  for(const c of cands){ if(pathClear(c,rects,exempt)) return c; }
+  // sonst: Pfad mit den WENIGSTEN Hindernis-Treffern (statt blind cands[0])
+  let best=cands[0], bn=pathHits(cands[0],rects,exempt);
+  for(const c of cands){ const n=pathHits(c,rects,exempt); if(n<bn){bn=n;best=c;} }
+  return best;
+}
+function pointsToD(pts){ return "M "+pts.map(p=>p[0]+" "+p[1]).join(" L "); }
+
+/* Leitungs-Pfad inkl. frei gesetzter Wegpunkte. Ohne Wegpunkte: orthogonal
+   mit Hindernisvermeidung (wie bisher). Mit Wegpunkten: A -> WP1 -> ... -> B,
+   jedes Teilstück orthogonal geroutet. Verbindung bleibt erhalten (Endpunkte
+   referenzieren weiterhin Pins/Dots/Schienen). */
+function wirePath(w,a,b){
+  const rects=compRects([refComp(w.a),refComp(w.b)]);
+  if(!w.waypoints||!w.waypoints.length) return orthoPath(a,b,rects);
+  const nodes=[a, ...w.waypoints.map(p=>({x:p.x,y:p.y})), b];
+  let out=[[nodes[0].x,nodes[0].y]];
+  for(let i=0;i<nodes.length-1;i++){
+    const seg=orthoPath(nodes[i],nodes[i+1],rects);
+    for(let j=1;j<seg.length;j++) out.push(seg[j]);
+  }
+  return out;
+}
+/* Rechtsklick-Menü auf eine Leitung: Farbe wählen, Wegpunkt setzen, löschen. */
+async function wireMenu(w,e){
+  // In-Page-Menue (prompt() ist im eingebetteten iframe blockiert)
+  const a=await askChoice('Leitung:', [
+    {label:'Farbe ändern',value:'color'},
+    {label:'Wegpunkt hier setzen (frei versetzen)',value:'wp'},
+    {label:'Wegpunkte entfernen',value:'clrwp'},
+    {label:'Leitung löschen',value:'del'}
+  ]);
+  if(!a)return;
+  if(a==='color'){
+    const cols=[['schwarz/Standard',null],['blau (N)','#1565d8'],['braun (L)','#7a4a23'],
+      ['rot','#d62b2b'],['grün/gelb (PE)','#caa800'],['grau','#888'],['orange','#e67e22']];
+    const cc=await askChoice('Farbe:', cols.map((v,i)=>({label:v[0],value:String(i)})));
+    if(cc!==null){ const v=cols[parseInt(cc)]; w.color=v[1]; toast('Leitungsfarbe: '+v[0]); }
+  } else if(a==='wp'){
+    const pt=toWorld(e); w.waypoints=w.waypoints||[]; w.waypoints.push({x:snap(pt.x),y:snap(pt.y)});
+    toast('Wegpunkt gesetzt — ziehen zum Versetzen');
+  } else if(a==='clrwp'){ w.waypoints=[]; toast('Wegpunkte entfernt'); }
+  else if(a==='del'){ removeWire(w.id); return; }
+  render(); simulate();
+}
+let wpDrag=null;
+function startWaypointDrag(w,wi,e){ wpDrag={w,wi}; svg.setPointerCapture(e.pointerId); }
+
+/* ============ Drag Bauteil ============ */
+function startDrag(c,e){
+  const pt=toWorld(e);
+  drag={c, dx:pt.x-c.x, dy:pt.y-c.y, moved:false};
+  svg.setPointerCapture(e.pointerId);
+}
+
+/* ============ Verdrahten (Pin <-> Pin, Pin <-> Dot, Leitung) ============ */
+function startWire(c,p,e){ wireStart={from:{c:c.id,p:p.id}, cur:toWorld(e)}; svg.setPointerCapture(e.pointerId); render();}
+function endWire(c,p){
+  if(wireStart){
+    const from=wireStart.from, to={c:c.id,p:p.id};
+    if(!sameEnd(from,to)){ const nw={id:nextId++, sheet:SHEET, a:from, b:to}; const col=wireColorFor(from,to); if(col) nw.color=col; wires.push(nw); }
+  }
+  wireStart=null; render(); simulate();
+}
+function sameEnd(a,b){ return JSON.stringify(a)===JSON.stringify(b); }
+function startWireFromDot(d,e){ wireStart={from:{dot:d.id}, cur:toWorld(e)}; svg.setPointerCapture(e.pointerId); render(); }
+function endWireOnDot(d){
+  if(wireStart){ const from=wireStart.from, to={dot:d.id};
+    if(!sameEnd(from,to)) wires.push({id:nextId++,sheet:SHEET,a:from,b:to}); }
+  wireStart=null; render(); simulate();
+}
+// Klick auf bestehende Leitung -> bewussten Dot setzen und von dort starten
+function startWireFromWire(w,pt){
+  const t=closestTOnWire(w,pt);
+  const d={id:nextId++, sheet:SHEET, onWire:w.id, t};
+  dots.push(d);
+  wireStart={from:{dot:d.id}, cur:pt};
+  toast('Verbindungspunkt gesetzt — Ziel anklicken');
+  render();
+}
+// Während Zeichnen auf andere Leitung treffen -> dort Dot + Draht
+function finishWireOnWire(w,e){
+  const pt=toWorld(e);
+  const t=closestTOnWire(w,pt);
+  const d={id:nextId++, sheet:SHEET, onWire:w.id, t};
+  dots.push(d);
+  if(wireStart && !sameEnd(wireStart.from,{dot:d.id})){
+    wires.push({id:nextId++,sheet:SHEET,a:wireStart.from,b:{dot:d.id}});
+  }
+  wireStart=null; render(); simulate();
+}
+/* Treffer-Test beim Drag-Loslassen: nächste Klemme/Dot/Schiene am aktuellen
+   Blatt innerhalb Toleranz finden. Liefert eine Endpunkt-Referenz oder null.
+   So funktioniert das Verbinden auch per gezogenem Drag (nicht nur Klick-zu-Klick),
+   unabhängig davon, dass render() die Pin-Elemente neu erzeugt. */
+function hitTestEndpoint(pt, exclude){
+  const TOL=16; let best=null, bd=TOL;
+  // Pins der Bauteile auf diesem Blatt
+  comps.filter(c=>(c.sheet||1)===SHEET).forEach(c=>{
+    DEFS[c.kind].pins.forEach(p=>{
+      const pos=rotPin(c,p); const d=Math.hypot(pos.x-pt.x,pos.y-pt.y);
+      const ref={c:c.id,p:p.id};
+      if(d<bd && !(exclude&&sameEnd(exclude,ref))){ bd=d; best=ref; }
+    });
+  });
+  // Dots auf diesem Blatt
+  dots.filter(d=>(d.sheet||1)===SHEET).forEach(d=>{
+    const pos=dotPos(d); if(!pos)return; const dd=Math.hypot(pos.x-pt.x,pos.y-pt.y);
+    const ref={dot:d.id};
+    if(dd<bd && !(exclude&&sameEnd(exclude,ref))){ bd=dd; best=ref; }
+  });
+  // Schienen (warm/Rückleiter/PE) — Treffer wenn nahe an der Schienen-Y
+  const rails = SHEET===1 ? [['L1',HS.L1],['L2',HS.L2],['L3',HS.L3],['N',HS.N],['PE',HS.PE]]
+                          : [['L+',CS.Lplus],['N',CS.N]];
+  rails.forEach(([name,yy])=>{
+    if(pt.x<PATH_X0-4 || pt.x>PATH_X9+4) return;
+    const dy=Math.abs(yy-pt.y);
+    // BUG-FIX 1 — verteilter Andock-x (eigener Slot pro Leiter im Pfad).
+    if(dy<bd){ bd=dy; best={rail:name, x:railSlotX(name, pt.x, exclude)}; }
+  });
+  return best;
+}
+// Draht beim Drag-Loslassen an der Zielposition abschliessen.
+function finishWireAt(pt){
+  if(!wireStart) return false;
+  const to=hitTestEndpoint(pt, wireStart.from);
+  if(to){
+    if(!sameEnd(wireStart.from,to)){ const nw={id:nextId++,sheet:SHEET,a:wireStart.from,b:to}; const col=wireColorFor(wireStart.from,to); if(col) nw.color=col; wires.push(nw); }
+    wireStart=null; render(); simulate(); return true;
+  }
+  return false; // kein Ziel getroffen -> wireStart bleibt aktiv (Klick-zu-Klick)
+}
+function removeWire(id){
+  wires=wires.filter(w=>w.id!==id);
+  dots=dots.filter(d=>d.onWire!==id);   // Dots auf gelöschter Leitung mitlöschen
+  // Drähte, die an diesen Dots hingen, ebenfalls weg
+  const goneDots=new Set(); dots.forEach(d=>{}); // (Dots schon gefiltert)
+  wires=wires.filter(w=>!(w.a.dot!=null&&!dots.find(d=>d.id===w.a.dot)) && !(w.b.dot!=null&&!dots.find(d=>d.id===w.b.dot)));
+  render();simulate();
+}
+function removeDot(id){
+  dots=dots.filter(d=>d.id!==id);
+  wires=wires.filter(w=>w.a.dot!==id && w.b.dot!==id);
+  render();simulate();
+}
+
+/* ============ Pointer global ============ */
+svg.addEventListener('pointermove',e=>{
+  if(wpDrag){const pt=toWorld(e); const wp=wpDrag.w.waypoints[wpDrag.wi];
+    wp.x=snap(pt.x); wp.y=snap(pt.y); render(); return;}
+  if(drag){const pt=toWorld(e);const def=DEFS[drag.c.kind];
+    // Bauteil-MITTE auf Pfad-Mittellinie snappen (nicht die obere-linke Ecke!)
+    const centerX = snapX(pt.x - drag.dx + def.w/2);
+    const nx = Math.round(centerX - def.w/2);
+    const ny = snap(pt.y-drag.dy);
+    if(nx!==drag.c.x||ny!==drag.c.y)drag.moved=true;
+    drag.c.x=nx;drag.c.y=ny;render();}
+  else if(wireStart){wireStart.cur=toWorld(e); wireStart.moved=true; render();}
+});
+svg.addEventListener('pointerup',e=>{
+  if(wpDrag){wpDrag=null;simulate();}
+  if(drag){drag=null;simulate();}
+  if(wireStart){
+    // Drag-Loslassen: nächste Klemme/Dot/Schiene treffen -> Draht abschliessen.
+    const pt=toWorld(e);
+    if(finishWireAt(pt)) return;
+    // Nichts getroffen: war es ein echtes Ziehen, abbrechen; sonst armiert
+    // lassen (Klick-zu-Klick: zweiter Klick auf Ziel-Klemme verbindet).
+    if(wireStart.moved){ wireStart=null; render(); }
+  }
+});
+let panning=null;
+svg.addEventListener('pointerdown',e=>{
+  if(e.target===svg || (e.target.tagName==='rect'&&!e.target.closest('g[transform]'))){
+    if(MODE==='edit'){panning={x:e.clientX,y:e.clientY,vx:view.x,vy:view.y};}
+  }
+});
+svg.addEventListener('pointermove',e=>{if(panning){view.x=panning.vx+(e.clientX-panning.x);view.y=panning.vy+(e.clientY-panning.y);render();}});
+window.addEventListener('pointerup',()=>{panning=null;});
+svg.addEventListener('wheel',e=>{e.preventDefault();const f=e.deltaY<0?1.1:1/1.1;const pt=toWorld(e);
+  view.k=Math.min(2.4,Math.max(.4,view.k*f));
+  const after=toWorld(e); view.x+=(after.x-pt.x)*view.k; view.y+=(after.y-pt.y)*view.k; render();},{passive:false});
+
+function toWorld(e){const r=svg.getBoundingClientRect();return {x:(e.clientX-r.left-view.x)/view.k,y:(e.clientY-r.top-view.y)/view.k};}
+function snap(v){return Math.round(v/10)*10;}
+// X snappt auf Strompfade 0-9 (Mittellinie) wenn nahe, sonst 10er-Raster
+function snapX(v){
+  const px=nearestPathX(v);
+  if(Math.abs(px-v) < (PATH_X9-PATH_X0)/10/2) return Math.round(px);
+  return Math.round(v/10)*10;
+}
+
+/* ============ Bauteil hinzufügen ============ */
+function addComp(kind,x,y){
+  const def=DEFS[kind];
+  const sheet=def.sheet||1;
+  if(sheet!==SHEET){ switchSheet(sheet); }
+  // auf Strompfad ausrichten: Bauteilmitte auf Pfad-Mittellinie
+  const cx=snapX(x), cy=snap(y-def.h/2);
+  const c={id:nextId++, kind, x:Math.round(cx-def.w/2), y:cy, sheet, rot:0};
+  // FREIE BESCHRIFTUNG: Geräte-Bezeichnung (tag) startet LEER — der User
+  // beschriftet selbst (Doppelklick / Klick im Bearbeiten-Modus aufs Label).
+  // Spulen/Relais behalten einen funktionalen Namen (Q1/K1 …), weil Kontakte
+  // per coilRef DARAUF verweisen (Simulation). Der Name bleibt frei änderbar.
+  if(HAS_TAG.includes(kind)){ c.tag=''; }
+  // Funktionale Defaults (Logik, kein freies Label):
+  if(kind==='coil'){ c.name=nextName('Q'); }
+  if(kind==='timer'){ c.name=nextName('K'); }
+  if(kind==='relaisAllg'||kind==='relaisAnzug'||kind==='relaisRueck'||kind==='schrittrelais'){ c.name=nextName('K'); }
+  if(kind==='mainK'){ c.coilRef='Q1'; }
+  if(kind==='auxNO'||kind==='auxNC'){ c.coilRef='Q1'; }
+  if(kind==='kAnzugNO'||kind==='kAnzugNC'){ c.coilRef='K3'; }
+  if(kind==='kRueckNO'||kind==='kRueckNC'){ c.coilRef='K2'; }
+  if(kind==='motor'){ c.starMode='stern'; }
+  if(kind==='schmelz'){ c.rating='10A'; }
+  if(kind==='lsschalter'){ c.rating='13A C'; }
+  comps.push(c); render(); simulate(); return c;
+}
+// Fortlaufende Spulen-/Relais-Namen Q1,Q2 / K1,K2 (Sim-Referenz, frei änderbar).
+// Geräte-Bezeichnungen (tag) werden NICHT mehr automatisch vergeben -> bleiben
+// leer, der User beschriftet selbst (siehe editLabel).
+function nextName(prefix){const used=comps.filter(c=>COIL_KINDS.includes(c.kind)).map(c=>c.name);for(let i=1;i<20;i++)if(!used.includes(prefix+i))return prefix+i;return prefix+'9';}
+
+/* ============ Palette ============ */
+function buildPalette(){
+  const pal=document.getElementById('palette');
+  const cats={};
+  Object.entries(DEFS).forEach(([k,d])=>{(cats[d.cat]=cats[d.cat]||[]).push([k,d]);});
+  let html='';
+  // feste Reihenfolge der Kategorien; unbekannte hinten anfügen
+  const order=['Hauptstrom','Steuerstrom','Befehlsgeräte','Relais','Sensorik','Meldung'];
+  const catList=order.filter(c=>cats[c]).concat(Object.keys(cats).filter(c=>!order.includes(c)));
+  catList.forEach(cat=>{
+    html+=`<h3>${cat}</h3>`;
+    (cats[cat]||[]).forEach(([k,d])=>{
+      const vbH=d.h+(k==='motor'?14:18);
+      html+=`<div class="pitem" draggable="true" data-kind="${k}"><svg class="sym" viewBox="-14 -2 ${d.w+20} ${vbH}">${miniSym(k,d)}</svg><span>${d.label}</span></div>`;
+    });
+  });
+  pal.innerHTML=html;
+  pal.querySelectorAll('.pitem').forEach(el=>{
+    el.addEventListener('dragstart',e=>{e.dataTransfer.setData('kind',el.dataset.kind);});
+    el.addEventListener('click',()=>{
+      const r=svg.getBoundingClientRect();addComp(el.dataset.kind,(r.width/2-view.x)/view.k,(r.height/2-view.y)/view.k);
+    });
+  });
+}
+function miniSym(k,d){const g=document.createElementNS(SVG_NS,'g');d.sym(g,{kind:k,name:'K1',coilRef:'K1',starMode:'stern',rot:0},null);return g.innerHTML;}
+
+svg.addEventListener('dragover',e=>e.preventDefault());
+svg.addEventListener('drop',e=>{e.preventDefault();const k=e.dataTransfer.getData('kind');if(k){const pt=toWorld(e);addComp(k,pt.x,pt.y);}});
+
+/* ============ Blatt-Tabs ============ */
+function buildSheetbar(){
+  const bar=document.getElementById('sheetbar');
+  const tabs=[[1,'Hauptstromkreis'],[2,'Steuerstromkreis'],[3,'Steuerstromkreis (2)']];
+  let html='';
+  tabs.forEach(([n,t])=>{
+    html+=`<div class="sheettab ${n===SHEET?'active':''}" onclick="switchSheet(${n})">${t} <span class="dotnum">Blatt ${n}/3</span></div>`;
+  });
+  html+=`<span class="sheethelp">Gemeinsame Simulation über alle Blätter</span>`;
+  bar.innerHTML=html;
+}
+function switchSheet(n){
+  if(n===SHEET){return;}
+  SHEET=n; wireStart=null; drag=null;
+  buildSheetbar(); render();
+}
+
+/* ============ SIMULATION KERN ============
+   Knoten = verbundene Pin-/Dot-Mengen (Union-Find über Drähte UND die
+   bewussten Verbindungspunkte). Kreuzende Leitungen ohne Dot teilen KEINEN
+   Knoten — eine Verbindung entsteht nur über Klemmen (Pins), Pin-Dot-Drähte
+   oder Dot-auf-Leitung (der Dot wird mit der Leitung verbunden).
+   Quellen: Blatt1 L1/L2/L3 = L (warm). Blatt2/3 L+ = warm, N = Rückleiter.
+   Spule erregt, wenn A1 warm UND A2 mit N verbunden. Iterativ (Selbsthaltung).
+   ============================================================ */
+function simulate(){
+  if(MODE!=='run'){ SIM=null; render(); updatePanel(); return; }
+
+  // alle Knoten-IDs sammeln (Pins + Dots)
+  function freshUF(){
+    const par={};
+    const f=x=>{par[x]=par[x]||x;return par[x]===x?x:(par[x]=f(par[x]));};
+    const u=(a,b)=>{par[f(a)]=f(b);};
+    comps.forEach(c=>DEFS[c.kind].pins.forEach(p=>{par[c.id+'|'+p.id]=c.id+'|'+p.id;}));
+    dots.forEach(d=>{ par['dot|'+d.id]='dot|'+d.id; });
+    // Rail-Knoten anhand verwendeter Wire-Endpunkte registrieren
+    wires.forEach(w=>{ [w.a,w.b].forEach(e=>{ if(e.rail!=null){const k=railKey(e,w.sheet);par[k]=par[k]||k;} }); });
+    return {f,u};
+  }
+  function endKey(ref,sheet){ return ref.rail!=null ? railKey(ref,sheet) : (ref.dot!=null ? 'dot|'+ref.dot : ref.c+'|'+ref.p); }
+  function applyWiresAndDots(u,f){
+    wires.forEach(w=>u(endKey(w.a,w.sheet),endKey(w.b,w.sheet)));
+    // Dot auf Leitung: Dot teilt Knoten mit beiden Enden der Trägerleitung
+    dots.forEach(d=>{ const w=wires.find(x=>x.id===d.onWire); if(w){ u('dot|'+d.id, endKey(w.a,w.sheet)); u('dot|'+d.id, endKey(w.b,w.sheet)); } });
+  }
+
+  function elementClosed(c,coils){
+    switch(c.kind){
+      case 'mss': return [['1','2'],['3','4'],['5','6']];
+      case 'mainK': { const cl=contactorClosed(c,coils); return cl?[['1','2'],['3','4'],['5','6']]:[]; }
+      case 'msr': { const tr=anyTrip(); return tr?[]:[['1','2'],['3','4'],['5','6']]; }
+      case 'heater': return [['1','2']];
+      case 'btnNO': return pressedC(c)?[['a','b']]:[];
+      case 'btnNC': return pressedC(c)?[]:[['a','b']];
+      case 'notaus': return pressedC(c)?[]:[['a','b']];          // Öffner, rastend
+      case 'endschalter': { const act=pressedC(c); return (c.nc?!act:act)?[['a','b']]:[]; }
+      case 'wahl': case 'thermostat': case 'waechter': case 'schwimmer':
+        return sel(c)?[['a','b']]:[];                              // Umschalt-/Wahlkontakt: An = leitend
+      case 'auxNO': return contactorClosed(c,coils)?[['a','b']]:[];
+      case 'auxNC': return contactorClosed(c,coils)?[]:[['a','b']];
+      case 'msrAux': return anyTrip()?[]:[['a','b']];
+      /* ---- NEU: Steuerungstechnik-Symbolsatz ---- */
+      // Taster
+      case 'eintaster': case 'schluesseltaster': return pressedC(c)?[['3','4']]:[];   // Schliesser
+      case 'austaster': return pressedC(c)?[]:[['1','2']];                            // Öffner
+      case 'notausS21': return pressedC(c)?[]:[['1','2']];                            // Öffner, rastend
+      // Niveau / Endschalter (Sensor sel(c) = aktiv)
+      case 'niveauNC': return sel(c)?[]:[['1','2']];
+      case 'niveauNO': return sel(c)?[['3','4']]:[];
+      case 'endNO': return pressedC(c)?[['3','4']]:[];
+      case 'endNC': return pressedC(c)?[]:[['1','2']];
+      // Hand-0-Auto: Mitte(1) -> a (Hand) bei pos1 / -> b (Auto) bei pos2
+      case 'handAuto': { const p=handPos(c); return p===1?[['1','a']]:p===2?[['1','b']]:[]; }
+      // MSR-Kontakte F (Bimetall): Auslöse 95/96 Öffner, Alarm 97/98 Schliesser
+      case 'fAusloese': return anyTrip()?[]:[['a','b']];
+      case 'fAlarm': return anyTrip()?[['a','b']]:[];
+      // Zeit-Kontakte (verzögert) — vereinfacht ohne Zeitbasis: folgen ihrer Spule
+      case 'kAnzugNO': case 'kRueckNO': return contactorClosed(c,coils)?[['a','b']]:[];
+      case 'kAnzugNC': case 'kRueckNC': return contactorClosed(c,coils)?[]:[['a','b']];
+      // Steuergeräte mit eigener Speisung: leiten L->Kontakt bei sel(c)
+      case 'schaltuhr': return sel(c)?[['1','2']]:[['1','3']];   // Umschalter
+      case 'bewegungsmelder': return sel(c)?[['3','4']]:[];
+      case 'daemmerung': return sel(c)?[['1','2']]:[];
+      // Sicherungen: leiten immer durch (ausgelöst nicht modelliert)
+      case 'schmelz': case 'lsschalter': return [['a','b']];
+      // Meldeleuchten/Horn (neu): Strompfad durch, Anzeige separat
+      case 'betriebsleuchte': case 'leuchtmelder': case 'alarmhorn': return [['a','b']];
+      // Lasten/Leuchten/Horn leiten den Strompfad durch (Anzeige separat)
+      case 'lampG': case 'lampR': case 'lampB': case 'horn': return [['a','b']];
+      // Motor-Klemmbrett (3~): interne Wicklungen U1-U2, V1-V2, W1-W2 (immer),
+      // plus Brücken je nach Schaltung. So bilden Stern und Dreieck im Union-Find
+      // unterschiedliche Knoten ab (testbar + elektrisch sinnvoll).
+      case 'motor': {
+        const pairs=[['U1','U2'],['V1','V2'],['W1','W2']]; // Wicklungsstränge
+        const mode=c.starMode||'stern';
+        if(mode==='stern'){ pairs.push(['U2','V2'],['V2','W2']); }         // Sternpunkt W2-U2-V2
+        else if(mode==='dreieck'){ pairs.push(['U1','W2'],['V1','U2'],['W1','V2']); } // Dreieck
+        // mode==='keine': nur Wicklungen, keine Brücke
+        return pairs;
+      }
+      default: return [];
+    }
+  }
+  function pressedC(c){return !!toggleStates['btn_'+c.id];}
+  function sel(c){return !!toggleStates['sel_'+c.id];}
+  function anyTrip(){return comps.some(c=>['msr','msrAux','fAusloese','fAlarm'].includes(c.kind)&&toggleStates['trip_'+c.id]);}
+  // TASK 4: ein Kontakt ist „erregt", wenn IRGENDEINE gleichnamige Spule (coilRef
+  // == Spulen-Name) angezogen ist — blattübergreifend, Name = derselbe Apparat.
+  function contactorClosed(c,coils){return coilEnergizedByName(c.coilRef,coils);}
+
+  const isCoilKind=c=>COIL_KINDS.includes(c.kind);
+  let coils={};
+  if(SIM && SIM.coils){ comps.filter(isCoilKind).forEach(c=>{ coils[c.id]=!!SIM.coils[c.id]; }); }
+  for(let iter=0;iter<14;iter++){
+    const {f:f2,u:u2}=freshUF();
+    applyWiresAndDots(u2,f2);
+    comps.forEach(c=>{ elementClosed(c,coils).forEach(pair=>u2(c.id+'|'+pair[0], c.id+'|'+pair[1])); });
+
+    const Lroots=new Set(), Nroots=new Set();
+    // Quellen sind die festen Schienen — über unsichtbare „Schienen-Knoten":
+    // jeder Pin, der auf der Schienen-Y / Pfad liegt, gilt automatisch nicht;
+    // stattdessen modellieren wir Schienen als globale Quelle: alle Pins, die
+    // mit einem supply-losen Schema arbeiten, werden über spezielle Klemmen
+    // gespeist. Hier: nutze Schienenanschluss-Heuristik via Bauteiltyp.
+    // -> Wir behandeln die obersten Hauptkontakt-/MSS-Eingänge etc. NICHT
+    //    automatisch; die Speisung kommt über explizite Schienen-Pins:
+    addRailSources(f2, Lroots, Nroots);
+
+    const newCoils={};
+    comps.filter(isCoilKind).forEach(c=>{
+      const a1=f2(c.id+'|A1'), a2=f2(c.id+'|A2');
+      // BUG 6: elektrisch erregt ODER von Hand betätigt (Test)
+      newCoils[c.id]= (Lroots.has(a1) && Nroots.has(a2)) || !!toggleStates['man_'+(c.name||'K1')];
+    });
+    if(stable(coils,newCoils)){ coils=newCoils; break; }
+    coils=newCoils;
+  }
+
+  // Finale Klassen
+  const {f:f2,u:u2}=freshUF();
+  applyWiresAndDots(u2,f2);
+  comps.forEach(c=>{ elementClosed(c,coils).forEach(pair=>u2(c.id+'|'+pair[0], c.id+'|'+pair[1])); });
+  const Lroots=new Set(), Nroots=new Set(), phaseRoots={};
+  addRailSources(f2, Lroots, Nroots, phaseRoots);
+  const hotPins=new Set();
+  comps.forEach(c=>DEFS[c.kind].pins.forEach(p=>{const id=c.id+'|'+p.id;if(Lroots.has(f2(id)))hotPins.add(id);}));
+  dots.forEach(d=>{ const id='dot|'+d.id; if(Lroots.has(f2(id)))hotPins.add(id); });
+
+  // Motor läuft: U1/V1/W1 über geschlossene Hauptkontakte mit L verbunden
+  let motor={run:false,dir:0,mode:'stern'};
+  const mot=comps.find(c=>c.kind==='motor');
+  if(mot){
+    motor.mode = mot.starMode||'stern';
+    // BUG-FIX (Phasen-Trennung): Ein 3~-Motor dreht nur, wenn seine Klemmen an
+    // VERSCHIEDENEN Phasen liegen. Es genügt NICHT, drei Klemmen an dieselbe
+    // Phase (z.B. 3x L1) zu hängen — das ergäbe kein Drehfeld. Daher zählen wir
+    // die ANZAHL UNTERSCHIEDLICHER Phasen (L1/L2/L3), die den Motor speisen.
+    const distinct=new Set();
+    [['U1'],['V1'],['W1']].forEach(([t])=>{
+      phasesOfRoot(f2(mot.id+'|'+t), phaseRoots).forEach(ph=>distinct.add(ph));
+    });
+    const phases=distinct.size;
+    if(phases>=2 && !anyTrip()){
+      motor.run=true;
+      const k1=findCoilByName('Q1')||findCoilByName('K1');
+      const k2=findCoilByName('Q2')||findCoilByName('K2');
+      const k1on=k1&&coils[k1.id], k2on=k2&&coils[k2.id];
+      motor.dir = k2on && !k1on ? -1 : 1;
+    }
+  }
+
+  SIM={coils,hotPins,qClosed:true,motor,trip:anyTrip()};
+  render(); updatePanel();
+}
+
+/* Schienen-Speisung: Pins die auf einer Schiene angeschlossen sind, werden
+   warm/Rückleiter. Heuristik: Ein Pin gilt als an L-Schiene angeschlossen,
+   wenn ein Draht ihn mit einem Punkt auf der Schienen-Y verbindet ODER er per
+   Konvention ein oberster Einspeise-Pin ist. Wir vereinfachen praxisnah:
+   - Blatt 1: die "oberen" Pins (1/3/5) eines MSS, der direkt unter den
+     Schienen sitzt, gelten als L-gespeist; ebenso jede Klemme/jeder Dot der
+     vertikal NAHE einer L-Schiene liegt und per Draht/Dot daran hängt.
+   Damit Presets & freie Schaltungen funktionieren, speisen wir robust:
+   jeden Endknoten, dessen Welt-Y nahe einer Schiene liegt UND der über die
+   linke Speisespalte erreichbar ist, als Quelle. Einfacher & stabil:
+   wir markieren Pins/Dots als Quelle, wenn ihre Welt-Y ~ Schiene und ihr
+   Welt-X im Pfadbereich liegt. */
+function addRailSources(f, Lroots, Nroots, phaseRoots){
+  // Schienen sind die einzige Speisung. Eine Verbindung zur Schiene entsteht
+  // nur durch eine bewusste Leitung auf die Schiene (rail-Endpunkt).
+  // L-Schienen (warm): L1/L2/L3 (Blatt1), L+ (Blatt2/3).
+  // N (Rückleiter): N auf den Steuer-Blättern.  PE ist Schutzleiter (keine
+  // Funktion in der Logik). Wir registrieren alle vorkommenden Rail-Knoten:
+  //
+  // BUG-FIX (Phasen-Trennung): L1/L2/L3 sind DREI UNABHÄNGIGE Phasen-Netze.
+  // `Lroots` bleibt die Sammel-Menge "an irgendeiner Phase = warm" (für Hot-
+  // Färbung, Lampen, Spulen — das ist korrekt: jede Phase führt Spannung).
+  // ZUSÄTZLICH füllen wir `phaseRoots` (optional): für jede Phase einen eigenen
+  // Satz von Wurzel-Knoten. So kann z.B. der Motor prüfen, ob seine Klemmen an
+  // VERSCHIEDENEN Phasen hängen — eine Verbindung an L1 zieht L2/L3 NICHT mit.
+  wires.forEach(w=>{ [w.a,w.b].forEach(e=>{
+    if(e.rail==null)return;
+    const k=railKey(e,w.sheet);
+    const root=f(k);
+    if(e.rail==='L1'||e.rail==='L2'||e.rail==='L3'||e.rail==='L+'){
+      Lroots.add(root);
+      if(phaseRoots){ const ph=(e.rail==='L+'?'L1':e.rail); (phaseRoots[ph]=phaseRoots[ph]||new Set()).add(root); }
+    }
+    else if(e.rail==='N') Nroots.add(root);
+    // PE: verbindbar (eigener Knoten via Union-Find), aber KEINE Quelle —
+    // führt keine Spannung, speist nichts (Schutzleiter ohne Funktion in der Logik).
+  });});
+}
+// Welche Phase(n) speist diesen (gewurzelten) Knoten? Liefert ein Set der
+// Phasen-Namen ('L1'/'L2'/'L3'), die mit dem Knoten verbunden sind.
+function phasesOfRoot(root, phaseRoots){
+  const out=new Set();
+  if(!phaseRoots) return out;
+  ['L1','L2','L3'].forEach(ph=>{ if(phaseRoots[ph] && phaseRoots[ph].has(root)) out.add(ph); });
+  return out;
+}
+
+function stable(a,b){const ka=Object.keys(a),kb=Object.keys(b);if(ka.length!==kb.length)return false;return kb.every(k=>a[k]===b[k]);}
+
+/* ============ Panel ============ */
+function updatePanel(){
+  const s=SIM;
+  const k1=findCoilByName('Q1')||findCoilByName('K1');
+  const k2=findCoilByName('Q2')||findCoilByName('K2');
+  const k1on=s&&k1&&s.coils[k1.id], k2on=s&&k2&&s.coils[k2.id];
+  document.getElementById('sK1').textContent=k1?(k1on?'erregt':'aus'):'—';
+  document.getElementById('sK2').textContent=k2?(k2on?'erregt':'aus'):'—';
+  const m=s&&s.motor;
+  document.getElementById('sMotor').textContent=m&&m.run?(m.dir>0?'Rechtslauf (R)':'Linkslauf (L)'):'Stillstand';
+  document.getElementById('ledR').className='led'+(m&&m.run&&m.dir>0?' r':'');
+  document.getElementById('ledL').className='led'+(m&&m.run&&m.dir<0?' l':'');
+  const trip=s&&s.trip;
+  document.getElementById('ledF').className='led'+(trip?' fault':'');
+  document.getElementById('sF').textContent=trip?'AUSGELÖST':'ok';
+  document.getElementById('ctxnote').textContent = MODE==='run'
+    ? 'Einschalten-Modus: EIN/AUS-Taster klicken (halten = Tasten). MSR anklicken simuliert Überlast.'
+    : 'Bearbeiten-Modus: Bauteil ziehen; Bauteil anklicken = drehen/löschen; Klemmen/Leitung verbinden (Dot).';
+}
+
+/* ============ Modus ============ */
+const ICON_PLAY='<svg class="icn" viewBox="0 0 16 16"><polygon points="3,2 14,8 3,14" fill="currentColor"/></svg>';
+const ICON_STOP='<svg class="icn" viewBox="0 0 16 16"><rect x="3" y="3" width="10" height="10" rx="1.5" fill="currentColor"/></svg>';
+function toggleMode(){
+  MODE = MODE==='edit'?'run':'edit';
+  const btn=document.getElementById('btnMode'), band=document.getElementById('modeBand'), stage=document.getElementById('stage');
+  if(MODE==='run'){btn.innerHTML=ICON_STOP+' Bearbeiten';btn.classList.add('run');band.textContent='Modus: Einschalten';band.style.background='rgba(46,230,166,.14)';stage.classList.add('run');
+    Object.keys(toggleStates).forEach(k=>{if(k.startsWith('btn_')||k.startsWith('man_'))toggleStates[k]=false;});}
+  else{btn.innerHTML=ICON_PLAY+' Einschalten';btn.classList.remove('run');band.textContent='Modus: Bearbeiten';band.style.background='';stage.classList.remove('run');SIM=null;}
+  simulate();
+}
+
+/* ============ Toast / Hint ============ */
+let toastT=null;
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2200);}
+document.getElementById('hintBody').textContent='Tipp: Bauteil ziehen, Klemme auf Klemme verbinden. Doppelklick aufs Bauteil = Bezeichnung setzen/löschen (du beschriftest selbst). Motor anklicken = Stern/Dreieck/keine. Rechtsklick auf Leitung = Farbe/Wegpunkt/löschen. Klemme an Schiene = Einspeisung.';
+function toggleHint(){
+  const h=document.getElementById('hint'), b=document.getElementById('btnHint');
+  h.classList.toggle('collapsed');
+  b.textContent = h.classList.contains('collapsed') ? '+' : '–';
+}
+
+/* ============ Speichern / Laden ============ */
+async function saveLocal(){
+  const name=await askText('Name der Schaltung (erscheint im Schriftfeld, z.B. „Pumpensteuerung"):', SCHEMA_NAME||'Meine Motorensteuerung');
+  if(!name)return;
+  SCHEMA_NAME=name;
+  // nur Datenfelder speichern (Labels/starMode inklusive); DOM-Referenz _g raus
+  const compsData=comps.map(({_g,...rest})=>rest);
+  const data={comps:compsData,wires,dots,nextId,name,schemaName:name,ts:Date.now()};
+  const all=JSON.parse(localStorage.getItem('lernstrom_motor')||'{}');
+  all[name]=data; localStorage.setItem('lernstrom_motor',JSON.stringify(all));
+  render();
+  toast('Gespeichert: '+name+' (Name jetzt im Schriftfeld)');
+}
+async function openLoad(){
+  const all=JSON.parse(localStorage.getItem('lernstrom_motor')||'{}');
+  const keys=Object.keys(all);
+  if(!keys.length){toast('Keine gespeicherten Schaltungen');return;}
+  const kk=await askChoice('Laden — verfügbar:', keys.map(k=>({label:k,value:k})));
+  if(kk===null)return;
+  if(!all[kk]){toast('Nicht gefunden');return;}
+  const d=all[kk];comps=d.comps||[];wires=d.wires||[];dots=d.dots||[];nextId=d.nextId||(maxId()+1);
+  SCHEMA_NAME=d.schemaName||d.name||kk;
+  comps.forEach(c=>{if(c.sheet==null)c.sheet=DEFS[c.kind].sheet||1;});
+  if(MODE==='run')toggleMode();render();simulate();toast('Geladen: '+kk);
+}
+function maxId(){let m=0;comps.forEach(c=>m=Math.max(m,c.id));wires.forEach(w=>m=Math.max(m,w.id));dots.forEach(d=>m=Math.max(m,d.id));return m;}
+async function clearAll(){if(!(await askConfirm('Schaltung leeren?')))return;comps=[];wires=[];dots=[];SIM=null;render();simulate();}
+
+/* ============ Presets ============ */
+function loadPreset(which){
+  comps=[];wires=[];dots=[];nextId=1;toggleStates={};
+  if(MODE==='run')toggleMode();
+  const C=(kind,sheet,x,y,extra)=>{const c={id:nextId++,kind,sheet,x,y,rot:0};
+    if(kind==='mainK'||kind==='auxNO'||kind==='auxNC')c.coilRef='Q1';
+    if(kind==='motor')c.starMode='stern';
+    Object.assign(c,extra||{});comps.push(c);return c;};
+  const wire=(a,pa,b,pb)=>wires.push({id:nextId++,sheet:a.sheet,a:{c:a.id,p:pa},b:{c:b.id,p:pb}});
+  // Schienen-Anschluss: Pin -> Schiene (rail) am X des Pins
+  const toRail=(c,p,rail)=>{ const pos=rotPin(c,DEFS[c.kind].pins.find(x=>x.id===p));
+    wires.push({id:nextId++,sheet:c.sheet,a:{c:c.id,p:p},b:{rail:rail,x:Math.round(pos.x)}}); };
+
+  if(which==='direkt'){
+    // ---- Blatt 1 Hauptstrom ----
+    const q=C('mss',1, pathX(1)-42, HS.L3+30);
+    const k=C('mainK',1, pathX(1)-42, HS.L3+130, {coilRef:'Q1'});
+    const f=C('msr',1, pathX(1)-42, HS.L3+250);
+    const m=C('motor',1, pathX(1)-60, HS.L3+330, {starMode:'stern'});
+    // Einspeisung: MSS-Eingänge auf Schienen
+    toRail(q,'1','L1');toRail(q,'3','L2');toRail(q,'5','L3');
+    wire(q,'2',k,'1');wire(q,'4',k,'3');wire(q,'6',k,'5');
+    wire(k,'2',f,'2');wire(k,'4',f,'4');wire(k,'6',f,'6');
+    wire(f,'1',m,'U1');wire(f,'3',m,'V1');wire(f,'5',m,'W1');
+    // ---- Blatt 2 Steuerstrom ----
+    const fa=C('msrAux',2, pathX(2)-24, CS.Lplus+30);
+    const s0=C('btnNC',2, pathX(2)-24, CS.Lplus+120, {tag:'S1'});
+    const s1=C('btnNO',2, pathX(2)-24, CS.Lplus+210, {tag:'S2'});
+    const a13=C('auxNO',2, pathX(3)-24, CS.Lplus+210, {coilRef:'Q1'});
+    const c1=C('coil',2, pathX(2)-24, CS.Lplus+310, {name:'Q1'});
+    toRail(fa,'a','L+'); toRail(c1,'A2','N');
+    wire(fa,'b',s0,'a');
+    wire(s0,'b',s1,'a');
+    wire(s0,'b',a13,'a');
+    wire(a13,'b',s1,'b');
+    wire(s1,'b',c1,'A1');
+    SCHEMA_NAME='Direktstart (IKS)';
+    toast('Direktstart geladen — Blatt 2: „Einschalten", dann EIN-Taster S2 drücken');
+  } else if(which==='wende'){
+    // ---- Blatt 1 ----
+    const q=C('mss',1, pathX(1)-42, HS.L3+30);
+    const k1=C('mainK',1, pathX(1)-42, HS.L3+130, {coilRef:'Q1'});
+    const k2=C('mainK',1, pathX(3)-42, HS.L3+130, {coilRef:'Q2'});
+    const f=C('msr',1, pathX(2)-42, HS.L3+250);
+    const m=C('motor',1, pathX(2)-60, HS.L3+330, {starMode:'stern'});
+    toRail(q,'1','L1');toRail(q,'3','L2');toRail(q,'5','L3');
+    wire(q,'2',k1,'1');wire(q,'4',k1,'3');wire(q,'6',k1,'5');
+    wire(q,'2',k2,'1');wire(q,'4',k2,'3');wire(q,'6',k2,'5');
+    wire(k1,'2',f,'2');wire(k1,'4',f,'4');wire(k1,'6',f,'6');
+    wire(k2,'2',f,'2');wire(k2,'4',f,'6');wire(k2,'6',f,'4'); // Phasentausch L2/L3
+    wire(f,'1',m,'U1');wire(f,'3',m,'V1');wire(f,'5',m,'W1');
+    // ---- Blatt 2 ----
+    const fa=C('msrAux',2, pathX(2)-24, CS.Lplus+24);
+    const s0=C('btnNC',2, pathX(2)-24, CS.Lplus+104, {tag:'S1'});
+    const sR=C('btnNO',2, pathX(1)-24, CS.Lplus+200, {tag:'S2'});
+    const lk2a=C('auxNC',2, pathX(1)-24, CS.Lplus+280, {coilRef:'Q2'});
+    const ah1=C('auxNO',2, pathX(0)-24, CS.Lplus+200, {coilRef:'Q1'});
+    const c1=C('coil',2, pathX(1)-24, CS.Lplus+360, {name:'Q1'});
+    const sL=C('btnNO',2, pathX(3)-24, CS.Lplus+200, {tag:'S3'});
+    const lk1a=C('auxNC',2, pathX(3)-24, CS.Lplus+280, {coilRef:'Q1'});
+    const ah2=C('auxNO',2, pathX(4)-24, CS.Lplus+200, {coilRef:'Q2'});
+    const c2=C('coil',2, pathX(3)-24, CS.Lplus+360, {name:'Q2'});
+    toRail(fa,'a','L+'); toRail(c1,'A2','N'); toRail(c2,'A2','N');
+    wire(fa,'b',s0,'a');
+    wire(s0,'b',sR,'a');
+    wire(s0,'b',ah1,'a'); wire(ah1,'b',sR,'b');
+    wire(sR,'b',lk2a,'a'); wire(lk2a,'b',c1,'A1');
+    wire(s0,'b',sL,'a');
+    wire(s0,'b',ah2,'a'); wire(ah2,'b',sL,'b');
+    wire(sL,'b',lk1a,'a'); wire(lk1a,'b',c2,'A1');
+    SCHEMA_NAME='Wendeschützsteuerung';
+    toast('Wendeschütz geladen — S2=Rechts (Q1), S3=Links (Q2), S1=Aus, verriegelt');
+  } else {
+    // ---- Stern-Dreieck (vereinfacht, K1 Netz + Anzeige) ----
+    const q=C('mss',1, pathX(1)-42, HS.L3+30);
+    const k1=C('mainK',1, pathX(1)-42, HS.L3+130, {coilRef:'Q1'}); // Netzschütz
+    const f=C('msr',1, pathX(1)-42, HS.L3+250);
+    const m=C('motor',1, pathX(1)-60, HS.L3+330, {starMode:'stern'});
+    toRail(q,'1','L1');toRail(q,'3','L2');toRail(q,'5','L3');
+    wire(q,'2',k1,'1');wire(q,'4',k1,'3');wire(q,'6',k1,'5');
+    wire(k1,'2',f,'2');wire(k1,'4',f,'4');wire(k1,'6',f,'6');
+    wire(f,'1',m,'U1');wire(f,'3',m,'V1');wire(f,'5',m,'W1');
+    // ---- Blatt 2 ----
+    const fa=C('msrAux',2, pathX(2)-24, CS.Lplus+30);
+    const s0=C('btnNC',2, pathX(2)-24, CS.Lplus+120, {tag:'S1'});
+    const s1=C('btnNO',2, pathX(2)-24, CS.Lplus+210, {tag:'S2'});
+    const a13=C('auxNO',2, pathX(3)-24, CS.Lplus+210, {coilRef:'Q1'});
+    const c1=C('coil',2, pathX(2)-24, CS.Lplus+310, {name:'Q1'});
+    toRail(fa,'a','L+'); toRail(c1,'A2','N');
+    wire(fa,'b',s0,'a');
+    wire(s0,'b',s1,'a');
+    wire(s0,'b',a13,'a'); wire(a13,'b',s1,'b');
+    wire(s1,'b',c1,'A1');
+    SCHEMA_NAME='Stern-Dreieck-Anlauf';
+    toast('Stern-Dreieck (Basis) — Motor auf Stern; im Bauteil-Menü Dreieck wählbar');
+  }
+  SHEET=1; buildSheetbar(); render();simulate();
+}
+
+/* ============ Drucken (A4 Querformat, alle 3 Blätter) ============ */
+function printSchema(){
+  const area=document.getElementById('printArea'); if(!area) { window.print(); return; }
+  const wasRun = MODE==='run'; if(wasRun) toggleMode();   // im Bearbeiten-Modus drucken (saubere Symbole)
+  const savedSheet=SHEET, savedView={x:view.x,y:view.y,k:view.k};
+  area.innerHTML='';
+  [1,2,3].forEach(n=>{
+    SHEET=n; render();
+    const block=document.createElement('div');
+    block.style.cssText='page-break-after:always;width:100%';
+    const clone=svg.cloneNode(true);
+    clone.removeAttribute('style');
+    clone.setAttribute('viewBox','0 0 '+SHEET_W+' '+SHEET_H);
+    // Render-Transform der Hauptgruppe neutralisieren (volles Blatt anzeigen)
+    const g=clone.querySelector('g'); if(g) g.setAttribute('transform','translate(0,0) scale(1)');
+    clone.setAttribute('width','100%'); clone.removeAttribute('height');
+    block.appendChild(clone); area.appendChild(block);
+  });
+  SHEET=savedSheet; view.x=savedView.x;view.y=savedView.y;view.k=savedView.k; render();
+  const cleanup=()=>{ area.innerHTML=''; window.removeEventListener('afterprint',cleanup); };
+  window.addEventListener('afterprint',cleanup);
+  window.print();
+}
+
+/* ============ Toggles (einklappen) ============ */
+function togglePalette(){ document.getElementById('palette').classList.toggle('collapsed'); }
+function togglePanel(){
+  const p=document.getElementById('simPanel'); p.classList.toggle('collapsed');
+  document.getElementById('btnPanel').textContent = p.classList.contains('collapsed') ? '+' : '–';
+}
+function toggleTheme(){
+  THEME = THEME==='light' ? 'dark' : 'light';
+  applyTheme();
+  try{ localStorage.setItem('lernstrom_motor_theme', THEME); }catch(e){}
+}
+function applyTheme(){
+  applyThemeColors();
+  document.body.classList.toggle('light', THEME==='light');
+  const b=document.getElementById('btnTheme');
+  if(b) b.lastChild.textContent = THEME==='light' ? ' Hell' : ' Dunkel';
+  buildPalette(); render();
+}
+
+/* ============ Init ============ */
+try{ const st=localStorage.getItem('lernstrom_motor_theme'); if(st) THEME=st; }catch(e){}
+applyThemeColors();
+document.body.classList.toggle('light', THEME==='light');
+buildPalette();
+buildSheetbar();
+// Ansicht so setzen, dass Blatt zentriert sichtbar ist
+(function fit(){
+  const r=svg.getBoundingClientRect();
+  if(r.width&&r.height){ view.k=Math.min(r.width/(SHEET_W+40), r.height/(SHEET_H+40), 1.1);
+    view.x=(r.width-SHEET_W*view.k)/2; view.y=(r.height-SHEET_H*view.k)/2; }
+})();
+(function(){ const b=document.getElementById('btnTheme'); if(b) b.lastChild.textContent = THEME==='light' ? ' Hell' : ' Dunkel'; })();
+render();
+</script>
+</body>
+</html>

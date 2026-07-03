@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>LernStrom — Schlusskontrolle &amp; Abnahme</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    background:radial-gradient(circle at 50% 30%, #1a2230 0%, #0c1018 70%, #06080d 100%);
+    font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:#e8edf2;
+    display:flex;align-items:center;justify-content:center;
+    overflow:hidden;
+    user-select:none;-webkit-user-select:none;
+    touch-action:none;
+  }
+  /* phone stage */
+  #stage{
+    position:relative;
+    width:390px;height:844px;
+    max-height:100vh;
+    border-radius:34px;
+    overflow:hidden;
+    box-shadow:0 30px 90px rgba(0,0,0,.7), 0 0 0 10px #0a0d13, 0 0 0 12px #1c232e, inset 0 0 60px rgba(0,0,0,.4);
+    background:
+      radial-gradient(120% 60% at 50% -10%, rgba(45,212,191,.10), transparent 60%),
+      linear-gradient(180deg,#26303d 0%, #1a212c 35%, #141a23 100%);
+  }
+  @media (max-height:860px){ #stage{transform:scale(calc(100vh / 860));} }
+
+  #stage::after{
+    content:"";position:absolute;inset:0;border-radius:34px;pointer-events:none;
+    box-shadow:inset 0 0 120px rgba(0,0,0,.55), inset 0 -40px 80px rgba(0,0,0,.5);
+    background:radial-gradient(140% 90% at 50% 120%, rgba(120,80,30,.18), transparent 55%);
+    z-index:60;
+  }
+
+  canvas#fx{position:absolute;inset:0;z-index:40;pointer-events:none;}
+
+  /* ---------- HUD ---------- */
+  #hud{position:absolute;top:0;left:0;right:0;z-index:50;padding:14px 16px 8px;display:flex;align-items:center;gap:10px;}
+  .badge{
+    display:flex;align-items:center;gap:7px;
+    background:linear-gradient(180deg,#202a37,#161d27);
+    border:1px solid rgba(255,255,255,.07);
+    border-radius:14px;padding:7px 11px;font-size:13px;font-weight:700;
+    box-shadow:0 4px 10px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.05);
+  }
+  .badge .dot{width:9px;height:9px;border-radius:50%;background:#2dd4bf;box-shadow:0 0 8px #2dd4bf;}
+  #xpBadge{color:#ffd166;}
+  #xpBadge .ico{filter:drop-shadow(0 0 5px rgba(255,209,102,.6));}
+  .spacer{flex:1;}
+  #mute{
+    width:38px;height:38px;border-radius:12px;cursor:pointer;
+    background:linear-gradient(180deg,#202a37,#161d27);
+    border:1px solid rgba(255,255,255,.07);
+    display:flex;align-items:center;justify-content:center;font-size:17px;
+    box-shadow:0 4px 10px rgba(0,0,0,.4);
+  }
+  #mute:active{transform:scale(.92);}
+
+  /* step progress bar */
+  #prog{position:absolute;top:58px;left:16px;right:16px;z-index:50;height:8px;border-radius:6px;
+    background:rgba(0,0,0,.4);overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,.6);}
+  #progFill{height:100%;width:0%;border-radius:6px;
+    background:linear-gradient(90deg,#2dd4bf,#7af0d9);transition:width .5s cubic-bezier(.2,1.3,.4,1);
+    box-shadow:0 0 12px rgba(45,212,191,.7);}
+
+  /* ---------- title / instruction ---------- */
+  #task{position:absolute;top:72px;left:50%;transform:translateX(-50%);z-index:50;text-align:center;
+    pointer-events:auto;max-width:330px;padding:7px 14px;border-radius:14px;
+    background:linear-gradient(180deg,rgba(26,33,44,.82),rgba(18,24,32,.82));
+    border:1px solid rgba(255,255,255,.06);box-shadow:0 6px 16px rgba(0,0,0,.4);
+    transition:opacity .45s, transform .45s;cursor:pointer;}
+  #task.faded{opacity:.12;}
+  #task.faded:hover{opacity:1;}
+  #task.hidden{opacity:0;transform:translateX(-50%) translateY(-10px);pointer-events:none;}
+  #taskToggle{width:auto;height:38px;padding:0 11px;border-radius:12px;cursor:pointer;
+    background:linear-gradient(180deg,#202a37,#161d27);border:1px solid rgba(255,255,255,.07);
+    display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#9fb0c0;
+    box-shadow:0 4px 10px rgba(0,0,0,.4);gap:5px;}
+  #taskToggle.off{color:#5a6675;}
+  #taskToggle:active{transform:scale(.92);}
+  #task h1{font-size:15px;font-weight:800;letter-spacing:.3px;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.6);}
+  #task p{font-size:12px;margin-top:3px;color:#9fb0c0;font-weight:600;line-height:1.4;}
+  #task .fuse{display:none;}
+
+  /* step chips row */
+  #steps{position:absolute;top:38px;left:16px;right:16px;z-index:49;display:flex;gap:3px;justify-content:center;pointer-events:none;}
+  #steps .sc{flex:1;height:4px;border-radius:3px;background:rgba(255,255,255,.08);transition:background .4s, box-shadow .4s;}
+  #steps .sc.done{background:linear-gradient(90deg,#2dd4bf,#7af0d9);box-shadow:0 0 8px rgba(45,212,191,.6);}
+  #steps .sc.cur{background:#ffd166;box-shadow:0 0 10px rgba(255,209,102,.7);}
+
+  /* generic scene container */
+  .prep{position:absolute;inset:0;z-index:30;opacity:0;pointer-events:none;transition:opacity .55s;}
+  .prep.on{opacity:1;pointer-events:auto;}
+  .prep svg{position:absolute;inset:0;width:100%;height:100%;display:block;}
+
+  /* readout chip */
+  .readout{position:absolute;left:50%;transform:translateX(-50%);bottom:64px;z-index:35;
+    font-size:13px;font-weight:800;color:#fff;background:linear-gradient(180deg,#202a37,#141a23);
+    padding:7px 16px;border-radius:20px;border:1px solid rgba(45,212,191,.3);
+    box-shadow:0 6px 18px rgba(0,0,0,.5);pointer-events:none;text-align:center;min-width:180px;}
+  .readout .big{color:#7af0d9;font-size:16px;}
+  .readout.bad{border-color:#ff6b6b;color:#ffb3b3;}
+  .readout.good{border-color:#2dd4bf;}
+
+  /* WIN overlay */
+  #win{position:absolute;inset:0;z-index:70;display:none;flex-direction:column;align-items:center;justify-content:center;
+    background:radial-gradient(circle at 50% 40%, rgba(45,212,191,.18), rgba(6,9,14,.86) 60%);
+    backdrop-filter:blur(2px);}
+  #win.show{display:flex;animation:winIn .5s;}
+  @keyframes winIn{from{opacity:0}to{opacity:1}}
+  #win .card{
+    width:308px;padding:26px 22px 24px;border-radius:24px;text-align:center;
+    background:linear-gradient(180deg,#222d3a,#161d27);
+    border:1px solid rgba(45,212,191,.3);
+    box-shadow:0 30px 70px rgba(0,0,0,.7), 0 0 40px rgba(45,212,191,.2), inset 0 1px 0 rgba(255,255,255,.06);
+    transform:scale(.6);animation:pop .6s cubic-bezier(.2,1.6,.4,1) forwards;
+  }
+  @keyframes pop{to{transform:scale(1)}}
+  #win h2{font-size:23px;font-weight:900;color:#fff;letter-spacing:.5px;}
+  #win .sub{font-size:13px;color:#9fb0c0;margin-top:5px;font-weight:600;}
+  #stars{display:flex;gap:8px;justify-content:center;margin:16px 0 6px;}
+  #stars .st{font-size:34px;color:#2a3340;transform:scale(0);}
+  #stars .st.lit{color:#ffd166;text-shadow:0 0 16px rgba(255,209,102,.8);animation:starPop .5s cubic-bezier(.2,1.8,.4,1) forwards;}
+  @keyframes starPop{0%{transform:scale(0) rotate(-40deg)}70%{transform:scale(1.4) rotate(10deg)}100%{transform:scale(1) rotate(0)}}
+  #xpBig{font-size:30px;font-weight:900;color:#ffd166;margin:8px 0 4px;text-shadow:0 0 18px rgba(255,209,102,.5);}
+  #win .stamp{display:inline-block;margin:6px 0 2px;padding:6px 16px;border-radius:10px;
+    font-size:15px;font-weight:900;letter-spacing:1px;color:#7af0d9;
+    border:2.5px solid #2dd4bf;transform:rotate(-7deg);
+    box-shadow:0 0 18px rgba(45,212,191,.35);text-shadow:0 0 10px rgba(45,212,191,.5);}
+  #win .ok{margin-top:16px;padding:12px 0;border-radius:14px;cursor:pointer;font-weight:800;font-size:15px;color:#06281f;
+    background:linear-gradient(180deg,#5cf0d6,#2dd4bf);box-shadow:0 8px 20px rgba(45,212,191,.4);}
+  #win .ok:active{transform:scale(.96);}
+
+  .toast{position:absolute;z-index:55;font-weight:900;font-size:15px;pointer-events:none;
+    text-shadow:0 2px 6px rgba(0,0,0,.6);animation:toastUp 1s ease-out forwards;}
+  @keyframes toastUp{0%{opacity:0;transform:translateY(0) scale(.6)}15%{opacity:1;transform:translateY(-6px) scale(1.1)}100%{opacity:0;transform:translateY(-46px) scale(1)}}
+
+  .shake{animation:shakeStage .35s;}
+  @keyframes shakeStage{0%,100%{transform:translate(0,0)}20%{transform:translate(-6px,2px)}40%{transform:translate(6px,-2px)}60%{transform:translate(-4px,1px)}80%{transform:translate(4px,-1px)}}
+
+  /* affordance helpers */
+  .pulseTool{animation:toolPulse 1.1s ease-in-out infinite;}
+  @keyframes toolPulse{0%,100%{filter:drop-shadow(0 0 1px rgba(45,212,191,.3))}50%{filter:drop-shadow(0 0 10px rgba(45,212,191,.95)) drop-shadow(0 0 4px rgba(122,240,217,.9))}}
+  .dragPath{stroke-dasharray:7 7;animation:dashMove 1s linear infinite;}
+  @keyframes dashMove{to{stroke-dashoffset:-28;}}
+  .ghost{pointer-events:none;}
+  .pathArrow{animation:arrowGlow 1.1s ease-in-out infinite;}
+  @keyframes arrowGlow{0%,100%{opacity:.55}50%{opacity:1}}
+
+  /* big floating "do this" hint banner — SCHMAL + LINKS */
+  .doHint{position:absolute;left:12px;top:108px;transform:none;z-index:36;max-width:170px;
+    font-size:11.5px;font-weight:800;color:#fff;text-align:left;line-height:1.4;
+    background:linear-gradient(180deg,rgba(32,42,55,.95),rgba(20,26,35,.95));
+    padding:9px 16px;border-radius:16px;border:1px solid rgba(45,212,191,.4);
+    box-shadow:0 8px 22px rgba(0,0,0,.5), 0 0 22px rgba(45,212,191,.18);
+    pointer-events:none;opacity:0;transition:opacity .4s;}
+  .doHint.on{opacity:1;}
+  .doHint b{color:#7af0d9;}
+
+  /* checklist (Abnahmeprotokoll) */
+  #checklist{position:absolute;left:20px;right:20px;top:150px;z-index:34;opacity:0;pointer-events:none;transition:opacity .5s;}
+  #checklist.on{opacity:1;pointer-events:auto;}
+  #checklist h3{font-size:13px;font-weight:900;color:#7af0d9;text-align:center;margin-bottom:12px;letter-spacing:.4px;}
+  .chk{display:flex;align-items:center;gap:12px;background:linear-gradient(180deg,#202a37,#161d27);
+    border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:13px 14px;margin-bottom:10px;
+    cursor:pointer;transition:transform .18s, border-color .3s, box-shadow .3s;
+    box-shadow:0 4px 12px rgba(0,0,0,.35);}
+  .chk:active{transform:scale(.97);}
+  .chk .box{width:26px;height:26px;border-radius:8px;border:2px solid #4a5663;flex:none;
+    display:flex;align-items:center;justify-content:center;font-size:17px;color:#06281f;font-weight:900;
+    background:#0e1622;transition:background .3s, border-color .3s;}
+  .chk .txt{flex:1;font-size:12.5px;font-weight:700;color:#cdd8e2;line-height:1.35;}
+  .chk .txt small{display:block;font-size:10.5px;color:#7e8ea0;font-weight:600;margin-top:2px;}
+  .chk.done{border-color:#2dd4bf;box-shadow:0 0 16px rgba(45,212,191,.25);}
+  .chk.done .box{background:linear-gradient(180deg,#5cf0d6,#2dd4bf);border-color:#2dd4bf;}
+  .chk.done .txt{color:#eafff9;}
+  .chk.locked{opacity:.45;pointer-events:none;}
+
+  #abnahmeBtn{margin-top:6px;width:100%;padding:15px 0;border-radius:16px;cursor:pointer;
+    font-weight:900;font-size:16px;letter-spacing:.5px;color:#06281f;text-align:center;
+    background:linear-gradient(180deg,#5cf0d6,#2dd4bf);box-shadow:0 10px 26px rgba(45,212,191,.4);
+    border:none;transition:opacity .3s, transform .15s;}
+  #abnahmeBtn:active{transform:scale(.97);}
+  #abnahmeBtn.locked{opacity:.35;pointer-events:none;filter:grayscale(.6);}
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <canvas id="fx"></canvas>
+
+  <!-- HUD -->
+  <div id="hud">
+    <div class="badge"><span class="dot"></span><span id="phaseLbl">Schritt 1</span></div>
+    <div class="spacer"></div>
+    <div class="badge" id="xpBadge"><span class="ico">⚡</span><span id="xpVal">0</span> XP</div>
+    <div id="taskToggle" title="Aufgabe ein/aus">Aufgabe</div>
+    <div id="mute">🔇</div>
+  </div>
+
+  <div id="steps"></div>
+  <div id="prog"><div id="progFill"></div></div>
+
+  <div id="task">
+    <h1 id="taskTitle">Schlusskontrolle</h1>
+    <p id="taskSub">Prüfe, ob die ganze Anlage funktioniert</p>
+    <div class="fuse" id="fuseChip">Schlusskontrolle vor der Abnahme</div>
+  </div>
+
+  <!-- STEP 1: Funktionskontrolle -->
+  <div class="prep" id="pFunc"><svg id="svgFunc" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"></svg><div class="doHint" id="hintFunc"></div><div class="readout" id="roFunc">Tippe jeden Schalter</div></div>
+
+  <!-- STEP 2: Schutzleiter-Prüfung -->
+  <div class="prep" id="pPe"><svg id="svgPe" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"></svg><div class="doHint" id="hintPe"></div><div class="readout" id="roPe">Prüfe jeden Schutzleiter</div></div>
+
+  <!-- STEP 3: Messprotokoll (Spannung zwischen Klemmen) -->
+  <div class="prep" id="pCheck"><svg id="svgCheck" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"></svg><div class="readout" id="roCheck">Miss zwischen allen Klemmen-Paaren</div></div>
+
+  <!-- STEP 4: Abnahme -->
+  <div class="prep" id="pAbnahme">
+    <svg id="svgHouse" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"></svg>
+    <div id="checklist">
+      <h3>ABNAHMEPROTOKOLL</h3>
+      <div class="chk" data-k="func"><div class="box"></div><div class="txt">Funktionskontrolle<small>Schalter, Leuchten, Steckdosen, Storen — alles in Betrieb</small></div></div>
+      <div class="chk" data-k="pe"><div class="box"></div><div class="txt">Schutzleiter / Durchgang<small>PE an allen Apparaten verbunden — Durchgang i.O.</small></div></div>
+      <div class="chk" data-k="mess"><div class="box"></div><div class="txt">Messprotokoll Spannung<small>L-L ≈400 V, L-N/L-PE ≈230 V, N-PE ≈0 V</small></div></div>
+      <button id="abnahmeBtn" class="locked">ANLAGE ABNEHMEN</button>
+    </div>
+  </div>
+
+  <!-- WIN -->
+  <div id="win">
+    <div class="card">
+      <h2>ANLAGE ABGENOMMEN!</h2>
+      <div class="sub">Schlusskontrolle bestanden — das ganze Haus läuft</div>
+      <div id="stars"><span class="st">★</span><span class="st">★</span><span class="st">★</span></div>
+      <div id="xpBig">+0 XP</div>
+      <div class="stamp">ABNAHME ✓ i.O.</div>
+      <div class="sub" id="winNote">Funktion · Schutzleiter · Messprotokoll — alles geprüft</div>
+      <div class="ok" id="again">Nochmal spielen</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+"use strict";
+/* ============================================================= *
+ *  LernStrom — Schlusskontrolle & Abnahme  (single-file demo)   *
+ *  Finaler Schritt: echte Kontrolle ob alles geht + Abnahme.    *
+ *  Pure SVG + Canvas particle FX + WebAudio. Stil 1:1 wie       *
+ *  baustromverteiler-v2 (el()-Helper, HUD, ±4% Messung, etc.).  *
+ * ============================================================= */
+
+const STAGE_W = 390, STAGE_H = 844;
+const SVGNS   = "http://www.w3.org/2000/svg";
+const stage   = document.getElementById('stage');
+const fx      = document.getElementById('fx');
+const ctx     = fx.getContext('2d');
+
+/* ---------- coordinate helper: client px -> svg viewbox px ---- */
+function toSvgFor(svg, clientX, clientY){
+  const r = svg.getBoundingClientRect();
+  return {
+    x: (clientX - r.left) / r.width  * STAGE_W,
+    y: (clientY - r.top ) / r.height * STAGE_H
+  };
+}
+
+/* =============================================================
+ *  AUDIO  (tiny WebAudio synth) — muted=true Default + Toggle
+ * ============================================================= */
+let audioCtx=null, muted=true;
+function AC(){ if(!audioCtx){ try{audioCtx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){} } return audioCtx; }
+function tone(freq, dur, type, vol, slideTo){
+  if(muted) return; const c=AC(); if(!c) return;
+  const o=c.createOscillator(), g=c.createGain();
+  o.type=type||'sine'; o.frequency.value=freq;
+  if(slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, c.currentTime+dur);
+  g.gain.value=0.0001;
+  g.gain.exponentialRampToValueAtTime(vol||0.2, c.currentTime+0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime+dur);
+  o.connect(g); g.connect(c.destination);
+  o.start(); o.stop(c.currentTime+dur+0.02);
+}
+function sndClick(){ tone(680,0.07,'triangle',0.25,1200); setTimeout(()=>tone(1500,0.05,'sine',0.12),20); }
+function sndSnap(){ tone(440,0.05,'square',0.18,900); setTimeout(()=>tone(1320,0.12,'triangle',0.22),30); }
+function sndBuzz(){ if(muted)return; const c=AC(); if(!c)return;
+  const o=c.createOscillator(),g=c.createGain(); o.type='sawtooth';o.frequency.value=120;
+  g.gain.value=0.0001;g.gain.exponentialRampToValueAtTime(0.22,c.currentTime+0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+0.25);
+  o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+0.27);
+}
+function sndPick(){ tone(520,0.05,'sine',0.14,720); }
+function sndLamp(){ tone(900,0.05,'sine',0.16,1600); setTimeout(()=>tone(1400,0.10,'triangle',0.14),28); }
+function sndMotor(){ if(muted)return; const c=AC(); if(!c)return;
+  const o=c.createOscillator(),g=c.createGain(); o.type='sawtooth';o.frequency.value=80;
+  o.frequency.exponentialRampToValueAtTime(110,c.currentTime+0.5);
+  g.gain.value=0.0001;g.gain.exponentialRampToValueAtTime(0.07,c.currentTime+0.06);
+  g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+0.55);
+  o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+0.57);
+}
+function sndBeep(){ tone(1760,0.10,'square',0.14); }
+function sndWin(){ [523,659,784,1047,1319].forEach((f,i)=>setTimeout(()=>tone(f,0.3,'triangle',0.2),i*110)); }
+
+document.getElementById('mute').onclick=function(){
+  muted=!muted; this.textContent=muted?'🔇':'🔊';
+  if(!muted){ AC(); tone(880,0.06,'sine',0.15); }
+};
+
+/* Aufgaben-Box: Toggle ein/aus + tap-to-reveal (nicht-blockierend) */
+window.__taskHidden=false;
+(function(){
+  const tk=document.getElementById('task');
+  const tg=document.getElementById('taskToggle');
+  if(tg && tk){
+    tg.onclick=function(){
+      window.__taskHidden=!window.__taskHidden;
+      tg.classList.toggle('off',window.__taskHidden);
+      clearTimeout(window.__taskFadeT);
+      if(window.__taskHidden){ tk.classList.add('hidden'); }
+      else{
+        tk.classList.remove('hidden'); tk.classList.remove('faded');
+        window.__taskFadeT=setTimeout(()=>{ if(!window.__taskHidden) tk.classList.add('faded'); },2200);
+      }
+    };
+    tk.addEventListener('click',function(){
+      if(window.__taskHidden) return;
+      tk.classList.remove('faded');
+      clearTimeout(window.__taskFadeT);
+      window.__taskFadeT=setTimeout(()=>{ if(!window.__taskHidden) tk.classList.add('faded'); },2200);
+    });
+  }
+})();
+
+/* =============================================================
+ *  PARTICLE / FX ENGINE  (canvas)
+ * ============================================================= */
+function sizeCanvas(){
+  const r=stage.getBoundingClientRect();
+  const dpr=window.devicePixelRatio||1;
+  fx.width=STAGE_W*dpr; fx.height=STAGE_H*dpr;
+  fx.style.width=r.width+'px'; fx.style.height=r.height+'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+let particles=[];
+function spark(x,y,n,opt){
+  opt=opt||{};
+  for(let i=0;i<n;i++){
+    const a=Math.random()*Math.PI*2, sp=(opt.speed||3)*(0.4+Math.random());
+    particles.push({
+      x,y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp - (opt.up||0),
+      life:1, decay:0.012+Math.random()*0.02,
+      size:(opt.size||2.4)*(0.6+Math.random()),
+      color:opt.color|| (Math.random()<.5?'#ffd166':'#ffae42'),
+      grav:opt.grav!=null?opt.grav:0.06, glow:opt.glow!==false
+    });
+  }
+}
+let confetti=[];
+function burstConfetti(){
+  const cols=['#2dd4bf','#ffd166','#ff6b6b','#7af0d9','#ffffff','#ffae42','#8ab4ff'];
+  for(let i=0;i<150;i++){
+    confetti.push({
+      x:STAGE_W/2+(Math.random()-.5)*60, y:STAGE_H*0.42,
+      vx:(Math.random()-.5)*9, vy:-Math.random()*11-3,
+      g:0.22+Math.random()*0.1, w:5+Math.random()*6, h:8+Math.random()*8,
+      rot:Math.random()*6.28, vr:(Math.random()-.5)*0.4,
+      color:cols[(Math.random()*cols.length)|0], life:1
+    });
+  }
+}
+
+function fxLoop(){
+  ctx.clearRect(0,0,STAGE_W,STAGE_H);
+  // dust (faint, drawn first)
+  for(const d of dust){
+    d.ph+=0.02; d.y+=d.vy; d.x+=d.vx+Math.sin(d.ph)*0.15;
+    if(d.y<-4){d.y=STAGE_H+4;d.x=Math.random()*STAGE_W;}
+    ctx.globalAlpha=d.a*(0.6+0.4*Math.sin(d.ph));
+    ctx.fillStyle='#ffe9c0';ctx.shadowBlur=4;ctx.shadowColor='#ffd9a0';
+    ctx.beginPath();ctx.arc(d.x,d.y,d.r,0,6.28);ctx.fill();
+  }
+  ctx.shadowBlur=0;ctx.globalAlpha=1;
+  // sparks
+  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i];
+    p.vy+=p.grav; p.x+=p.vx; p.y+=p.vy; p.life-=p.decay;
+    if(p.life<=0){particles.splice(i,1);continue;}
+    ctx.globalAlpha=Math.max(0,p.life);
+    if(p.glow){ctx.shadowBlur=10;ctx.shadowColor=p.color;}else ctx.shadowBlur=0;
+    ctx.fillStyle=p.color;
+    ctx.beginPath();ctx.arc(p.x,p.y,p.size*p.life+0.4,0,6.28);ctx.fill();
+  }
+  ctx.shadowBlur=0;
+  // confetti
+  for(let i=confetti.length-1;i>=0;i--){
+    const c=confetti[i];
+    c.vy+=c.g;c.x+=c.vx;c.y+=c.vy;c.rot+=c.vr;c.vx*=0.99;
+    if(c.y>STAGE_H+30){confetti.splice(i,1);continue;}
+    ctx.save();ctx.translate(c.x,c.y);ctx.rotate(c.rot);
+    ctx.globalAlpha=1;ctx.fillStyle=c.color;
+    ctx.fillRect(-c.w/2,-c.h/2,c.w,c.h);
+    ctx.restore();
+  }
+  ctx.globalAlpha=1;
+  requestAnimationFrame(fxLoop);
+}
+
+/* floating toast text */
+function toast(text,color,x,y){
+  const t=document.createElement('div');
+  t.className='toast';t.textContent=text;t.style.color=color||'#7af0d9';
+  const r=stage.getBoundingClientRect();
+  t.style.left=(x/STAGE_W*r.width)+'px';
+  t.style.top =(y/STAGE_H*r.height)+'px';
+  t.style.transform='translate(-50%,0)';
+  stage.appendChild(t);
+  setTimeout(()=>t.remove(),1000);
+}
+function shakeStage(){ stage.classList.add('shake');setTimeout(()=>stage.classList.remove('shake'),360); }
+
+/* =============================================================
+ *  SVG helpers
+ * ============================================================= */
+function el(tag,attrs){
+  const e=document.createElementNS(SVGNS,tag);
+  for(const k in attrs) e.setAttribute(k,attrs[k]);
+  return e;
+}
+const COMMON_DEFS = `
+  <linearGradient id="metal" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#3a4654"/><stop offset="0.5" stop-color="#2b3542"/><stop offset="1" stop-color="#1d2531"/>
+  </linearGradient>
+  <linearGradient id="brushed" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#454f5c"/><stop offset="0.5" stop-color="#5a6573"/><stop offset="1" stop-color="#3a4350"/>
+  </linearGradient>
+  <linearGradient id="copper" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#ffd9a0"/><stop offset="0.5" stop-color="#e08e3c"/><stop offset="1" stop-color="#9c5a18"/>
+  </linearGradient>
+  <linearGradient id="steel" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#d7dde4"/><stop offset="0.5" stop-color="#8d97a3"/><stop offset="1" stop-color="#4b5560"/>
+  </linearGradient>
+  <linearGradient id="handle" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#ff8a3c"/><stop offset="1" stop-color="#c14a14"/>
+  </linearGradient>
+  <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#2b3645"/><stop offset="1" stop-color="#1a222d"/>
+  </linearGradient>
+  <radialGradient id="led" cx="0.5" cy="0.4" r="0.6">
+    <stop offset="0" stop-color="#fff"/><stop offset="0.3" stop-color="#aef7e4"/><stop offset="1" stop-color="#0c5f4e"/>
+  </radialGradient>
+  <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="#fff6cf"/><stop offset="0.5" stop-color="#ffe08a" stop-opacity="0.7"/><stop offset="1" stop-color="#ffd166" stop-opacity="0"/>
+  </radialGradient>
+  <filter id="soft"><feGaussianBlur stdDeviation="2.2"/></filter>
+  <filter id="ds" x="-30%" y="-30%" width="160%" height="160%">
+    <feDropShadow dx="0" dy="5" stdDeviation="5" flood-color="#000" flood-opacity="0.5"/>
+  </filter>`;
+function addDefs(svg){ const d=el('defs',{}); d.innerHTML=COMMON_DEFS; svg.appendChild(d); }
+
+/* =============================================================
+ *  AFFORDANCE HELPERS — show the player WHAT to do
+ * ============================================================= */
+const _seenSteps = {};
+function firstVisit(step){ if(_seenSteps[step]) return false; _seenSteps[step]=true; return true; }
+
+function addDragPath(svg,x1,y1,x2,y2,col){
+  col = col || '#7af0d9';
+  const g=el('g',{class:'ghost'});
+  g.appendChild(el('line',{x1,y1,x2,y2,stroke:col,'stroke-width':3,'stroke-linecap':'round',opacity:0.85,class:'dragPath'}));
+  const ang=Math.atan2(y2-y1,x2-x1), L=13, w=7;
+  const ax=x2-Math.cos(ang)*2, ay=y2-Math.sin(ang)*2;
+  const p1x=ax-Math.cos(ang)*L+Math.cos(ang+Math.PI/2)*w, p1y=ay-Math.sin(ang)*L+Math.sin(ang+Math.PI/2)*w;
+  const p2x=ax-Math.cos(ang)*L+Math.cos(ang-Math.PI/2)*w, p2y=ay-Math.sin(ang)*L+Math.sin(ang-Math.PI/2)*w;
+  g.appendChild(el('path',{d:`M ${ax} ${ay} L ${p1x} ${p1y} L ${p2x} ${p2y} Z`,fill:col,class:'pathArrow'}));
+  svg.appendChild(g);
+  return g;
+}
+function ghostDemo(svg,x1,y1,x2,y2,opt){
+  opt=opt||{};
+  const reps=opt.reps||1, dur=opt.dur||1100, hold=opt.hold||260;
+  const hand=el('g',{class:'ghost'});
+  hand.appendChild(el('circle',{cx:0,cy:0,r:17,fill:'rgba(255,255,255,.14)',stroke:'#fff','stroke-width':1.4,opacity:0.7}));
+  hand.appendChild(el('path',{d:'M -3 -2 q 0 -12 4 -12 q 4 0 4 12 l 0 6 q 6 -1 8 3 q 3 5 -1 12 q -4 6 -12 5 q -7 -1 -9 -8 l -2 -9 q 0 -4 4 -3 l 5 1 Z',
+    fill:'#f4f7fa',stroke:'#10151c','stroke-width':1,transform:'translate(2,4) scale(.9)'}));
+  svg.appendChild(hand);
+  let rep=0;
+  function run(){
+    const t0=performance.now();
+    (function a(t){
+      let k=Math.min(1,(t-t0)/dur);
+      const e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+      const hx=x1+(x2-x1)*e, hy=y1+(y2-y1)*e;
+      hand.setAttribute('transform','translate('+hx+','+hy+')');
+      hand.setAttribute('opacity', k<0.12?(k/0.12):(k>0.92?(1-(k-0.92)/0.08):1));
+      if(opt.onStep) opt.onStep(e);
+      if(k<1){ requestAnimationFrame(a); }
+      else {
+        rep++;
+        if(rep<reps){ setTimeout(run,hold); }
+        else { hand.remove(); if(opt.done) opt.done(); }
+      }
+    })(performance.now());
+  }
+  run();
+  return hand;
+}
+function showDoHint(id,html,ms){
+  const e=document.getElementById(id); if(!e) return;
+  e.innerHTML=html; e.classList.add('on');
+  if(ms){ setTimeout(()=>e.classList.remove('on'),ms); }
+}
+function hideDoHint(id){ const e=document.getElementById(id); if(e) e.classList.remove('on'); }
+
+/* =============================================================
+ *  GAME STATE
+ * ============================================================= */
+let xp=0;
+const xpVal=document.getElementById('xpVal');
+function addXp(n){
+  n=Math.round((Number(n)||0)*0.5); // XP global -50% (Roadmap)
+  const start=xp,end=xp+n,t0=performance.now();
+  (function anim(t){
+    const k=Math.min(1,(t-t0)/600);
+    xp=Math.round(start+(end-start)*(1-Math.pow(1-k,3)));
+    xpVal.textContent=xp;
+    if(k<1)requestAnimationFrame(anim);
+  })(performance.now());
+}
+
+/* which Abnahme checks are unlocked by completing each prüf-step */
+const progress = { func:false, pe:false, mess:false };
+
+/* step orchestration */
+const STEP_LIST = ['func','pe','check','abnahme'];
+const STEP_TITLES = {
+  func:   ['Funktionskontrolle','Tippe jeden Schalter — geht jede Leuchte, Steckdose & Store?'],
+  pe:     ['Schutzleiter-Prüfung','Durchgang an jedem Apparat messen — ist PE verbunden?'],
+  check:  ['Messprotokoll — Spannung','Tippe zwei Klemmen und lies die Spannung'],
+  abnahme:['Abnahme','Abnahmeprotokoll abhaken — dann Anlage abnehmen']
+};
+let stepIdx=0;
+const stepsBar=document.getElementById('steps');
+function buildStepsBar(){
+  stepsBar.innerHTML='';
+  STEP_LIST.forEach(()=>{ const d=document.createElement('div'); d.className='sc'; stepsBar.appendChild(d); });
+}
+function setHud(step){
+  const chips=stepsBar.children;
+  for(let i=0;i<chips.length;i++){
+    chips[i].className='sc'+(i<stepIdx?' done':i===stepIdx?' cur':'');
+  }
+  document.getElementById('phaseLbl').textContent='Schritt '+(stepIdx+1)+'/'+STEP_LIST.length;
+  const t=STEP_TITLES[step];
+  document.getElementById('taskTitle').textContent=t[0];
+  document.getElementById('taskSub').textContent=t[1];
+  document.getElementById('fuseChip').style.display = 'none';
+  document.getElementById('progFill').style.width=(stepIdx/(STEP_LIST.length-1)*100)+'%';
+}
+
+const SCENE_OF = { func:'pFunc', pe:'pPe', check:'pCheck', abnahme:'pAbnahme' };
+function showScene(step){
+  Object.values(SCENE_OF).forEach(id=>{
+    const e=document.getElementById(id); e.classList.remove('on');
+  });
+  const tk=document.getElementById('task');
+  tk.style.display=''; tk.style.opacity='';
+  tk.classList.remove('faded');
+  clearTimeout(window.__taskFadeT);
+  if(!window.__taskHidden){ window.__taskFadeT=setTimeout(()=>{ if(!window.__taskHidden) tk.classList.add('faded'); },2200); }
+  const cur=document.getElementById(SCENE_OF[step]);
+  setTimeout(()=>cur.classList.add('on'),60);
+}
+function gotoStep(name){
+  // run cleanup of the builder we are leaving, if any
+  const leaving=STEP_LIST[stepIdx];
+  if(leaving && BUILDERS[leaving] && BUILDERS[leaving]._cleanup){ try{BUILDERS[leaving]._cleanup();}catch(e){} }
+  stepIdx=STEP_LIST.indexOf(name);
+  setHud(name);
+  showScene(name);
+  BUILDERS[name]();
+}
+window.__goto=function(n){ try{gotoStep(n);}catch(e){console.log('goto err',e);} };
+// Dev-Sprungleiste (nur mit ?dev in der URL)
+if(typeof location!=='undefined' && /dev/.test(location.search) && document.body){
+  const bar=document.createElement('div');
+  bar.style.cssText='position:fixed;bottom:4px;left:4px;right:4px;z-index:99999;display:flex;flex-wrap:wrap;gap:3px;justify-content:center;';
+  STEP_LIST.forEach((s,i)=>{ const b=document.createElement('button'); b.textContent=(i+1)+'·'+s;
+    b.style.cssText='font-size:10px;font-weight:700;padding:4px 7px;background:#11202c;color:#7af0d9;border:1px solid #2dd4bf;border-radius:7px;cursor:pointer;';
+    b.onclick=()=>gotoStep(s); bar.appendChild(b); });
+  document.body.appendChild(bar);
+}
+function nextStep(){
+  const ni=stepIdx+1;
+  if(ni>=STEP_LIST.length) return;
+  gotoStep(STEP_LIST[ni]);
+}
+
+/* =============================================================
+ *  STEP 1 — Funktionskontrolle
+ *  Tippe jeden Schalter: Lampe geht an/aus, Storen fahren.
+ *  Gutmütig: erst nach dem Antippen aller Geräte geht es weiter.
+ * ============================================================= */
+const svgFunc=document.getElementById('svgFunc');
+const roFunc=document.getElementById('roFunc');
+function buildFunc(){
+  svgFunc.innerHTML=''; addDefs(svgFunc);
+  // --- room scenery: wall fills the whole stage + floor + baseboard ---
+  svgFunc.appendChild(el('rect',{x:0,y:110,width:390,height:650,fill:'url(#wall)'}));
+  // floor (darker) with subtle perspective top edge
+  svgFunc.appendChild(el('rect',{x:0,y:700,width:390,height:144,fill:'#10161e'}));
+  svgFunc.appendChild(el('rect',{x:0,y:700,width:390,height:60,fill:'#161d27'}));
+  svgFunc.appendChild(el('line',{x1:0,y1:700,x2:390,y2:700,stroke:'#0a0d13','stroke-width':2}));
+  // baseboard (Sockelleiste)
+  svgFunc.appendChild(el('rect',{x:0,y:688,width:390,height:14,fill:'#222b36',stroke:'#10151c','stroke-width':1}));
+  // --- panel that frames the room ---
+  svgFunc.appendChild(el('rect',{x:18,y:130,width:354,height:560,rx:22,fill:'none',stroke:'#10151c','stroke-width':2,opacity:0.5}));
+  svgFunc.appendChild(el('rect',{x:34,y:142,width:322,height:30,rx:8,fill:'#11161e',opacity:0.7}));
+  const ttl=el('text',{x:195,y:162,'text-anchor':'middle','font-size':'12','font-weight':'800',fill:'#7af0d9'}); ttl.textContent='WOHNUNG — BETRIEB PRÜFEN'; svgFunc.appendChild(ttl);
+
+  // devices to test: lamps (toggle on/off), steckdose, store(motor) — verteilt über 3 Zeilen
+  const DEV=[
+    {id:'L1', kind:'lamp',   name:'Deckenleuchte', x:118, y:232},
+    {id:'L2', kind:'lamp',   name:'Wandleuchte',   x:272, y:232},
+    {id:'SD', kind:'socket', name:'Steckdose',     x:118, y:430},
+    {id:'ST', kind:'store',  name:'Storen',        x:272, y:430},
+    {id:'L3', kind:'lamp',   name:'Küche',         x:118, y:628},
+    {id:'SD2',kind:'socket', name:'Steckdose Bad', x:272, y:628}
+  ];
+  let doneCount=0; const total=DEV.length;
+  const tested={};
+
+  DEV.forEach((d,idx)=>{
+    const g=el('g',{cursor:'pointer'});
+    // device illustration
+    if(d.kind==='lamp'){
+      d._glow=el('circle',{cx:d.x,cy:d.y-14,r:30,fill:'url(#glow)',opacity:0});
+      g.appendChild(d._glow);
+      g.appendChild(el('path',{d:'M '+(d.x-16)+' '+(d.y-2)+' L '+(d.x+16)+' '+(d.y-2)+' L '+(d.x+10)+' '+(d.y-26)+' L '+(d.x-10)+' '+(d.y-26)+' Z',fill:'#2b3645',stroke:'#10151c','stroke-width':1.5}));
+      d._bulb=el('circle',{cx:d.x,cy:d.y,r:11,fill:'#39424d',stroke:'#10151c','stroke-width':1.5});
+      g.appendChild(d._bulb);
+    } else if(d.kind==='socket'){
+      g.appendChild(el('rect',{x:d.x-22,y:d.y-22,width:44,height:44,rx:10,fill:'#e9edf2',stroke:'#10151c','stroke-width':1.5}));
+      g.appendChild(el('circle',{cx:d.x-8,cy:d.y+4,r:3.4,fill:'#1a212c'}));
+      g.appendChild(el('circle',{cx:d.x+8,cy:d.y+4,r:3.4,fill:'#1a212c'}));
+      g.appendChild(el('rect',{x:d.x-3,y:d.y-13,width:6,height:7,rx:2,fill:'#1a212c'}));
+      d._test=el('circle',{cx:d.x,cy:d.y,r:24,fill:'none',stroke:'#2dd4bf','stroke-width':3,opacity:0});
+      g.appendChild(d._test);
+    } else if(d.kind==='store'){
+      g.appendChild(el('rect',{x:d.x-26,y:d.y-30,width:52,height:14,rx:4,fill:'#2b3645',stroke:'#10151c','stroke-width':1.5}));
+      d._slats=el('g',{});
+      for(let s=0;s<4;s++){ d._slats.appendChild(el('rect',{x:d.x-22,y:d.y-15+s*9,width:44,height:6,rx:2,fill:'#5a6573',stroke:'#10151c','stroke-width':1})); }
+      g.appendChild(d._slats);
+      d._storeY=0;
+    }
+    // label
+    const lb=el('text',{x:d.x,y:d.y+40,'text-anchor':'middle','font-size':'9.5','font-weight':'700',fill:'#9fb0c0'}); lb.textContent=d.name; g.appendChild(lb);
+    // the switch / control (the thing you tap)
+    const sw=el('g',{});
+    const swY=d.y+54;
+    const swBg=el('rect',{x:d.x-15,y:swY,width:30,height:20,rx:6,fill:'#11161e',stroke:'#4a5663','stroke-width':1.5});
+    sw.appendChild(swBg);
+    const knob=el('rect',{x:d.x-13,y:swY+2,width:13,height:16,rx:4,fill:'#8d97a3'});
+    sw.appendChild(knob);
+    g.appendChild(sw);
+    // check mark badge (appears once tested)
+    d._chk=el('text',{x:d.x+24,y:swY+16,'font-size':'15','font-weight':'900',fill:'#2dd4bf',opacity:0}); d._chk.textContent='✓'; g.appendChild(d._chk);
+    // big hit
+    const hit=el('rect',{x:d.x-34,y:d.y-44,width:68,height:122,fill:'transparent'}); g.appendChild(hit);
+    svgFunc.appendChild(g);
+    d._knob=knob; d._on=false;
+
+    hit.addEventListener('pointerdown',()=>tapDev(d));
+  });
+
+  function tapDev(d){
+    AC();
+    d._on=!d._on;
+    // animate the switch knob
+    d._knob.setAttribute('x', d._on ? (d.x+1) : (d.x-13));
+    d._knob.setAttribute('fill', d._on ? '#2dd4bf' : '#8d97a3');
+    if(d.kind==='lamp'){
+      sndLamp();
+      d._bulb.setAttribute('fill', d._on ? '#fff3b0' : '#39424d');
+      d._bulb.setAttribute('stroke', d._on ? '#ffd166' : '#10151c');
+      d._glow.setAttribute('opacity', d._on ? 1 : 0);
+      if(d._on) spark(d.x,d.y,8,{color:'#ffe08a',speed:2,grav:0.02});
+    } else if(d.kind==='socket'){
+      sndBeep();
+      d._test.setAttribute('opacity', d._on ? 1 : 0);
+      if(d._on) spark(d.x,d.y,8,{color:'#7af0d9',speed:2.2});
+    } else if(d.kind==='store'){
+      sndMotor();
+      // run the store up (slats retract under the box) or down — translate only, always renders
+      const target = d._on ? -22 : 0;
+      const sy0=d._storeY, t0=performance.now();
+      (function a(t){ const k=Math.min(1,(t-t0)/520);
+        const yy=sy0+(target-sy0)*k; d._storeY=yy;
+        d._slats.setAttribute('transform','translate(0,'+yy+')');
+        d._slats.setAttribute('opacity', d._on ? (1-Math.min(0.55,Math.abs(yy)/26)) : 1);
+        if(k<1)requestAnimationFrame(a);
+      })(performance.now());
+    }
+    // register first test of this device (gutmütig: toggling counts)
+    if(!tested[d.id]){
+      tested[d.id]=true; doneCount++;
+      d._chk.setAttribute('opacity',1);
+      toast('geprüft ✓','#7af0d9',d.x,d.y-30);
+      addXp(5);
+      roFunc.innerHTML='Geprüft: <span class="big">'+doneCount+'/'+total+'</span> Geräte';
+      if(doneCount===total){
+        roFunc.classList.add('good'); roFunc.textContent='Funktionskontrolle i.O. ✓';
+        progress.func=true;
+        spark(195,420,26,{color:'#2dd4bf',speed:4,up:1});
+        sndSnap();
+        setTimeout(()=>nextStep(),900);
+      }
+    }
+  }
+
+  if(firstVisit('func')){
+    showDoHint('hintFunc','Tippe jeden <b>Schalter</b> unter den Geräten. Die <b>Leuchte</b> geht an, die <b>Storen</b> fahren, die <b>Steckdose</b> wird geprüft. Teste <b>alle</b>.');
+    setTimeout(()=>hideDoHint('hintFunc'),5200);
+  } else hideDoHint('hintFunc');
+
+  roFunc.classList.remove('good');
+  roFunc.innerHTML='Geprüft: <span class="big">0/'+total+'</span> Geräte';
+}
+
+/* =============================================================
+ *  STEP 2 — Schutzleiter-Prüfung (Durchgangsmessung)
+ *  Drag the prüfspitze (probe) to each apparatus' PE point; the
+ *  meter beeps + shows Durchgang (grün=ok). Gutmütig: alle PE i.O.
+ * ============================================================= */
+const svgPe=document.getElementById('svgPe');
+const roPe=document.getElementById('roPe');
+function buildPe(){
+  svgPe.innerHTML=''; addDefs(svgPe);
+  // --- room scenery: wall + floor + baseboard ---
+  svgPe.appendChild(el('rect',{x:0,y:110,width:390,height:650,fill:'url(#wall)'}));
+  svgPe.appendChild(el('rect',{x:0,y:700,width:390,height:144,fill:'#10161e'}));
+  svgPe.appendChild(el('rect',{x:0,y:700,width:390,height:60,fill:'#161d27'}));
+  svgPe.appendChild(el('line',{x1:0,y1:700,x2:390,y2:700,stroke:'#0a0d13','stroke-width':2}));
+  svgPe.appendChild(el('rect',{x:0,y:688,width:390,height:14,fill:'#222b36',stroke:'#10151c','stroke-width':1}));
+  // Durchgangsmessgerät display at top (kompakt, höher)
+  svgPe.appendChild(el('rect',{x:70,y:150,width:250,height:96,rx:16,fill:'#16344e',stroke:'#0c1a28','stroke-width':3,filter:'url(#ds)'}));
+  svgPe.appendChild(el('rect',{x:88,y:166,width:214,height:46,rx:8,fill:'#0a1f14',stroke:'#06120c','stroke-width':2}));
+  const disp=el('text',{x:195,y:200,'text-anchor':'middle','font-size':'24','font-weight':'800',fill:'#7CFFB0','font-family':'monospace'}); disp.textContent='Ω  – – –'; svgPe.appendChild(disp);
+  const dLbl=el('text',{x:195,y:234,'text-anchor':'middle','font-size':'11','font-weight':'700',fill:'#9fb0c0'}); dLbl.textContent='Durchgangsprüfung Schutzleiter'; svgPe.appendChild(dLbl);
+
+  // apparatus list, each with a PE terminal (green-yellow dot) to probe — 2 Reihen, an der Wand montiert
+  const APP=[
+    {id:'a1', name:'Steckdose Zimmer', x:120, y:340},
+    {id:'a2', name:'Boiler',          x:270, y:340},
+    {id:'a3', name:'Herd',            x:120, y:560},
+    {id:'a4', name:'Storenmotor',     x:270, y:560}
+  ];
+  let doneCount=0; const total=APP.length;
+  const tested={};
+
+  APP.forEach(a=>{
+    const g=el('g',{});
+    // cable abgang nach unten (decorative)
+    g.appendChild(el('path',{d:'M '+a.x+' '+(a.y+26)+' q 0 22 -6 40',fill:'none',stroke:'#1d2531','stroke-width':5,'stroke-linecap':'round'}));
+    g.appendChild(el('rect',{x:a.x-30,y:a.y-26,width:60,height:52,rx:10,fill:'url(#metal)',stroke:'#10151c','stroke-width':1.5}));
+    // Befestigungsschrauben (decorative)
+    g.appendChild(el('circle',{cx:a.x-23,cy:a.y-19,r:2.4,fill:'#11161e'}));
+    g.appendChild(el('circle',{cx:a.x+23,cy:a.y-19,r:2.4,fill:'#11161e'}));
+    g.appendChild(el('circle',{cx:a.x-23,cy:a.y+19,r:2.4,fill:'#11161e'}));
+    g.appendChild(el('circle',{cx:a.x+23,cy:a.y+19,r:2.4,fill:'#11161e'}));
+    // PE terminal (green-yellow)
+    a._term=el('circle',{cx:a.x,cy:a.y,r:13,fill:'#3aa635',stroke:'#0c1a28','stroke-width':2});
+    g.appendChild(a._term);
+    // green-yellow stripes
+    for(let s=0;s<3;s++) g.appendChild(el('rect',{x:a.x-11,y:a.y-9+s*7,width:22,height:3.4,fill:'#ffd23a'}));
+    a._ring=el('circle',{cx:a.x,cy:a.y,r:20,fill:'none',stroke:'#7af0d9','stroke-width':2.5,opacity:0,class:'pulseTool'}); g.appendChild(a._ring);
+    const lb=el('text',{x:a.x,y:a.y+40,'text-anchor':'middle','font-size':'9.5','font-weight':'700',fill:'#9fb0c0'}); lb.textContent=a.name; g.appendChild(lb);
+    a._chk=el('text',{x:a.x+22,y:a.y-14,'font-size':'15','font-weight':'900',fill:'#2dd4bf',opacity:0}); a._chk.textContent='✓'; g.appendChild(a._chk);
+    svgPe.appendChild(g);
+    a._done=false;
+  });
+
+  // the probe (Prüfspitze) the player drags from a parked spot
+  const PROBE_HOME={x:330,y:758};
+  const probe=el('g',{cursor:'grab',class:'pulseTool'});
+  probe.appendChild(el('rect',{x:-7,y:0,width:14,height:54,rx:6,fill:'url(#handle)',stroke:'#10151c','stroke-width':1.4}));
+  probe.appendChild(el('path',{d:'M -3 0 L 3 0 L 1 -34 L -1 -34 Z',fill:'url(#steel)',stroke:'#10151c','stroke-width':1.2}));
+  probe.appendChild(el('circle',{cx:0,cy:-34,r:3,fill:'#cfd6dd'}));
+  // wire tail to the meter
+  const tail=el('path',{d:'',fill:'none',stroke:'#1a8a5a','stroke-width':4,'stroke-linecap':'round',opacity:0.8});
+  svgPe.appendChild(tail);
+  const phit=el('circle',{cx:0,cy:-20,r:34,fill:'transparent'}); probe.appendChild(phit);
+  let probeX=PROBE_HOME.x, probeY=PROBE_HOME.y;
+  function placeProbe(x,y){ probe.setAttribute('transform','translate('+x+','+y+')'); probeX=x; probeY=y;
+    tail.setAttribute('d','M 250 244 C 320 330, '+ (x+30) +' '+(y-90)+', '+x+' '+(y-34)); }
+  svgPe.appendChild(probe);
+  placeProbe(PROBE_HOME.x,PROBE_HOME.y);
+
+  const sguide=addDragPath(svgPe,PROBE_HOME.x-10,PROBE_HOME.y-30,APP[0].x+4,APP[0].y,'#7af0d9');
+
+  if(firstVisit('pe')){
+    showDoHint('hintPe','Zieh die <b>Prüfspitze</b> auf den <b>grün-gelben Schutzleiter</b> jedes Apparats. Das Messgerät zeigt <b>Durchgang</b> (~0 Ω, grün) = PE verbunden.');
+    probe.classList.remove('pulseTool');
+    ghostDemo(svgPe,PROBE_HOME.x,PROBE_HOME.y-20,APP[0].x,APP[0].y,{dur:1200,onStep:(f)=>{
+      placeProbe(PROBE_HOME.x+(APP[0].x-PROBE_HOME.x)*f, PROBE_HOME.y+(APP[0].y-PROBE_HOME.y)*f);
+    },done:()=>{
+      placeProbe(PROBE_HOME.x,PROBE_HOME.y);
+      probe.classList.add('pulseTool');
+    }});
+  } else hideDoHint('hintPe');
+
+  let drag=false, touched=false;
+  function killAffordance(){ if(!touched){ touched=true; probe.classList.remove('pulseTool'); if(sguide)sguide.remove(); hideDoHint('hintPe'); } }
+
+  function checkContact(){
+    // find apparatus whose PE point the probe tip is over
+    for(const a of APP){
+      if(a._done) continue;
+      const dx=a.x-probeX, dy=a.y-(probeY-34);
+      if(dx*dx+dy*dy < 28*28){ measure(a); return true; }
+    }
+    return false;
+  }
+  function measure(a){
+    a._done=true; doneCount++;
+    // realistic small Durchgang resistance (PE always OK here — gutmütig)
+    const ohm=(Math.round((0.2+Math.random()*0.4)*100)/100).toFixed(2);
+    disp.setAttribute('fill','#7CFFB0');
+    disp.textContent='Ω  '+ohm;
+    a._term.setAttribute('stroke','#7af0d9'); a._term.setAttribute('stroke-width','3');
+    a._chk.setAttribute('opacity',1); a._ring.setAttribute('opacity',0);
+    sndBeep(); sndSnap();
+    spark(a.x,a.y,12,{color:'#7af0d9',speed:2.5});
+    toast('Durchgang i.O. ✓','#7af0d9',a.x,a.y-30);
+    addXp(6);
+    roPe.innerHTML='Schutzleiter geprüft: <span class="big">'+doneCount+'/'+total+'</span>';
+    if(doneCount===total){
+      roPe.classList.add('good'); roPe.textContent='Alle Schutzleiter verbunden ✓';
+      progress.pe=true;
+      spark(195,440,26,{color:'#2dd4bf',speed:4,up:1});
+      setTimeout(()=>nextStep(),950);
+    } else {
+      // hint pulse on remaining
+      APP.forEach(x=>{ if(!x._done) x._ring.setAttribute('opacity',0); });
+    }
+  }
+
+  function down(e){ e.preventDefault(); AC(); drag=true; killAffordance(); probe.setAttribute('cursor','grabbing'); try{phit.setPointerCapture(e.pointerId);}catch(_){} }
+  function move(e){ if(!drag)return; const p=toSvgFor(svgPe,e.clientX,e.clientY); placeProbe(p.x,p.y+20);
+    // highlight nearest untested PE
+    let near=null,bd=44*44;
+    APP.forEach(a=>{ if(a._done)return; const dx=a.x-probeX,dy=a.y-(probeY-34),d=dx*dx+dy*dy; if(d<bd){bd=d;near=a;} });
+    APP.forEach(a=>{ if(!a._done) a._ring.setAttribute('opacity', a===near?0.9:0); });
+  }
+  function up(){ if(!drag)return; drag=false; probe.setAttribute('cursor','grab');
+    // measured? then keep the Ω value on the display and only park the probe
+    const measured=checkContact();
+    if(measured){ placeProbe(PROBE_HOME.x,PROBE_HOME.y);
+      APP.forEach(a=>{ if(!a._done) a._ring.setAttribute('opacity',0); }); return; }
+    // not on a contact: gently return probe home (gutmütig, never stuck) + clear display
+    placeProbe(PROBE_HOME.x,PROBE_HOME.y); disp.setAttribute('fill','#7CFFB0'); disp.textContent='Ω  – – –';
+    APP.forEach(a=>{ if(!a._done) a._ring.setAttribute('opacity',0); });
+  }
+  phit.addEventListener('pointerdown',down);
+  window.addEventListener('pointermove',move);
+  window.addEventListener('pointerup',up);
+  buildPe._cleanup=()=>{ phit.removeEventListener('pointerdown',down); window.removeEventListener('pointermove',move); window.removeEventListener('pointerup',up); };
+
+  roPe.classList.remove('good');
+  roPe.innerHTML='Schutzleiter geprüft: <span class="big">0/'+total+'</span>';
+}
+
+/* =============================================================
+ *  STEP 3 — Messprotokoll (Spannung zwischen allen Klemmen-Paaren)
+ *  ±4% realistische Streuung — exakt nach dem buildCheck-Muster
+ *  des Baustromverteilers.
+ * ============================================================= */
+const svgCheck=document.getElementById('svgCheck');
+const roCheck=document.getElementById('roCheck');
+function buildCheck(){
+  svgCheck.innerHTML=''; addDefs(svgCheck);
+  const TL=['L1','L2','L3','N','PE'];
+  const TCOL={L1:'#a9692f',L2:'#3a3a3a',L3:'#c4c9cf',N:'#4f93e8',PE:'#ffd23a'};
+  const isPh=x=>x==='L1'||x==='L2'||x==='L3';
+  function nominal(a,b){ if(isPh(a)&&isPh(b))return 400; if((isPh(a)&&(b==='N'||b==='PE'))||(isPh(b)&&(a==='N'||a==='PE')))return 230; return 0; }
+  const PAIRS=[['L1','L2'],['L2','L3'],['L3','L1'],['L1','N'],['L2','N'],['L3','N'],['L1','PE'],['L2','PE'],['L3','PE'],['N','PE']];
+  const key=(a,b)=>[a,b].slice().sort().join('-');
+  // feste Messwerte pro Runde, ±4% Streuung (N-PE = paar Volt) — wie in der echten Welt
+  const reading={};
+  PAIRS.forEach(([a,b])=>{ const nom=nominal(a,b);
+    reading[key(a,b)] = nom===0 ? Math.round(Math.random()*25)/10 : Math.round(nom*(1+(Math.random()*0.08-0.04)));
+  });
+  const measured={}; let count=0, sel=null;
+  // --- room scenery: wall + floor + baseboard ---
+  svgCheck.appendChild(el('rect',{x:0,y:110,width:390,height:650,fill:'url(#wall)'}));
+  svgCheck.appendChild(el('rect',{x:0,y:700,width:390,height:144,fill:'#10161e'}));
+  svgCheck.appendChild(el('rect',{x:0,y:700,width:390,height:60,fill:'#161d27'}));
+  svgCheck.appendChild(el('line',{x1:0,y1:700,x2:390,y2:700,stroke:'#0a0d13','stroke-width':2}));
+  svgCheck.appendChild(el('rect',{x:0,y:688,width:390,height:14,fill:'#222b36',stroke:'#10151c','stroke-width':1}));
+  // Messgerät-Display
+  svgCheck.appendChild(el('rect',{x:66,y:158,width:258,height:118,rx:16,fill:'#16344e',stroke:'#0c1a28','stroke-width':3,filter:'url(#ds)'}));
+  svgCheck.appendChild(el('rect',{x:84,y:174,width:222,height:58,rx:8,fill:'#0a1f14',stroke:'#06120c','stroke-width':2}));
+  const disp=el('text',{x:298,y:218,'text-anchor':'end','font-size':'38','font-weight':'800',fill:'#7CFFB0','font-family':'monospace'}); disp.textContent='– – –'; svgCheck.appendChild(disp);
+  const pairLbl=el('text',{x:195,y:262,'text-anchor':'middle','font-size':'13','font-weight':'700',fill:'#9fb0c0'}); pairLbl.textContent='Tippe zwei Klemmen'; svgCheck.appendChild(pairLbl);
+  // Klemmen (tippbar) — gestreckt, in einem Klemmenkasten / Verteiler
+  const ty0=346, tgap=78, tx=195; const nodes={};
+  // Verteilerkasten-Rahmen um die Klemmenreihe
+  svgCheck.appendChild(el('rect',{x:118,y:312,width:154,height:412,rx:16,fill:'#1c2530',stroke:'#0c1118','stroke-width':3,filter:'url(#ds)'}));
+  svgCheck.appendChild(el('rect',{x:130,y:324,width:130,height:388,rx:10,fill:'#141b24',stroke:'#0a0e14','stroke-width':1.5}));
+  // DIN-Schiene (Tragschiene)
+  svgCheck.appendChild(el('rect',{x:148,y:330,width:18,height:376,rx:3,fill:'url(#steel)',stroke:'#10151c','stroke-width':1,opacity:0.85}));
+  const kkLbl=el('text',{x:195,y:702,'text-anchor':'middle','font-size':'10','font-weight':'700',fill:'#7e8ea0'}); kkLbl.textContent='KLEMMENKASTEN'; svgCheck.appendChild(kkLbl);
+  // Verbindungskabel Display -> Klemmen
+  svgCheck.appendChild(el('path',{d:'M 195 276 C 195 300, 195 312, 195 '+ty0,fill:'none',stroke:'#2b3645','stroke-width':4,'stroke-linecap':'round',opacity:0.7}));
+  TL.forEach((t,i)=>{ const yy=ty0+i*tgap;
+    const g=el('g',{cursor:'pointer'});
+    const ring=el('circle',{cx:tx,cy:yy,r:24,fill:'#0e1622',stroke:TCOL[t],'stroke-width':3}); g.appendChild(ring);
+    g.appendChild(el('circle',{cx:tx,cy:yy,r:13,fill:TCOL[t],stroke:'#0c1a28','stroke-width':2}));
+    const lb=el('text',{x:tx,y:yy+5,'text-anchor':'middle','font-size':'13','font-weight':'800',fill:(t==='L2'?'#fff':'#0c1a28')}); lb.textContent=t; g.appendChild(lb);
+    const hit=el('circle',{cx:tx,cy:yy,r:36,fill:'transparent'}); g.appendChild(hit);
+    svgCheck.appendChild(g); nodes[t]={ring,yy};
+    hit.addEventListener('pointerdown',()=>tap(t));
+  });
+  function tap(t){ AC(); sndPick();
+    if(sel===null){ sel=t; nodes[t].ring.setAttribute('stroke-width','6'); disp.textContent='– – –'; pairLbl.textContent=t+' – ?'; return; }
+    if(sel===t){ nodes[t].ring.setAttribute('stroke-width','3'); sel=null; pairLbl.textContent='Tippe zwei Klemmen'; return; }
+    const a=sel,b=t,k=key(a,b); nodes[a].ring.setAttribute('stroke-width','3'); sel=null;
+    const v=reading[k];
+    disp.textContent = (v<10 ? v.toFixed(1) : String(v)) + ' V';
+    pairLbl.textContent = a+'–'+b+'   (Nenn '+(nominal(a,b)===0?'~0':nominal(a,b))+' V)';
+    sndSnap(); spark(tx,(nodes[a].yy+nodes[b].yy)/2,8,{color:'#7CFFB0',speed:2});
+    if(!measured[k]){ measured[k]=true; count++; addXp(5);
+      roCheck.innerHTML='Gemessen: <span class="big">'+count+'/'+PAIRS.length+'</span>';
+      if(count===PAIRS.length){ roCheck.classList.add('good'); roCheck.textContent='Messprotokoll vollständig ✓';
+        progress.mess=true;
+        setTimeout(()=>nextStep(),900);
+      }
+    }
+  }
+  roCheck.classList.remove('good'); roCheck.innerHTML='Miss alle Paare: <span class="big">0/'+PAIRS.length+'</span>';
+}
+
+/* =============================================================
+ *  STEP 4 — Abnahme (Abnahmeprotokoll abhaken -> Anlage abnehmen)
+ *  Das Haus im Hintergrund; alle Punkte sind durch die vorigen
+ *  Schritte schon erfüllt -> abhaken -> grosser Erfolgs-Moment.
+ * ============================================================= */
+const svgHouse=document.getElementById('svgHouse');
+let houseWindows=[];
+function buildHouse(allOn){
+  svgHouse.innerHTML=''; addDefs(svgHouse);
+  houseWindows=[];
+  const baseY=600, hw=224, hx=(390-hw)/2;
+  // --- horizon / sky behind the house (transparent enough for the checklist) ---
+  svgHouse.appendChild(el('rect',{x:0,y:120,width:390,height:640,fill:'#121925',opacity:0.55}));
+  // ground / Gras
+  svgHouse.appendChild(el('rect',{x:0,y:760,width:390,height:84,fill:'#0e1a16'}));
+  svgHouse.appendChild(el('rect',{x:0,y:760,width:390,height:36,fill:'#13251d'}));
+  svgHouse.appendChild(el('line',{x1:0,y1:760,x2:390,y2:760,stroke:'#0a130f','stroke-width':2}));
+  // ground glow
+  svgHouse.appendChild(el('ellipse',{cx:195,cy:baseY+150,rx:170,ry:30,fill:'rgba(45,212,191,.12)'}));
+  // house body
+  svgHouse.appendChild(el('rect',{x:hx,y:baseY,width:hw,height:150,rx:6,fill:'url(#wall)',stroke:'#10151c','stroke-width':2,filter:'url(#ds)'}));
+  // roof
+  svgHouse.appendChild(el('path',{d:'M '+(hx-16)+' '+baseY+' L 195 '+(baseY-72)+' L '+(hx+hw+16)+' '+baseY+' Z',fill:'#2b3645',stroke:'#10151c','stroke-width':2}));
+  svgHouse.appendChild(el('rect',{x:248,y:baseY-58,width:18,height:34,fill:'#222a35',stroke:'#10151c','stroke-width':1.5}));
+  // door
+  svgHouse.appendChild(el('rect',{x:178,y:baseY+92,width:34,height:58,rx:4,fill:'#1a222d',stroke:'#10151c','stroke-width':1.5}));
+  svgHouse.appendChild(el('circle',{cx:205,cy:baseY+122,r:2.4,fill:'#ffd166'}));
+  // windows (light up on abnahme)
+  const wpos=[[hx+24,baseY+24],[hx+hw-58,baseY+24],[hx+24,baseY+86],[hx+hw-58,baseY+86]];
+  wpos.forEach(([wx,wy])=>{
+    const glow=el('rect',{x:wx-6,y:wy-6,width:46,height:50,rx:4,fill:'url(#glow)',opacity:0});
+    svgHouse.appendChild(glow);
+    const win=el('rect',{x:wx,y:wy,width:34,height:38,rx:3,fill:'#1a222d',stroke:'#3a4654','stroke-width':1.5});
+    svgHouse.appendChild(win);
+    svgHouse.appendChild(el('line',{x1:wx+17,y1:wy,x2:wx+17,y2:wy+38,stroke:'#3a4654','stroke-width':1}));
+    svgHouse.appendChild(el('line',{x1:wx,y1:wy+19,x2:wx+34,y2:wy+19,stroke:'#3a4654','stroke-width':1}));
+    houseWindows.push({win,glow,wx,wy});
+  });
+  // caption
+  const cap=el('text',{x:195,y:baseY+182,'text-anchor':'middle','font-size':'11','font-weight':'700',fill:'#7e8ea0'});
+  cap.textContent = allOn ? 'Anlage in Betrieb' : 'Bereit zur Abnahme'; svgHouse.appendChild(cap);
+  svgHouse.__cap=cap;
+  if(allOn) lightHouse();
+}
+function lightHouse(){
+  houseWindows.forEach((w,i)=>setTimeout(()=>{
+    w.win.setAttribute('fill','#fff3b0'); w.glow.setAttribute('opacity',1);
+    spark(w.wx+17,w.wy+19,6,{color:'#ffe08a',speed:1.6,grav:0.01});
+    sndLamp();
+  },i*160));
+  if(svgHouse.__cap) svgHouse.__cap.textContent='Das ganze Haus geht — Anlage läuft!';
+}
+
+const checklist=document.getElementById('checklist');
+const abnahmeBtn=document.getElementById('abnahmeBtn');
+function buildAbnahme(){
+  buildHouse(false);
+  setTimeout(()=>checklist.classList.add('on'),120);
+  const chks=checklist.querySelectorAll('.chk');
+  let ticked=0; const need=chks.length;
+  // reset checklist visual state
+  chks.forEach(c=>{ c.classList.remove('done'); c.querySelector('.box').textContent=''; });
+  abnahmeBtn.classList.add('locked');
+
+  chks.forEach(c=>{
+    c.onclick=()=>{
+      if(c.classList.contains('done')) return;
+      const k=c.getAttribute('data-k');
+      // all underlying checks already passed in earlier steps -> always tickable here.
+      AC(); sndSnap();
+      c.classList.add('done'); c.querySelector('.box').textContent='✓';
+      const r=c.getBoundingClientRect(), sr=stage.getBoundingClientRect();
+      const px=(r.left+r.width/2-sr.left)/sr.width*STAGE_W;
+      const py=(r.top+r.height/2-sr.top)/sr.height*STAGE_H;
+      spark(px,py,10,{color:'#2dd4bf',speed:2.5});
+      addXp(6);
+      ticked++;
+      if(ticked>=need){
+        abnahmeBtn.classList.remove('locked');
+        toast('Protokoll vollständig','#7af0d9',195,200);
+      }
+    };
+  });
+
+  abnahmeBtn.onclick=()=>{
+    if(abnahmeBtn.classList.contains('locked')) return;
+    AC();
+    checklist.classList.remove('on');
+    triggerWin();
+  };
+}
+
+/* =============================================================
+ *  WIN — grosser Erfolgs-Moment
+ * ============================================================= */
+function triggerWin(){
+  // light up the whole house
+  lightHouse();
+  document.getElementById('progFill').style.width='100%';
+  setTimeout(()=>{ sndWin(); burstConfetti();
+    spark(STAGE_W/2,STAGE_H*0.42,42,{color:'#ffd166',speed:6,up:2});
+    spark(STAGE_W/2,STAGE_H*0.42,30,{color:'#2dd4bf',speed:5,up:1});
+  },300);
+  setTimeout(()=>{
+    const win=document.getElementById('win'); win.classList.add('show');
+    addXp(60);
+    const sts=document.querySelectorAll('#stars .st');
+    sts.forEach((s,i)=>setTimeout(()=>{s.classList.add('lit');sndSnap();},300+i*260));
+    const xb=document.getElementById('xpBig'); const tt=performance.now();
+    (function cc(t){const k=Math.min(1,(t-tt)/900);const v=Math.round(150*(1-Math.pow(1-k,3)));xb.textContent='+'+v+' XP';if(k<1)requestAnimationFrame(cc);})(performance.now());
+  },1100);
+}
+document.getElementById('again').onclick=()=>location.reload();
+
+/* =============================================================
+ *  BUILDERS registry + boot
+ * ============================================================= */
+const BUILDERS = {
+  func:    buildFunc,
+  pe:      buildPe,
+  check:   buildCheck,
+  abnahme: buildAbnahme
+};
+
+/* =============================================================
+ *  MAIN LOOP + dust
+ * ============================================================= */
+let dust=[];
+function initDust(){
+  for(let i=0;i<22;i++) dust.push({
+    x:Math.random()*STAGE_W,y:Math.random()*STAGE_H,
+    vy:-(0.1+Math.random()*0.25),vx:(Math.random()-.5)*0.2,
+    r:0.5+Math.random()*1.4,a:0.05+Math.random()*0.18,ph:Math.random()*6.28
+  });
+}
+
+function boot(){
+  sizeCanvas();
+  initDust();
+  buildStepsBar();
+  fxLoop();
+  gotoStep('func');
+}
+window.addEventListener('resize',sizeCanvas);
+boot();
+
+})();
+</script>
+</body>
+</html>

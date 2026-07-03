@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>StromLab — PSA / Störlichtbogen (AC)</title>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;min-height:100vh;background:radial-gradient(130% 100% at 50% 0%,#15222e 0%,#0b1017 70%);
+    color:#e8edf2;font-family:'Segoe UI',system-ui,sans-serif;padding:18px 14px 40px}
+  .wrap{max-width:620px;margin:0 auto}
+  .backlink{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:#8aa0b2;
+    text-decoration:none;margin-bottom:10px;padding:5px 11px;border-radius:20px;
+    border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);transition:.15s}
+  .backlink:hover{color:#7af0d9;border-color:rgba(45,212,191,.35);background:rgba(45,212,191,.08)}
+  .backlink svg{width:13px;height:13px;display:block}
+  header h1{font-size:24px;font-weight:900;margin:0;letter-spacing:.3px}
+  header h1 .lab{color:#7af0d9}
+  header .sub{font-size:12.5px;color:#8da0b2;font-weight:600;margin-top:3px}
+  header .tag{display:inline-block;margin-top:8px;font-size:10.5px;font-weight:800;letter-spacing:.5px;
+    text-transform:uppercase;color:#7af0d9;background:rgba(45,212,191,.12);border:1px solid rgba(45,212,191,.3);
+    padding:4px 10px;border-radius:20px}
+  .card{background:linear-gradient(180deg,#172230,#101824);border:1px solid rgba(255,255,255,.07);
+    border-radius:18px;padding:16px;margin-top:14px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+  .result{display:flex;align-items:center;gap:16px;background:linear-gradient(180deg,#10302a,#0e1c1a);
+    border:1px solid rgba(45,212,191,.35);box-shadow:0 0 30px rgba(45,212,191,.12)}
+  .result .big{font-size:46px;font-weight:900;color:#7af0d9;line-height:1;font-variant-numeric:tabular-nums}
+  .result .unit{font-size:20px;color:#9fe9da;font-weight:800}
+  .result .lbl{font-size:12px;color:#9fb0c0;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+  .result .calc{font-size:11.5px;color:#8da0b2;margin-top:6px;font-weight:600}
+  .result .calc b{color:#cfe}
+  .grp{margin-top:16px}
+  .grp .h{font-size:11px;font-weight:800;color:#8da0b2;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;display:flex;justify-content:space-between}
+  .grp .h .v{color:#7af0d9}
+  .pills{display:flex;flex-wrap:wrap;gap:6px}
+  .pill{padding:8px 12px;border-radius:11px;border:1px solid rgba(255,255,255,.1);background:#1b2735;
+    color:#cdd8e2;font-weight:800;font-size:13px;cursor:pointer;transition:.15s}
+  .pill small{display:block;font-size:9.5px;color:#8093a4;font-weight:600;margin-top:1px}
+  .pill:hover{transform:translateY(-2px)}
+  .pill.on{background:linear-gradient(180deg,#2dd4bf,#14b8a6);color:#06281f;border-color:#2dd4bf;box-shadow:0 0 16px rgba(45,212,191,.4)}
+  .pill.on small{color:#06403a}
+  input[type=range]{width:100%;accent-color:#2dd4bf}
+  input[type=number],select{background:#0e1722;border:1px solid rgba(255,255,255,.12);color:#e8edf2;
+    border-radius:9px;padding:7px 8px;font-size:13px;font-weight:700;width:100%;font-family:inherit}
+  input[type=number]:focus,select:focus{outline:none;border-color:#2dd4bf}
+  table{width:100%;border-collapse:collapse;margin-top:6px;font-size:12px}
+  th,td{padding:7px 4px;text-align:center;border-bottom:1px solid rgba(255,255,255,.05)}
+  th{color:#8da0b2;font-size:10.5px;font-weight:800;text-transform:uppercase}
+  td.mm{color:#cdd8e2;font-weight:800;text-align:left;padding-left:8px}
+  td.val{color:#9fb0c0;font-variant-numeric:tabular-nums}
+  .seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .fld{margin-top:8px}
+  .fld label{display:block;font-size:10.5px;font-weight:800;color:#8da0b2;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
+  .sec table th:first-child,.sec table td:first-child{text-align:left;padding-left:6px}
+  .secrow td{padding:5px 4px}
+  .secrow input,.secrow select{padding:5px 6px;font-size:12px}
+  .stufe{display:inline-block;padding:3px 9px;border-radius:8px;font-weight:900;font-size:12px}
+  .s0{background:rgba(120,140,160,.2);color:#9fb0c0}
+  .s1{background:rgba(250,204,21,.18);color:#fde047;border:1px solid rgba(250,204,21,.4)}
+  .s2{background:rgba(249,115,22,.2);color:#fdba74;border:1px solid rgba(249,115,22,.45)}
+  .s3{background:rgba(239,68,68,.22);color:#fca5a5;border:1px solid rgba(239,68,68,.5)}
+  .btn{padding:7px 12px;border-radius:10px;border:1px solid rgba(45,212,191,.4);background:rgba(45,212,191,.12);
+    color:#7af0d9;font-weight:800;font-size:12px;cursor:pointer}
+  .btn.del{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.1);color:#fca5a5}
+  .note{font-size:11px;color:#6f8093;margin-top:12px;line-height:1.5}
+  .note b{color:#9fb0c0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="backlink" href="index.htm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>StromLab</a>
+  <header>
+    <h1><span class="lab">StromLab</span> · PSA (AC)</h1>
+    <div class="sub">Störlichtbogen — Kurzschlussstrom I<sub>k</sub>, Lichtbogenstrom I<sub>c</sub> &amp; Schutzkleidungsstufe je Messort</div>
+    <div class="tag">IEC 60909 · EN 61482 · Trafo + NS-Verteilung</div>
+  </header>
+
+  <div class="card result">
+    <div>
+      <div class="lbl">Höchste Schutzkleidungsstufe im Netz</div>
+      <div><span class="big" id="rVal">–</span></div>
+      <div class="calc" id="rCalc"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="grp"><div class="h"><span>Transformator (Einspeisung)</span><span class="v" id="trV"></span></div></div>
+    <div class="seg">
+      <div class="fld"><label>S [kVA]</label><input type="number" id="tS" value="250" step="10"></div>
+      <div class="fld"><label>u<sub>k</sub> [%]</label><input type="number" id="tUk" value="4" step="0.5"></div>
+      <div class="fld"><label>P<sub>Cu</sub> [W]</label><input type="number" id="tPcu" value="3250" step="50"></div>
+      <div class="fld"><label>Spannungsfaktor c</label><input type="number" id="tC" value="1.1" step="0.05"></div>
+    </div>
+    <div class="fld"><label>Netz-Nennspannung U<sub>N</sub> [V] (Leiter-Leiter)</label><input type="number" id="tUn" value="400" step="10"></div>
+  </div>
+
+  <div class="card sec">
+    <div class="grp"><div class="h"><span>Leitungsabschnitte (Trafo → … → Ort)</span><span class="v" id="abV"></span></div></div>
+    <table id="abTbl"></table>
+    <div style="margin-top:10px"><button class="btn" id="addAb">+ Abschnitt</button></div>
+  </div>
+
+  <div class="card">
+    <div class="grp"><div class="h"><span>Resultate je Messort</span><span class="v">I<sub>k</sub> · I<sub>c</sub> · Stufe</span></div></div>
+    <table id="resTbl"></table>
+    <div class="note" id="footnote"></div>
+  </div>
+</div>
+
+<script>
+/* ===== StromLab PSA (AC) — Störlichtbogen / Schutzkleidung =====
+   Modell: IEC 60909 Kurzschluss entlang NS-Netz.
+   Trafo-Innenimpedanz aus S, uk, PCu; Leitungen Cu (rho=0.01851 Ohm*mm2/m, dreiphasig).
+   Ik = c*UN / (sqrt(3) * |Zges|);  Ic (Lichtbogen-cut-off) ~ Ik begrenzt durch
+   Sicherung/Schutzorgan (gG NH bzw. LS C, In). Schutzkleidungsstufe aus Ic. */
+
+const RHO = 0.01851;            // Ohm*mm2/m bei Betriebstemperatur (Cu)
+const QS_LIST = [1.5,2.5,4,6,10,16,25,35,50,70,95,120,150];
+
+let trafo = {S:250, uk:4, Pcu:3250, c:1.1, Un:400};
+let abschnitte = [
+  {bau:'NH', char:'gG', In:160, S:95,  l:100, name:'NS-HV'},
+  {bau:'NH', char:'gG', In:63,  S:16,  l:10,  name:'UV'},
+  {bau:'LS', char:'C',  In:13,  S:1.5, l:20,  name:'Ort'}
+];
+
+const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e};
+
+/* --- Trafo-Impedanz (bezogen auf NS-Seite) --- */
+function trafoZ(){
+  const Un=trafo.Un, S=trafo.S*1000;            // VA
+  const Zt = (trafo.uk/100) * (Un*Un)/S;        // Ohm (Gesamt-Kurzschlussimpedanz)
+  const Rt = trafo.Pcu * (Un*Un) / (S*S);       // Ohm (Wirkanteil aus Kupferverlusten)
+  let Xt2 = Zt*Zt - Rt*Rt; if(Xt2<0) Xt2=0;
+  const Xt = Math.sqrt(Xt2);
+  return {R:Rt, X:Xt};
+}
+
+/* --- Lichtbogenstrom-Faktor: typ. Ic = k * Ik (Reduktion gegen prospektiven Ik) --- */
+function arcCut(Ik_kA, ab){
+  // Begrenzung durch Schutzorgan: gG-NH und LS strombegrenzend -> cut-off.
+  // Vereinfachtes, monoton fallendes Modell: bei hohem Ik stärkere Begrenzung.
+  let k;
+  if(ab.bau==='LS') k = 1.0;                      // LS: in NS-Endkreis ~ voller Bogenstrom
+  else { // NH gG
+    if(Ik_kA<=2) k=1.0; else if(Ik_kA<=6) k=0.80; else if(Ik_kA<=12) k=0.66; else k=0.55;
+  }
+  return Ik_kA * k;
+}
+
+/* --- Schutzkleidungsstufe aus Lichtbogenstrom Ic [kA] ---
+   Skala (EN 61482 / Praxis NS): Klasse 1 (Box-Test ~4 kA / 7 cal),
+   Klasse 2 (~7 kA / 40 cal). Schwellen aus JSON-Beispiel (5/8/10/15). */
+function stufe(Ic_kA){
+  if(Ic_kA < 2)  return {n:0, lbl:'keine PSA-Stufe', cls:'s0'};
+  if(Ic_kA < 5)  return {n:1, lbl:'Stufe 1 · EN 61482-1-2 Kl.1', cls:'s1'};
+  if(Ic_kA < 10) return {n:2, lbl:'Stufe 2 · EN 61482-1-2 Kl.2', cls:'s2'};
+  return {n:3, lbl:'Stufe 3 · 2× Kl.2 / Sonderschutz', cls:'s3'};
+}
+
+function qsOptions(sel){
+  return QS_LIST.map(q=>'<option value="'+q+'"'+(q===sel?' selected':'')+'>'+String(q).replace('.',',')+' mm²</option>').join('');
+}
+
+function buildAbTable(){
+  const t=document.getElementById('abTbl'); t.innerHTML='';
+  const hr=el('tr');
+  ['Ort','Bau','Char','In [A]','S [mm²]','l [m]',''].forEach(h=>hr.appendChild(el('th',null,h)));
+  t.appendChild(hr);
+  abschnitte.forEach((a,i)=>{
+    const tr=el('tr','secrow');
+    const cName=el('td'); const inN=el('input'); inN.value=a.name; inN.style.minWidth='62px';
+    inN.oninput=e=>{a.name=e.target.value;}; cName.appendChild(inN); tr.appendChild(cName);
+
+    const cBau=el('td'); const selB=el('select');
+    selB.innerHTML='<option value="NH"'+(a.bau==='NH'?' selected':'')+'>NH</option><option value="LS"'+(a.bau==='LS'?' selected':'')+'>LS</option>';
+    selB.onchange=e=>{a.bau=e.target.value;render();}; cBau.appendChild(selB); tr.appendChild(cBau);
+
+    const cChar=el('td'); const selC=el('select');
+    selC.innerHTML='<option value="gG"'+(a.char==='gG'?' selected':'')+'>gG</option><option value="C"'+(a.char==='C'?' selected':'')+'>C</option><option value="B"'+(a.char==='B'?' selected':'')+'>B</option>';
+    selC.onchange=e=>{a.char=e.target.value;render();}; cChar.appendChild(selC); tr.appendChild(cChar);
+
+    const cIn=el('td'); const inIn=el('input'); inIn.type='number'; inIn.value=a.In; inIn.style.width='60px';
+    inIn.oninput=e=>{a.In=+e.target.value;render();}; cIn.appendChild(inIn); tr.appendChild(cIn);
+
+    const cS=el('td'); const selS=el('select'); selS.innerHTML=qsOptions(a.S);
+    selS.onchange=e=>{a.S=+e.target.value;render();}; cS.appendChild(selS); tr.appendChild(cS);
+
+    const cL=el('td'); const inL=el('input'); inL.type='number'; inL.value=a.l; inL.style.width='56px';
+    inL.oninput=e=>{a.l=+e.target.value;render();}; cL.appendChild(inL); tr.appendChild(cL);
+
+    const cD=el('td'); const b=el('button','btn del','×'); b.onclick=()=>{abschnitte.splice(i,1);render();};
+    cD.appendChild(b); tr.appendChild(cD);
+    t.appendChild(tr);
+  });
+}
+
+function compute(){
+  const tz=trafoZ();
+  let R=tz.R, X=tz.X;
+  const rows=[];
+  // Messort "NS-HV" = direkt an Trafo-Klemme (vor 1. Leitung)
+  let Ik0 = trafo.c*trafo.Un / (Math.sqrt(3)*Math.hypot(R,X)) / 1000;
+  rows.push({name:'Trafo NS-Klemme', Ik:Ik0, Ic:Ik0, st:stufe(Ik0), info:'Z<sub>T</sub>'});
+  abschnitte.forEach(a=>{
+    // Leitungsimpedanz (Wirkwiderstand dominiert in NS), 3-phasig: R = rho*l/S
+    const Rl = RHO * a.l / a.S;
+    R += Rl;                 // X der Leitung vereinfacht vernachlässigt (kleine S)
+    const Z = Math.hypot(R,X);
+    const Ik = trafo.c*trafo.Un / (Math.sqrt(3)*Z) / 1000;   // kA
+    const Ic = arcCut(Ik, a);
+    rows.push({name:a.name, Ik:Ik, Ic:Ic, st:stufe(Ic), info:a.bau+' '+a.char+' '+a.In+'A'});
+  });
+  return rows;
+}
+
+function buildResTable(rows){
+  const t=document.getElementById('resTbl'); t.innerHTML='';
+  const hr=el('tr');
+  ['Messort','Schutz','I<sub>k</sub> [kA]','I<sub>c</sub> [kA]','Schutzkleidung'].forEach(h=>hr.appendChild(el('th',null,h)));
+  t.appendChild(hr);
+  rows.forEach(r=>{
+    const tr=el('tr');
+    tr.appendChild(el('td','mm',r.name));
+    tr.appendChild(el('td','val',r.info));
+    tr.appendChild(el('td','val',r.Ik.toFixed(r.Ik<10?2:1)));
+    tr.appendChild(el('td','val',r.Ic.toFixed(r.Ic<10?2:1)));
+    const cs=el('td'); cs.appendChild(el('span','stufe '+r.st.cls,r.st.lbl)); tr.appendChild(cs);
+    t.appendChild(tr);
+  });
+}
+
+let animRaf=0;
+function animTo(node,to){
+  cancelAnimationFrame(animRaf);const from=parseFloat(node.textContent)||0;const t0=performance.now();
+  (function a(t){const k=Math.min(1,(t-t0)/450);const v=from+(to-from)*(1-Math.pow(1-k,3));
+    node.textContent=Math.round(v);if(k<1)animRaf=requestAnimationFrame(a);else node.textContent=Math.round(to);})(performance.now());
+}
+
+function render(){
+  trafo.S=+document.getElementById('tS').value; trafo.uk=+document.getElementById('tUk').value;
+  trafo.Pcu=+document.getElementById('tPcu').value; trafo.c=+document.getElementById('tC').value;
+  trafo.Un=+document.getElementById('tUn').value;
+  buildAbTable();
+  const rows=compute();
+  buildResTable(rows);
+  const maxSt=rows.reduce((m,r)=>Math.max(m,r.st.n),0);
+  const lblByN={0:'keine PSA-Stufe',1:'Stufe 1',2:'Stufe 2',3:'Stufe 3'};
+  document.getElementById('rVal').textContent=maxSt;
+  animTo(document.getElementById('rVal'),maxSt);
+  const worst=rows.reduce((a,b)=>b.st.n>a.st.n?b:a,rows[0]);
+  document.getElementById('rCalc').innerHTML='maßgebend: <b>'+worst.name+'</b> · I<sub>c</sub> = <b>'+worst.Ic.toFixed(2)+' kA</b> → '+lblByN[maxSt];
+  document.getElementById('trV').textContent=trafo.S+' kVA · u'+'k '+trafo.uk+'%';
+  document.getElementById('abV').textContent=abschnitte.length+' Abschnitte';
+  document.getElementById('footnote').innerHTML=
+    '<b>Modell:</b> Z<sub>T</sub> aus S/u<sub>k</sub>/P<sub>Cu</sub> (IEC 60909). '+
+    'I<sub>k</sub> = c·U<sub>N</sub> / (√3·|Z|) je Messort (Trafo→NS-HV→UV→Orte). '+
+    'I<sub>c</sub> = strombegrenzter Lichtbogenstrom (gG/NH stärker begrenzend als LS). '+
+    'Schutzkleidungsstufe aus I<sub>c</sub>: &lt;2 kA keine · 2–5 kA Stufe 1 (EN 61482-1-2 Kl.1) · '+
+    '5–10 kA Stufe 2 (Kl.2) · ≥10 kA Stufe 3. Cu, ρ='+RHO+' Ω·mm²/m.';
+}
+
+document.querySelectorAll('#tS,#tUk,#tPcu,#tC,#tUn').forEach(i=>i.addEventListener('input',render));
+document.getElementById('addAb').onclick=()=>{abschnitte.push({bau:'LS',char:'C',In:16,S:2.5,l:15,name:'Ort'+(abschnitte.length+1)});render();};
+render();
+</script>
+</body>
+</html>

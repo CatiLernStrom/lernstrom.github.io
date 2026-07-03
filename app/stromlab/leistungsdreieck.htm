@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>StromLab — Leistungsdreieck</title>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;min-height:100vh;background:radial-gradient(130% 100% at 50% 0%,#15222e 0%,#0b1017 70%);
+    color:#e8edf2;font-family:'Segoe UI',system-ui,sans-serif;padding:18px 14px 40px}
+  .wrap{max-width:620px;margin:0 auto}
+  .backlink{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:#8aa0b2;
+    text-decoration:none;margin-bottom:10px;padding:5px 11px;border-radius:20px;
+    border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);transition:.15s}
+  .backlink:hover{color:#7af0d9;border-color:rgba(45,212,191,.35);background:rgba(45,212,191,.08)}
+  .backlink svg{width:13px;height:13px;display:block}
+  header h1{font-size:24px;font-weight:900;margin:0;letter-spacing:.3px}
+  header h1 .lab{color:#7af0d9}
+  header .sub{font-size:12.5px;color:#8da0b2;font-weight:600;margin-top:3px}
+  header .tag{display:inline-block;margin-top:8px;font-size:10.5px;font-weight:800;letter-spacing:.5px;
+    text-transform:uppercase;color:#7af0d9;background:rgba(45,212,191,.12);border:1px solid rgba(45,212,191,.3);
+    padding:4px 10px;border-radius:20px}
+  .card{background:linear-gradient(180deg,#172230,#101824);border:1px solid rgba(255,255,255,.07);
+    border-radius:18px;padding:16px;margin-top:14px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+  .result{display:flex;flex-wrap:wrap;gap:14px;background:linear-gradient(180deg,#10302a,#0e1c1a);
+    border:1px solid rgba(45,212,191,.35);box-shadow:0 0 30px rgba(45,212,191,.12)}
+  .res{flex:1 1 70px;min-width:70px}
+  .res .big{font-size:30px;font-weight:900;color:#7af0d9;line-height:1;font-variant-numeric:tabular-nums}
+  .res .unit{font-size:14px;color:#9fe9da;font-weight:800}
+  .res .lbl{font-size:11px;color:#9fb0c0;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-top:5px}
+  .grp{margin-top:16px}
+  .grp .h{font-size:11px;font-weight:800;color:#8da0b2;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;display:flex;justify-content:space-between}
+  .grp .h .v{color:#7af0d9}
+  .pills{display:flex;flex-wrap:wrap;gap:6px}
+  .pill{padding:8px 12px;border-radius:11px;border:1px solid rgba(255,255,255,.1);background:#1b2735;
+    color:#cdd8e2;font-weight:800;font-size:13px;cursor:pointer;transition:.15s}
+  .pill small{display:block;font-size:9.5px;color:#8093a4;font-weight:600;margin-top:1px}
+  .pill:hover{transform:translateY(-2px)}
+  .pill.on{background:linear-gradient(180deg,#2dd4bf,#14b8a6);color:#06281f;border-color:#2dd4bf;box-shadow:0 0 16px rgba(45,212,191,.4)}
+  .pill.on small{color:#06403a}
+  input[type=range]{width:100%;accent-color:#2dd4bf}
+  canvas{width:100%;display:block;border-radius:12px;background:#0c141d}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;font-weight:700;color:#9fb0c0;margin-top:8px}
+  .legend i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:5px;vertical-align:middle}
+  .note{font-size:11px;color:#6f8093;margin-top:12px;line-height:1.5}
+  .ld .h{margin-top:4px}
+  .ldrow{display:flex;align-items:center;gap:8px;margin-top:8px}
+  .ldrow .nm{flex:1;font-weight:800;font-size:13px}
+  .ldrow .nm small{display:block;font-size:10px;color:#8093a4;font-weight:600}
+  .ldrow input[type=range]{flex:1.4}
+  .ldrow .val{width:74px;text-align:right;font-variant-numeric:tabular-nums;color:#7af0d9;font-weight:800;font-size:12px}
+  .pf{display:inline-block;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:800;margin-left:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="backlink" href="index.htm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>StromLab</a>
+  <header>
+    <h1><span class="lab">StromLab</span> · Leistungsdreieck</h1>
+    <div class="sub">Wirk-, Blind- &amp; Scheinleistung — u(t)/i(t)/p(t) &amp; cosφ-Korrektur</div>
+    <div class="tag">P · Q · S · cosφ-Korrektur · U₀ 231 V</div>
+  </header>
+
+  <div class="card result">
+    <div class="res"><div><span class="big" id="rP">0</span> <span class="unit">W</span></div><div class="lbl">P · Wirk</div></div>
+    <div class="res"><div><span class="big" id="rQ">0</span> <span class="unit">var</span></div><div class="lbl">Q · Blind</div></div>
+    <div class="res"><div><span class="big" id="rS">0</span> <span class="unit">VA</span></div><div class="lbl">S · Schein</div></div>
+    <div class="res"><div><span class="big" id="rPF">1.00</span></div><div class="lbl">cosφ <span id="rType"></span></div></div>
+  </div>
+
+  <div class="card ld">
+    <div class="grp"><div class="h"><span>Lasten kombinieren</span><span class="v">U₀=231V · I₀=1A</span></div></div>
+
+    <div class="ldrow">
+      <div class="nm">Glühlampe <small>rein ohmsch (cosφ=1)</small></div>
+      <input type="range" id="gl" min="0" max="500" step="10" value="100" />
+      <div class="val"><span id="glv">100</span> W</div>
+    </div>
+
+    <div class="ldrow">
+      <div class="nm">Fluoreszenz-Lampe <small>induktiv (cosφ=0,5)</small></div>
+      <input type="range" id="fl" min="0" max="500" step="10" value="0" />
+      <div class="val"><span id="flv">0</span> W</div>
+    </div>
+
+    <div class="ldrow">
+      <div class="nm">Kondensator <small>kapazitiv (Qc → Korrektur)</small></div>
+      <input type="range" id="ko" min="0" max="500" step="10" value="0" />
+      <div class="val"><span id="kov">0</span> var</div>
+    </div>
+
+    <div class="grp"><div class="h"><span>cosφ der Fluoreszenz-Lampe</span><span class="v" id="cpv">0,50</span></div>
+      <input type="range" id="cp" min="30" max="100" step="1" value="50" />
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="grp"><div class="h"><span>Zeitverläufe u(t) · i(t) · p(t)</span><span class="v">0 – 40 ms · 50 Hz</span></div></div>
+    <canvas id="wave" width="700" height="260"></canvas>
+    <div class="legend">
+      <span><i style="background:#7af0d9"></i>u(t)</span>
+      <span><i style="background:#fbbf24"></i>i(t)</span>
+      <span><i style="background:#f472b6"></i>p(t) = u·i</span>
+      <span><i style="background:#5b6b7d"></i>Ø P</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="grp"><div class="h"><span>Leistungsdreieck</span><span class="v" id="phiv">φ = 0°</span></div></div>
+    <canvas id="tri" width="700" height="300"></canvas>
+    <div class="note" id="note"></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* StromLab Leistungsdreieck — Basis aus leistungsdreieck.json: U0=231V, I0=1A, S0=231VA */
+const U0=231, I0=1, F=50, OMEGA=2*Math.PI*F;
+
+const st={ gl:100, fl:0, ko:0, cp:0.50 };
+
+function compute(){
+  // P aus ohmscher Glühlampe + Wirkanteil Fluoreszenzlampe
+  const cp = st.cp;                                  // cosphi der Fluoreszenzlampe
+  const Pfl = st.fl;                                 // angegebene Wirkleistung Fluoreszenz
+  // induktives Q der Fluoreszenzlampe: Q = P * tan(phi), tan = sqrt(1-cp^2)/cp
+  const Qfl = cp>0 ? Pfl * (Math.sqrt(Math.max(0,1-cp*cp))/cp) : 0;
+  const P = st.gl + Pfl;                             // Gesamtwirkleistung (W)
+  const Q = Qfl - st.ko;                             // induktiv positiv, Kondensator kompensiert
+  const S = Math.sqrt(P*P + Q*Q);                    // VA
+  const pf = S>0 ? P/S : 1;                          // cosphi
+  const phi = Math.atan2(Q, P);                      // rad (>0 induktiv)
+  return {P,Q,S,pf,phi};
+}
+
+const $=id=>document.getElementById(id);
+let raf=0;
+function animTo(node,to,dec){ const from=parseFloat(node.textContent.replace(',','.'))||0; const t0=performance.now();
+  (function a(t){const k=Math.min(1,(t-t0)/350);const v=from+(to-from)*(1-Math.pow(1-k,3));
+   node.textContent=(Math.round(v*Math.pow(10,dec))/Math.pow(10,dec)).toFixed(dec);
+   if(k<1)requestAnimationFrame(a);else node.textContent=(Math.round(to*Math.pow(10,dec))/Math.pow(10,dec)).toFixed(dec);})(performance.now());
+}
+
+function drawTriangle(r){
+  const c=$('tri'), ctx=c.getContext('2d'); const W=c.width, H=c.height;
+  ctx.clearRect(0,0,W,H);
+  const ox=70, oy=H-50;
+  const maxS = Math.max(r.S, U0*I0*1.2, 50);
+  const scale=(W-150)/maxS;
+  const px=r.P*scale;
+  const qy=r.Q*scale;
+  // grid baseline
+  ctx.strokeStyle='rgba(255,255,255,.08)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(ox,oy); ctx.lineTo(W-40,oy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(ox,oy); ctx.lineTo(ox,30); ctx.stroke();
+  // P arrow (horizontal)
+  function arrow(x1,y1,x2,y2,col,w){ ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=w;
+    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+    const a=Math.atan2(y2-y1,x2-x1);ctx.beginPath();ctx.moveTo(x2,y2);
+    ctx.lineTo(x2-10*Math.cos(a-.4),y2-10*Math.sin(a-.4));ctx.lineTo(x2-10*Math.cos(a+.4),y2-10*Math.sin(a+.4));ctx.closePath();ctx.fill(); }
+  const ex=ox+px, ey=oy-qy;
+  // axis captions (Achsenbeschriftung)
+  ctx.font='600 11px Segoe UI'; ctx.fillStyle='#7c8da0';
+  ctx.fillText('P → Wirkleistung (W)', ox+4, oy+34);
+  ctx.save(); ctx.translate(ox-16, 36); ctx.rotate(-Math.PI/2);
+  ctx.fillText('Q → Blindleistung (var)', 0, 0); ctx.restore();
+  // S (resultant)
+  arrow(ox,oy,ex,ey,'#7af0d9',3.5);
+  // P
+  arrow(ox,oy,ox+px,oy,'#fbbf24',2.5);
+  // Q (vertical at end of P)
+  arrow(ox+px,oy,ex,ey,'#f472b6',2.5);
+  ctx.font='bold 13px Segoe UI';
+  ctx.fillStyle='#fbbf24'; ctx.fillText('P = '+r.P.toFixed(0)+' W',ox+px/2-30,oy+22);
+  ctx.fillStyle='#f472b6'; ctx.fillText('Q = '+r.Q.toFixed(0)+' var',ox+px+8,oy-qy/2);
+  ctx.fillStyle='#7af0d9'; ctx.fillText('S = '+r.S.toFixed(0)+' VA',ox+px/2-70,ey-12);
+  // angle arc
+  ctx.strokeStyle='#cdd8e2'; ctx.lineWidth=1.8;
+  ctx.beginPath(); ctx.arc(ox,oy,34,0,-r.phi,r.phi<0); ctx.stroke();
+  ctx.fillStyle='#cdd8e2'; ctx.font='bold 13px Segoe UI';
+  ctx.fillText('φ = '+(r.phi*180/Math.PI).toFixed(0)+'°',ox+42,oy-12*Math.sign(r.phi||1)-2);
+}
+
+let waveT0=performance.now();
+function drawWave(r){
+  const c=$('wave'), ctx=c.getContext('2d'); const W=c.width, H=c.height;
+  ctx.clearRect(0,0,W,H);
+  const tShift=((performance.now()-waveT0)/1000*0.04)%1; // scroll the 40ms window
+  const padL=8,padR=8,midY=H/2;
+  ctx.strokeStyle='rgba(255,255,255,.07)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(0,midY);ctx.lineTo(W,midY);ctx.stroke();
+  for(let ms=0;ms<=40;ms+=10){const x=padL+(ms/40)*(W-padL-padR);
+    ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.strokeStyle='rgba(255,255,255,.05)';ctx.stroke();
+    ctx.fillStyle='#5b6b7d';ctx.font='10px Segoe UI';ctx.fillText(ms+'ms',x+2,H-4);}
+  // y-axis caption
+  ctx.fillStyle='#5b6b7d';ctx.font='600 10px Segoe UI';
+  ctx.fillText('+',padL+2,14);ctx.fillText('0',padL+2,midY-4);ctx.fillText('−',padL+2,H-16);
+  // amplitudes: U scale fixed, I scaled by current magnitude (S/U0)
+  const Imag = U0>0 ? r.S/U0 : 0;
+  const uA=H*0.40, iA=H*0.40*Math.min(1, Imag/3);   // visual cap
+  const pAraw = (U0*Math.SQRT2)*((Imag*Math.SQRT2)); // peak of p envelope ~ U_peak*I_peak
+  const pA = H*0.40;
+  const phi=r.phi;
+  const N=400;
+  function plot(fn,col,w){ctx.strokeStyle=col;ctx.lineWidth=w;ctx.beginPath();
+    for(let i=0;i<=N;i++){const ms=i/N*40;const t=(ms/1000)+tShift*0.04;const x=padL+(i/N)*(W-padL-padR);
+      const y=midY-fn(t);i?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.stroke();}
+  const uPk=U0*Math.SQRT2, iPk=Imag*Math.SQRT2;
+  // normalize p to its own peak so it fits
+  const pPeak = Math.max(1e-6, uPk*iPk);
+  // average power line
+  ctx.strokeStyle='#5b6b7d';ctx.setLineDash([5,4]);ctx.lineWidth=1.2;
+  const pAvgY = midY - (r.P/(pPeak/2))*pA*0.5;
+  ctx.beginPath();ctx.moveTo(padL,pAvgY);ctx.lineTo(W-padR,pAvgY);ctx.stroke();ctx.setLineDash([]);
+  // p(t) = u*i
+  plot(t=>{const u=uPk*Math.sin(OMEGA*t);const ii=iPk*Math.sin(OMEGA*t-phi);return (u*ii)/(pPeak)*pA;},'#f472b6',2.2);
+  // u(t)
+  plot(t=>uA*Math.sin(OMEGA*t),'#7af0d9',2.4);
+  // i(t)
+  plot(t=>iA*Math.sin(OMEGA*t-phi),'#fbbf24',2.4);
+}
+
+$('gl').addEventListener('input',e=>{st.gl=+e.target.value;render();});
+$('fl').addEventListener('input',e=>{st.fl=+e.target.value;render();});
+$('ko').addEventListener('input',e=>{st.ko=+e.target.value;render();});
+$('cp').addEventListener('input',e=>{st.cp=+e.target.value/100;render();});
+
+// continuous animation of the waveforms (phase scroll)
+let lastR=compute();
+function loop(){ drawWave(lastR); requestAnimationFrame(loop); }
+function render(){
+  $('glv').textContent=st.gl; $('flv').textContent=st.fl; $('kov').textContent=st.ko;
+  $('cpv').textContent=st.cp.toFixed(2).replace('.',',');
+  const r=compute(); lastR=r;
+  animTo($('rP'),r.P,0); animTo($('rQ'),r.Q,0); animTo($('rS'),r.S,0); animTo($('rPF'),r.pf,2);
+  const phiDeg=r.phi*180/Math.PI;
+  $('phiv').textContent='φ = '+phiDeg.toFixed(1)+'°';
+  let type='', col='';
+  if(Math.abs(r.Q)<0.5){type='(ohmsch)';col='#2dd4bf';}
+  else if(r.Q>0){type='(induktiv)';col='#f472b6';}
+  else {type='(kapazitiv)';col='#fbbf24';}
+  $('rType').innerHTML='<span class="pf" style="background:'+col+'33;color:'+col+'">'+type+'</span>';
+  drawTriangle(r); drawWave(r);
+  $('note').innerHTML='Berechnung: P = ΣWirkleistungen = <b style="color:#cfe">'+r.P.toFixed(0)+' W</b>, '+
+    'Q = Q<sub>ind</sub> − Q<sub>C</sub> = <b style="color:#cfe">'+r.Q.toFixed(0)+' var</b>, '+
+    'S = √(P²+Q²) = <b style="color:#cfe">'+r.S.toFixed(0)+' VA</b>, cosφ = P/S = <b style="color:#cfe">'+r.pf.toFixed(3)+'</b>. '+
+    'Die Fluoreszenz-Lampe erzeugt induktives Q; der Kondensator (Q<sub>C</sub>) kompensiert es → cosφ steigt Richtung 1. Basis U₀=231 V, I₀=1 A.';
+}
+render();
+loop();
+</script>
+</body>
+</html>

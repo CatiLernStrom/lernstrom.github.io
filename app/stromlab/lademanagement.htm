@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>StromLab — Lademanagement</title>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;min-height:100vh;background:radial-gradient(130% 100% at 50% 0%,#15222e 0%,#0b1017 70%);
+    color:#e8edf2;font-family:'Segoe UI',system-ui,sans-serif;padding:18px 14px 40px}
+  .wrap{max-width:620px;margin:0 auto}
+  .backlink{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:#8aa0b2;
+    text-decoration:none;margin-bottom:10px;padding:5px 11px;border-radius:20px;
+    border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);transition:.15s}
+  .backlink:hover{color:#7af0d9;border-color:rgba(45,212,191,.35);background:rgba(45,212,191,.08)}
+  .backlink svg{width:13px;height:13px;display:block}
+  header h1{font-size:24px;font-weight:900;margin:0;letter-spacing:.3px}
+  header h1 .lab{color:#7af0d9}
+  header .sub{font-size:12.5px;color:#8da0b2;font-weight:600;margin-top:3px}
+  header .tag{display:inline-block;margin-top:8px;font-size:10.5px;font-weight:800;letter-spacing:.5px;
+    text-transform:uppercase;color:#7af0d9;background:rgba(45,212,191,.12);border:1px solid rgba(45,212,191,.3);
+    padding:4px 10px;border-radius:20px}
+  .card{background:linear-gradient(180deg,#172230,#101824);border:1px solid rgba(255,255,255,.07);
+    border-radius:18px;padding:16px;margin-top:14px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+  .result{display:flex;flex-wrap:wrap;gap:14px;background:linear-gradient(180deg,#10302a,#0e1c1a);
+    border:1px solid rgba(45,212,191,.35);box-shadow:0 0 30px rgba(45,212,191,.12)}
+  .res{flex:1 1 80px;min-width:80px}
+  .res .big{font-size:26px;font-weight:900;color:#7af0d9;line-height:1;font-variant-numeric:tabular-nums}
+  .res .unit{font-size:13px;color:#9fe9da;font-weight:800}
+  .res .lbl{font-size:10.5px;color:#9fb0c0;font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-top:5px}
+  .res.warn .big{color:#fb7185}
+  .grp{margin-top:16px}
+  .grp .h{font-size:11px;font-weight:800;color:#8da0b2;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;display:flex;justify-content:space-between}
+  .grp .h .v{color:#7af0d9}
+  .pills{display:flex;flex-wrap:wrap;gap:6px}
+  .pill{padding:8px 12px;border-radius:11px;border:1px solid rgba(255,255,255,.1);background:#1b2735;
+    color:#cdd8e2;font-weight:800;font-size:13px;cursor:pointer;transition:.15s}
+  .pill:hover{transform:translateY(-2px)}
+  .pill.on{background:linear-gradient(180deg,#2dd4bf,#14b8a6);color:#06281f;border-color:#2dd4bf;box-shadow:0 0 16px rgba(45,212,191,.4)}
+  input[type=range]{width:100%;accent-color:#2dd4bf}
+  .ldrow{display:flex;align-items:center;gap:8px;margin-top:10px}
+  .ldrow .nm{flex:1;font-weight:800;font-size:12.5px}
+  .ldrow input[type=range]{flex:1.5}
+  .ldrow .val{width:90px;text-align:right;font-variant-numeric:tabular-nums;color:#7af0d9;font-weight:800;font-size:12px}
+  canvas{width:100%;display:block;border-radius:12px;background:#0c141d}
+  .legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;font-weight:700;color:#9fb0c0;margin-top:8px}
+  .legend i{display:inline-block;width:14px;height:10px;border-radius:3px;margin-right:5px;vertical-align:middle}
+  .note{font-size:11px;color:#6f8093;margin-top:12px;line-height:1.5}
+  .toggle{display:flex;gap:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="backlink" href="index.htm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>StromLab</a>
+  <header>
+    <h1><span class="lab">StromLab</span> · Lademanagement</h1>
+    <div class="sub">E-Mobilität — dynamische Lastverteilung am Anschluss</div>
+    <div class="tag">3~ 400 V · Anschlussgrenze · PV-Eigennutzung</div>
+  </header>
+
+  <div class="card result">
+    <div class="res"><div><span class="big" id="rPeak">0</span> <span class="unit">kW</span></div><div class="lbl">Lastspitze</div></div>
+    <div class="res warn" id="rOverBox"><div><span class="big" id="rOver">0</span> <span class="unit">kW</span></div><div class="lbl">Überlast</div></div>
+    <div class="res"><div><span class="big" id="rPV">0</span> <span class="unit">%</span></div><div class="lbl">PV-Eigennutzung</div></div>
+    <div class="res"><div><span class="big" id="rDone">0</span> <span class="unit">/12</span></div><div class="lbl">voll geladen</div></div>
+  </div>
+
+  <div class="card">
+    <div class="grp"><div class="h"><span>Anschluss (Überstromunterbrecher)</span><span class="v" id="limV">63 A · 43 kW</span></div>
+      <input type="range" id="lim" min="25" max="125" step="1" value="63" />
+    </div>
+    <div class="ldrow"><div class="nm">Anzahl Fahrzeuge</div>
+      <input type="range" id="nev" min="1" max="12" step="1" value="12" /><div class="val"><span id="nevv">12</span> Stk</div></div>
+    <div class="ldrow"><div class="nm">Tagesbedarf je Fahrzeug</div>
+      <input type="range" id="kwh" min="5" max="40" step="1" value="20" /><div class="val"><span id="kwhv">20</span> kWh</div></div>
+    <div class="ldrow"><div class="nm">Ladeleistung je Punkt (max)</div>
+      <input type="range" id="pmax" min="3" max="22" step="1" value="11" /><div class="val"><span id="pmaxv">11</span> kW</div></div>
+
+    <div class="grp"><div class="h"><span>Ladefenster</span><span class="v" id="winV">15:00 → 09:00</span></div></div>
+    <div class="ldrow"><div class="nm">laden ab</div>
+      <input type="range" id="from" min="0" max="23" step="1" value="15" /><div class="val"><span id="fromv">15:00</span></div></div>
+    <div class="ldrow"><div class="nm">benötigt ab</div>
+      <input type="range" id="to" min="0" max="23" step="1" value="9" /><div class="val"><span id="tov">09:00</span></div></div>
+  </div>
+
+  <div class="card">
+    <div class="grp"><div class="h"><span>Gebäudelast &amp; PV</span><span class="v" id="pvV">PV: an</span></div></div>
+    <div class="ldrow"><div class="nm">Gebäudelastspitze</div>
+      <input type="range" id="bld" min="0" max="40" step="1" value="26" /><div class="val"><span id="bldv">26</span> kW</div></div>
+    <div class="ldrow"><div class="nm">PV-Erzeugungsspitze</div>
+      <input type="range" id="pv" min="0" max="50" step="1" value="32" /><div class="val"><span id="pvv">32</span> kW</div></div>
+  </div>
+
+  <div class="card">
+    <div class="grp"><div class="h"><span>Betriebsart</span><span class="v">über den Tag</span></div>
+      <div class="toggle">
+        <button class="pill" id="mOff">Ohne Management</button>
+        <button class="pill on" id="mOn">Dyn. Lastmanagement</button>
+      </div>
+    </div>
+    <canvas id="chart" width="700" height="320"></canvas>
+    <div class="legend">
+      <span><i style="background:#3b4b5d"></i>Gebäude</span>
+      <span><i style="background:#2dd4bf"></i>EV-Laden</span>
+      <span><i style="background:#fbbf24;opacity:.85"></i>PV-Erzeugung</span>
+      <span><i style="background:#fb7185"></i>Überlast</span>
+      <span><i style="background:#f472b6;height:3px"></i>Anschlussgrenze</span>
+    </div>
+    <div class="note" id="note"></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* StromLab Lademanagement — Daten aus lademanagement.json:
+   12 Fahrzeuge, laden ab 15:00, benötigt ab 09:00, 20 kWh/Tag,
+   Gebäudelastspitze 26 kW, PV-Erzeugungsspitze 32 kW (Sommer). 3~400V. */
+const VAC=400, SQ3=Math.sqrt(3);
+const st={ limA:63, nev:12, kwh:20, pmax:11, from:15, to:9, bld:26, pv:32, mode:'on', pvOn:true };
+
+const $=id=>document.getElementById(id);
+const hh=h=>String(h).padStart(2,'0')+':00';
+const kwFromA=a=>VAC*SQ3*a/1000; // 3-phasig
+
+// 48 Halbstunden-Slots über 24h
+const SLOTS=48, DT=0.5;
+
+function buildingCurve(){ // tageslast-profil, normiert auf Spitze
+  const peak=st.bld; const arr=[];
+  for(let s=0;s<SLOTS;s++){const h=s*DT;
+    // Wohngebäude: morgens + abends Spitze
+    let f=0.25+0.55*Math.exp(-Math.pow((h-7.5)/2.2,2))+0.75*Math.exp(-Math.pow((h-19)/2.6,2));
+    f=Math.min(1,f); arr.push(peak*f);}
+  return arr;
+}
+function pvCurve(){ const peak=st.pvOn?st.pv:0; const arr=[];
+  for(let s=0;s<SLOTS;s++){const h=s*DT;
+    let f=Math.max(0,Math.sin(Math.PI*(h-6)/12)); // 6..18 Uhr
+    arr.push(peak*Math.pow(f,1.1));}
+  return arr;
+}
+function windowSlots(){ // gibt boolean array welche slots im ladefenster liegen
+  const a=[]; for(let s=0;s<SLOTS;s++){const h=s*DT;
+    let inW; if(st.from<=st.to) inW=(h>=st.from&&h<st.to); else inW=(h>=st.from||h<st.to);
+    a.push(inW);} return a;
+}
+
+function simulate(){
+  const limKW=kwFromA(st.limA);
+  const bld=buildingCurve();
+  const pv=pvCurve();
+  const win=windowSlots();
+  const need = st.nev*st.kwh;                 // gesamtenergie kWh
+  const evMax = st.nev*st.pmax;               // max gleichzeitige ladeleistung
+  const ev=new Array(SLOTS).fill(0);
+  const over=new Array(SLOTS).fill(0);
+  let remaining=need;
+
+  if(st.mode==='off'){
+    // alle laden sofort ab "from" mit voller Leistung bis Energie gedeckt
+    for(let s=0;s<SLOTS && remaining>0;s++){
+      if(!win[s]) continue;
+      const p=Math.min(evMax, remaining/DT);
+      ev[s]=p; remaining-=p*DT;
+    }
+  } else {
+    // dyn. Lastmanagement: pro Slot verfügbarer Headroom = Grenze - Gebäude + PV-Überschuss
+    // wir verteilen die Energie über das Fenster, priorisiere PV-reiche Slots
+    const winIdx=[]; for(let s=0;s<SLOTS;s++) if(win[s]) winIdx.push(s);
+    // 1. Durchlauf: PV-Überschuss zuerst nutzen
+    const headroom=s=> Math.max(0, limKW - bld[s]);
+    const pvSurplus=s=> Math.max(0, pv[s]-bld[s]);
+    // sortiere slots nach pv-überschuss absteigend für gestaffeltes Laden
+    const order=[...winIdx].sort((a,b)=>pvSurplus(b)-pvSurplus(a));
+    for(const s of order){ if(remaining<=0)break;
+      const cap=Math.min(evMax, headroom(s)); if(cap<=0)continue;
+      const p=Math.min(cap, remaining/DT); ev[s]=p; remaining-=p*DT;
+    }
+    // 2. falls noch übrig: chronologisch auffüllen bis Grenze
+    if(remaining>0.01){ for(const s of winIdx){ if(remaining<=0)break;
+      const cap=Math.min(evMax, headroom(s))-ev[s]; if(cap<=0)continue;
+      const p=Math.min(cap, remaining/DT); ev[s]+=p; remaining-=p*DT; } }
+  }
+
+  // gesamtlast + überlast
+  const total=new Array(SLOTS);
+  for(let s=0;s<SLOTS;s++){ total[s]=bld[s]+ev[s];
+    over[s]=Math.max(0,total[s]-limKW); }
+
+  const charged=need-Math.max(0,remaining);
+  const evEnergy=ev.reduce((a,x)=>a+x*DT,0);
+  // PV genutzt = min(pv, total) summiert
+  let pvUsed=0, pvTot=0;
+  for(let s=0;s<SLOTS;s++){ pvUsed+=Math.min(pv[s], total[s])*DT; pvTot+=pv[s]*DT; }
+  const pvShare = evEnergy>0 ? Math.min(100, 100*Math.min(pvUsed,evEnergy)/Math.max(1e-6,evEnergy)) : 0;
+  const peak=Math.max(...total);
+  const overMax=Math.max(...over);
+  const vehDone = Math.floor(st.nev * (need>0?charged/need:1) + 1e-6);
+
+  return {limKW,bld,pv,ev,over,total,peak,overMax,charged,need,pvShare,vehDone,evEnergy};
+}
+
+let raf=0;
+function animTo(node,to,dec){const from=parseFloat(node.textContent)||0;const t0=performance.now();
+  (function a(t){const k=Math.min(1,(t-t0)/350);const v=from+(to-from)*(1-Math.pow(1-k,3));
+   node.textContent=(Math.round(v*Math.pow(10,dec))/Math.pow(10,dec)).toFixed(dec);
+   if(k<1)requestAnimationFrame(a);else node.textContent=(Math.round(to*Math.pow(10,dec))/Math.pow(10,dec)).toFixed(dec);})(performance.now());
+}
+
+function draw(r){
+  const c=$('chart'),ctx=c.getContext('2d');const W=c.width,H=c.height;
+  ctx.clearRect(0,0,W,H);
+  const padL=40,padB=24,padT=14,padR=8;
+  const plotW=W-padL-padR, plotH=H-padB-padT;
+  const ymax=Math.max(r.limKW*1.15, r.peak*1.1, Math.max(...r.pv)*1.1, 10);
+  const x=s=>padL+(s/SLOTS)*plotW;
+  const bw=plotW/SLOTS;
+  const y=v=>padT+plotH-(v/ymax)*plotH;
+  // grid + y labels
+  ctx.font='10px Segoe UI';
+  for(let g=0;g<=ymax;g+=20){ const yy=y(g);
+    ctx.strokeStyle='rgba(255,255,255,.06)';ctx.beginPath();ctx.moveTo(padL,yy);ctx.lineTo(W-padR,yy);ctx.stroke();
+    ctx.fillStyle='#5b6b7d';ctx.fillText(g+'',6,yy+3);}
+  // x labels
+  for(let h=0;h<=24;h+=4){ const xx=padL+(h/24)*plotW;
+    ctx.fillStyle='#5b6b7d';ctx.fillText(String(h).padStart(2,'0'),xx-6,H-6);}
+  // Achsentitel
+  ctx.fillStyle='#7c8da0';ctx.font='700 10px Segoe UI';
+  ctx.fillText('Uhrzeit [h]',W-padR-58,H-6);
+  ctx.save();ctx.translate(11,padT+24);ctx.rotate(-Math.PI/2);ctx.fillText('Leistung [kW]',0,0);ctx.restore();
+  ctx.font='10px Segoe UI';
+  // PV area
+  ctx.beginPath();ctx.moveTo(x(0),y(0));
+  for(let s=0;s<SLOTS;s++){ctx.lineTo(x(s)+bw/2,y(r.pv[s]));} ctx.lineTo(x(SLOTS),y(0));ctx.closePath();
+  ctx.fillStyle='rgba(251,191,36,.18)';ctx.fill();
+  ctx.strokeStyle='rgba(251,191,36,.6)';ctx.lineWidth=1.5;ctx.beginPath();
+  for(let s=0;s<SLOTS;s++){const xx=x(s)+bw/2,yy=y(r.pv[s]);s?ctx.lineTo(xx,yy):ctx.moveTo(xx,yy);}ctx.stroke();
+  // stacked bars: building + ev + overload-highlight
+  for(let s=0;s<SLOTS;s++){
+    const xx=x(s)+1, w=bw-2;
+    const yB=y(r.bld[s]);
+    ctx.fillStyle='#3b4b5d'; ctx.fillRect(xx,yB,w,y(0)-yB);
+    const top=r.bld[s]+r.ev[s];
+    const yT=y(Math.min(top,r.limKW));
+    ctx.fillStyle='#2dd4bf'; ctx.fillRect(xx,yT,w,yB-yT);
+    if(r.over[s]>0){ const yO=y(top); ctx.fillStyle='#fb7185'; ctx.fillRect(xx,yO,w,y(r.limKW)-yO); }
+  }
+  // limit line
+  ctx.strokeStyle='#f472b6';ctx.lineWidth=2;ctx.setLineDash([6,4]);
+  ctx.beginPath();ctx.moveTo(padL,y(r.limKW));ctx.lineTo(W-padR,y(r.limKW));ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='#f472b6';ctx.fillText('Grenze '+r.limKW.toFixed(0)+' kW',padL+4,y(r.limKW)-4);
+}
+
+function render(){
+  $('limV').textContent=st.limA+' A · '+kwFromA(st.limA).toFixed(0)+' kW';
+  $('nevv').textContent=st.nev; $('kwhv').textContent=st.kwh; $('pmaxv').textContent=st.pmax;
+  $('fromv').textContent=hh(st.from); $('tov').textContent=hh(st.to);
+  $('winV').textContent=hh(st.from)+' → '+hh(st.to);
+  $('bldv').textContent=st.bld; $('pvv').textContent=st.pv;
+  $('pvV').textContent='PV: '+(st.pvOn?'an':'aus');
+  $('mOn').classList.toggle('on',st.mode==='on');
+  $('mOff').classList.toggle('on',st.mode==='off');
+  const r=simulate();
+  animTo($('rPeak'),r.peak,0); animTo($('rOver'),r.overMax,0);
+  animTo($('rPV'),r.pvShare,0); animTo($('rDone'),r.vehDone,0);
+  $('rDone').nextElementSibling.textContent='/'+st.nev;
+  $('rOverBox').style.opacity = r.overMax>0.5?1:.45;
+  draw(r);
+  const ok = r.overMax<0.5 && r.charged>=r.need-0.5;
+  $('note').innerHTML='Anschlussgrenze ≈ √3·400V·'+st.limA+'A = <b style="color:#cfe">'+r.limKW.toFixed(0)+' kW</b>. '+
+    'EV-Energie geladen: <b style="color:#cfe">'+r.evEnergy.toFixed(0)+'</b> von '+r.need+' kWh. '+
+    (st.mode==='off'
+      ? 'Ohne Management laden alle gleichzeitig → '+(r.overMax>0.5?'<b style="color:#fb7185">Überlast '+r.overMax.toFixed(0)+' kW</b>, Überstromunterbrecher löst aus.':'noch im Limit.')
+      : 'Dyn. Lastmanagement staffelt die Ladung in PV-reiche Slots und unter die Grenze. '+(ok?'<b style="color:#7af0d9">Alle Fahrzeuge rechtzeitig voll, keine Überlast.</b>':'Fenster/Leistung knapp – Bedarf evtl. nicht ganz gedeckt.'));
+}
+
+['lim','nev','kwh','pmax','from','to','bld','pv'].forEach(id=>{
+  const map={lim:'limA',nev:'nev',kwh:'kwh',pmax:'pmax',from:'from',to:'to',bld:'bld',pv:'pv'};
+  $(id).addEventListener('input',e=>{st[map[id]]=+e.target.value;render();});
+});
+$('mOn').onclick=()=>{st.mode='on';render();};
+$('mOff').onclick=()=>{st.mode='off';render();};
+$('pvV').style.cursor='pointer';
+$('pvV').onclick=()=>{st.pvOn=!st.pvOn;render();};
+render();
+</script>
+</body>
+</html>

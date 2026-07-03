@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>LernStrom — Ausschalen &amp; Dosen anzeichnen</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    background:radial-gradient(circle at 50% 30%, #1a2230 0%, #0c1018 70%, #06080d 100%);
+    font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:#e8edf2;
+    display:flex;align-items:center;justify-content:center;
+    overflow:hidden;
+    user-select:none;-webkit-user-select:none;
+    touch-action:none;
+  }
+  #stage{
+    position:relative;
+    width:390px;height:844px;
+    max-height:100vh;
+    border-radius:34px;
+    overflow:hidden;
+    box-shadow:0 30px 90px rgba(0,0,0,.7), 0 0 0 10px #0a0d13, 0 0 0 12px #1c232e, inset 0 0 60px rgba(0,0,0,.4);
+    background:
+      radial-gradient(120% 60% at 50% -10%, rgba(45,212,191,.10), transparent 60%),
+      linear-gradient(180deg,#26303d 0%, #1a212c 35%, #141a23 100%);
+  }
+  @media (max-height:860px){ #stage{transform:scale(calc(100vh / 860));} }
+
+  #stage::after{
+    content:"";position:absolute;inset:0;border-radius:34px;pointer-events:none;
+    box-shadow:inset 0 0 120px rgba(0,0,0,.55), inset 0 -40px 80px rgba(0,0,0,.5);
+    background:radial-gradient(140% 90% at 50% 120%, rgba(120,80,30,.18), transparent 55%);
+    z-index:60;
+  }
+
+  canvas#fx{position:absolute;inset:0;z-index:40;pointer-events:none;}
+
+  /* ---------- HUD ---------- */
+  #hud{position:absolute;top:0;left:0;right:0;z-index:50;padding:14px 16px 8px;display:flex;align-items:center;gap:10px;}
+  .badge{
+    display:flex;align-items:center;gap:7px;
+    background:linear-gradient(180deg,#202a37,#161d27);
+    border:1px solid rgba(255,255,255,.07);
+    border-radius:14px;padding:7px 11px;font-size:13px;font-weight:700;
+    box-shadow:0 4px 10px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.05);
+  }
+  .badge .dot{width:9px;height:9px;border-radius:50%;background:#2dd4bf;box-shadow:0 0 8px #2dd4bf;}
+  #xpBadge{color:#ffd166;}
+  #xpBadge .ico{filter:drop-shadow(0 0 5px rgba(255,209,102,.6));}
+  .spacer{flex:1;}
+  #mute{
+    width:38px;height:38px;border-radius:12px;cursor:pointer;
+    background:linear-gradient(180deg,#202a37,#161d27);
+    border:1px solid rgba(255,255,255,.07);
+    display:flex;align-items:center;justify-content:center;font-size:17px;
+    box-shadow:0 4px 10px rgba(0,0,0,.4);
+  }
+  #mute:active{transform:scale(.92);}
+
+  #prog{position:absolute;top:58px;left:16px;right:16px;z-index:50;height:8px;border-radius:6px;
+    background:rgba(0,0,0,.4);overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,.6);}
+  #progFill{height:100%;width:0%;border-radius:6px;
+    background:linear-gradient(90deg,#2dd4bf,#7af0d9);transition:width .5s cubic-bezier(.2,1.3,.4,1);
+    box-shadow:0 0 12px rgba(45,212,191,.7);}
+
+  #task{position:absolute;top:74px;left:0;right:0;z-index:50;text-align:center;pointer-events:none;padding:0 14px;transition:opacity .6s, transform .6s;}
+  #task.faded{opacity:0;transform:translateY(-8px);pointer-events:none;}
+  #task.hidden{opacity:0!important;transform:translateY(-8px);pointer-events:none!important;}
+  #task h1{font-size:15px;font-weight:800;letter-spacing:.3px;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.6);}
+  #task p{font-size:12px;margin-top:3px;color:#9fb0c0;font-weight:600;line-height:1.4;}
+  #task .fuse{display:none;}
+  /* kompakter Toggle "Aufgabe ein/aus" — verdeckt die Spielflaeche nicht */
+  #taskToggle{position:absolute;top:96px;right:12px;z-index:58;cursor:pointer;
+    font-size:10px;font-weight:800;color:#9fb0c0;background:rgba(10,14,20,.55);
+    border:1px solid rgba(255,255,255,.08);border-radius:11px;padding:4px 9px;
+    -webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);user-select:none;-webkit-user-select:none;}
+  #taskToggle:active{transform:scale(.94);}
+
+  #steps{position:absolute;top:38px;left:16px;right:16px;z-index:49;display:flex;gap:3px;justify-content:center;pointer-events:none;}
+  #steps .sc{flex:1;height:4px;border-radius:3px;background:rgba(255,255,255,.08);transition:background .4s, box-shadow .4s;}
+  #steps .sc.done{background:linear-gradient(90deg,#2dd4bf,#7af0d9);box-shadow:0 0 8px rgba(45,212,191,.6);}
+  #steps .sc.cur{background:#ffd166;box-shadow:0 0 10px rgba(255,209,102,.7);}
+
+  .prep{position:absolute;inset:0;z-index:30;opacity:0;pointer-events:none;transition:opacity .55s;}
+  .prep.on{opacity:1;pointer-events:auto;}
+  .prep svg{position:absolute;inset:0;width:100%;height:100%;display:block;}
+
+  .readout{position:absolute;left:50%;transform:translateX(-50%);bottom:46px;z-index:35;
+    font-size:13px;font-weight:800;color:#fff;background:linear-gradient(180deg,#202a37,#141a23);
+    padding:7px 16px;border-radius:20px;border:1px solid rgba(45,212,191,.3);
+    box-shadow:0 6px 18px rgba(0,0,0,.5);pointer-events:none;text-align:center;min-width:200px;max-width:330px;}
+  .readout .big{color:#7af0d9;font-size:16px;}
+  .readout.bad{border-color:#ff6b6b;color:#ffb3b3;}
+  .readout.good{border-color:#2dd4bf;}
+
+  /* WIN overlay */
+  #win{position:absolute;inset:0;z-index:70;display:none;flex-direction:column;align-items:center;justify-content:center;
+    background:radial-gradient(circle at 50% 40%, rgba(45,212,191,.18), rgba(6,9,14,.86) 60%);
+    backdrop-filter:blur(2px);}
+  #win.show{display:flex;animation:winIn .5s;}
+  @keyframes winIn{from{opacity:0}to{opacity:1}}
+  #win .card{
+    width:300px;padding:26px 22px 24px;border-radius:24px;text-align:center;
+    background:linear-gradient(180deg,#222d3a,#161d27);
+    border:1px solid rgba(45,212,191,.3);
+    box-shadow:0 30px 70px rgba(0,0,0,.7), 0 0 40px rgba(45,212,191,.2), inset 0 1px 0 rgba(255,255,255,.06);
+    transform:scale(.6);animation:pop .6s cubic-bezier(.2,1.6,.4,1) forwards;
+  }
+  @keyframes pop{to{transform:scale(1)}}
+  #win h2{font-size:23px;font-weight:900;color:#fff;letter-spacing:.5px;}
+  #win .sub{font-size:13px;color:#9fb0c0;margin-top:5px;font-weight:600;}
+  #stars{display:flex;gap:8px;justify-content:center;margin:16px 0 6px;}
+  #stars .st{font-size:34px;color:#2a3340;transform:scale(0);}
+  #stars .st.lit{color:#ffd166;text-shadow:0 0 16px rgba(255,209,102,.8);animation:starPop .5s cubic-bezier(.2,1.8,.4,1) forwards;}
+  @keyframes starPop{0%{transform:scale(0) rotate(-40deg)}70%{transform:scale(1.4) rotate(10deg)}100%{transform:scale(1) rotate(0)}}
+  #xpBig{font-size:30px;font-weight:900;color:#ffd166;margin:8px 0 4px;text-shadow:0 0 18px rgba(255,209,102,.5);}
+  #win .ok{margin-top:16px;padding:12px 0;border-radius:14px;cursor:pointer;font-weight:800;font-size:15px;color:#06281f;
+    background:linear-gradient(180deg,#5cf0d6,#2dd4bf);box-shadow:0 8px 20px rgba(45,212,191,.4);}
+  #win .ok:active{transform:scale(.96);}
+
+  .toast{position:absolute;z-index:55;font-weight:900;font-size:15px;pointer-events:none;
+    text-shadow:0 2px 6px rgba(0,0,0,.6);animation:toastUp 1s ease-out forwards;}
+  @keyframes toastUp{0%{opacity:0;transform:translateY(0) scale(.6)}15%{opacity:1;transform:translateY(-6px) scale(1.1)}100%{opacity:0;transform:translateY(-46px) scale(1)}}
+
+  .shake{animation:shakeStage .35s;}
+  @keyframes shakeStage{0%,100%{transform:translate(0,0)}20%{transform:translate(-6px,2px)}40%{transform:translate(6px,-2px)}60%{transform:translate(-4px,1px)}80%{transform:translate(4px,-1px)}}
+
+  .pulseTool{animation:toolPulse 1.1s ease-in-out infinite;}
+  @keyframes toolPulse{0%,100%{filter:drop-shadow(0 0 1px rgba(45,212,191,.3))}50%{filter:drop-shadow(0 0 10px rgba(45,212,191,.95)) drop-shadow(0 0 4px rgba(122,240,217,.9))}}
+  .dragPath{stroke-dasharray:7 7;animation:dashMove 1s linear infinite;}
+  @keyframes dashMove{to{stroke-dashoffset:-28;}}
+  .ghost{pointer-events:none;}
+  .pathArrow{animation:arrowGlow 1.1s ease-in-out infinite;}
+  @keyframes arrowGlow{0%,100%{opacity:.55}50%{opacity:1}}
+
+  /* big floating "do this" hint banner — SCHMAL + LINKS, nie ueber dem Ziel */
+  .doHint{position:absolute;left:12px;top:116px;transform:none;z-index:36;max-width:170px;
+    font-size:11.5px;font-weight:800;color:#fff;text-align:left;line-height:1.4;
+    background:linear-gradient(180deg,rgba(32,42,55,.95),rgba(20,26,35,.95));
+    padding:9px 16px;border-radius:16px;border:1px solid rgba(45,212,191,.4);
+    box-shadow:0 8px 22px rgba(0,0,0,.5), 0 0 22px rgba(45,212,191,.18);
+    pointer-events:none;opacity:0;transition:opacity .4s;}
+  .doHint.on{opacity:1;}
+  .doHint b{color:#7af0d9;}
+
+  /* plan-overview "weiter" button */
+  .goBtn{position:absolute;left:50%;transform:translateX(-50%);bottom:150px;z-index:37;
+    padding:11px 26px;border-radius:16px;cursor:pointer;font-weight:800;font-size:14px;color:#06281f;
+    background:linear-gradient(180deg,#5cf0d6,#2dd4bf);box-shadow:0 8px 20px rgba(45,212,191,.4);
+    opacity:0;pointer-events:none;transition:opacity .4s;}
+  .goBtn.on{opacity:1;pointer-events:auto;}
+  .goBtn:active{transform:translateX(-50%) scale(.96);}
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <canvas id="fx"></canvas>
+
+  <!-- HUD -->
+  <div id="hud">
+    <div class="badge"><span class="dot"></span><span id="phaseLbl">Schritt 1</span></div>
+    <div class="spacer"></div>
+    <div class="badge" id="xpBadge"><span class="ico">⚡</span><span id="xpVal">0</span> XP</div>
+    <div id="mute">🔇</div>
+  </div>
+
+  <div id="steps"></div>
+  <div id="prog"><div id="progFill"></div></div>
+
+  <div id="task">
+    <h1 id="taskTitle">Ausschalen &amp; Dosen anzeichnen</h1>
+    <p id="taskSub">Nach dem Betonieren ausschalen</p>
+    <div class="fuse" id="planChip">Detailplan: Wohnung 1.OG</div>
+  </div>
+  <div id="taskToggle">Aufgabe ausblenden</div>
+
+  <!-- STEP 1: Ausschalen (Schalbretter abnehmen) -->
+  <div class="prep" id="pUnform">
+    <svg id="svgUnform" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"></svg>
+    <div class="doHint" id="hintUnform"></div>
+    <div class="readout" id="roUnform">Schalbretter abnehmen …</div>
+  </div>
+
+  <!-- STEP 2: Rohre in den Dosen freilegen / abschneiden -->
+  <div class="prep" id="pPipes">
+    <svg id="svgPipes" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"></svg>
+    <div class="doHint" id="hintPipes"></div>
+    <div class="readout" id="roPipes">Rohre an den Dosen freilegen</div>
+  </div>
+
+  <!-- STEP 3: Detailplan lesen -->
+  <div class="prep" id="pPlan">
+    <svg id="svgPlan" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"></svg>
+    <div class="doHint" id="hintPlan"></div>
+    <div class="readout" id="roPlan">Lies den Detailplan</div>
+    <div class="goBtn" id="planGo">An die Wand →</div>
+  </div>
+
+  <!-- STEP 4: Dosen nach Plan anzeichnen -->
+  <div class="prep" id="pMark">
+    <svg id="svgMark" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"></svg>
+    <div class="doHint" id="hintMark"></div>
+    <div class="readout" id="roMark">Dosen nach Plan anzeichnen (0/4)</div>
+  </div>
+
+  <!-- STEP 5: Aufmessung Hoehe ab Rohboden + Unterlagsboden -->
+  <div class="prep" id="pHeight">
+    <svg id="svgHeight" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"></svg>
+    <div class="doHint" id="hintHeight"></div>
+    <div class="readout" id="roHeight">Höhe ab Rohboden aufmessen</div>
+  </div>
+
+  <!-- WIN -->
+  <div id="win">
+    <div class="card">
+      <h2>NACH PLAN ANGEZEICHNET!</h2>
+      <div class="sub">Ausgeschalt, Rohre frei, Dosen korrekt markiert</div>
+      <div id="stars"><span class="st">★</span><span class="st">★</span><span class="st">★</span></div>
+      <div id="xpBig">+120 XP</div>
+      <div class="sub" id="winNote">Detailplan · Unterlagsboden berücksichtigt · alle Dosen am richtigen Mass</div>
+      <div class="ok" id="again">Nochmal spielen</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+"use strict";
+/* ============================================================= *
+ *  LernStrom — Ausschalen & Dosen anzeichnen nach Plan          *
+ *  Single-file Demo. Pure SVG + Canvas FX + WebAudio.           *
+ *  Stil/Technik 1:1 nach baustromverteiler-v2.                  *
+ * ============================================================= */
+
+const STAGE_W = 390, STAGE_H = 844;
+const SVGNS   = "http://www.w3.org/2000/svg";
+const stage   = document.getElementById('stage');
+const fx      = document.getElementById('fx');
+const ctx     = fx.getContext('2d');
+
+/* ---------- coordinate helper: client px -> svg viewbox px ---- */
+function toSvgFor(svg, clientX, clientY){
+  const r = svg.getBoundingClientRect();
+  return {
+    x: (clientX - r.left) / r.width  * STAGE_W,
+    y: (clientY - r.top ) / r.height * STAGE_H
+  };
+}
+
+/* =============================================================
+ *  AUDIO  (tiny WebAudio synth) — muted by default
+ * ============================================================= */
+let audioCtx=null, muted=true;
+function AC(){ if(!audioCtx){ try{audioCtx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){} } return audioCtx; }
+function tone(freq, dur, type, vol, slideTo){
+  if(muted) return; const c=AC(); if(!c) return;
+  const o=c.createOscillator(), g=c.createGain();
+  o.type=type||'sine'; o.frequency.value=freq;
+  if(slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, c.currentTime+dur);
+  g.gain.value=0.0001;
+  g.gain.exponentialRampToValueAtTime(vol||0.2, c.currentTime+0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime+dur);
+  o.connect(g); g.connect(c.destination);
+  o.start(); o.stop(c.currentTime+dur+0.02);
+}
+function sndClick(){ tone(680,0.07,'triangle',0.25,1200); setTimeout(()=>tone(1500,0.05,'sine',0.12),20); }
+function sndSnap(){ tone(440,0.05,'square',0.18,900); setTimeout(()=>tone(1320,0.12,'triangle',0.22),30); }
+function sndBuzz(){ if(muted)return; const c=AC(); if(!c)return;
+  const o=c.createOscillator(),g=c.createGain(); o.type='sawtooth';o.frequency.value=120;
+  g.gain.value=0.0001;g.gain.exponentialRampToValueAtTime(0.22,c.currentTime+0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+0.25);
+  o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+0.27);
+}
+function sndPick(){ tone(520,0.05,'sine',0.14,720); }
+function sndWood(){ if(muted)return; const c=AC(); if(!c)return;
+  const o=c.createOscillator(),g=c.createGain(); o.type='triangle';o.frequency.value=240;
+  o.frequency.exponentialRampToValueAtTime(90,c.currentTime+0.18);
+  g.gain.value=0.0001;g.gain.exponentialRampToValueAtTime(0.16,c.currentTime+0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+0.22);
+  o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+0.24);
+}
+function sndSaw(){ if(muted)return; const c=AC(); if(!c)return;
+  const o=c.createOscillator(),g=c.createGain(); o.type='sawtooth';o.frequency.value=300;
+  o.frequency.exponentialRampToValueAtTime(150,c.currentTime+0.16);
+  g.gain.value=0.0001;g.gain.exponentialRampToValueAtTime(0.10,c.currentTime+0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+0.18);
+  o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+0.2);
+}
+function sndPen(){ tone(900,0.04,'sine',0.10,1400); }
+function sndWin(){ [523,659,784,1047,1319].forEach((f,i)=>setTimeout(()=>tone(f,0.3,'triangle',0.2),i*110)); }
+
+document.getElementById('mute').onclick=function(){
+  muted=!muted; this.textContent=muted?'🔇':'🔊';
+  if(!muted){ AC(); tone(880,0.06,'sine',0.15); }
+};
+
+/* =============================================================
+ *  PARTICLE / FX ENGINE  (canvas)
+ * ============================================================= */
+function sizeCanvas(){
+  const r=stage.getBoundingClientRect();
+  const dpr=window.devicePixelRatio||1;
+  fx.width=STAGE_W*dpr; fx.height=STAGE_H*dpr;
+  fx.style.width=r.width+'px'; fx.style.height=r.height+'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+let particles=[];
+function spark(x,y,n,opt){
+  opt=opt||{};
+  for(let i=0;i<n;i++){
+    const a=Math.random()*Math.PI*2, sp=(opt.speed||3)*(0.4+Math.random());
+    particles.push({
+      x,y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp - (opt.up||0),
+      life:1, decay:0.012+Math.random()*0.02,
+      size:(opt.size||2.4)*(0.6+Math.random()),
+      color:opt.color|| (Math.random()<.5?'#ffd166':'#ffae42'),
+      grav:opt.grav!=null?opt.grav:0.06, glow:opt.glow!==false
+    });
+  }
+}
+let smoke=[];
+function puff(x,y,n,opt){
+  opt=opt||{};
+  for(let i=0;i<n;i++){
+    smoke.push({
+      x:x+(Math.random()-.5)*10, y:y+(Math.random()-.5)*6,
+      vx:(Math.random()-.5)*0.7, vy:-(0.5+Math.random()*0.9),
+      r:(opt.size||6)*(0.5+Math.random()), life:1, decay:0.012+Math.random()*0.01,
+      color:opt.color||'200,210,220'
+    });
+  }
+}
+let confetti=[];
+function burstConfetti(){
+  const cols=['#2dd4bf','#ffd166','#ff6b6b','#7af0d9','#ffffff','#ffae42','#8ab4ff'];
+  for(let i=0;i<140;i++){
+    confetti.push({
+      x:STAGE_W/2+(Math.random()-.5)*60, y:STAGE_H*0.42,
+      vx:(Math.random()-.5)*9, vy:-Math.random()*11-3,
+      g:0.22+Math.random()*0.1, w:5+Math.random()*6, h:8+Math.random()*8,
+      rot:Math.random()*6.28, vr:(Math.random()-.5)*0.4,
+      color:cols[(Math.random()*cols.length)|0], life:1
+    });
+  }
+}
+
+function fxLoop(){
+  ctx.clearRect(0,0,STAGE_W,STAGE_H);
+  for(const d of dust){
+    d.ph+=0.02; d.y+=d.vy; d.x+=d.vx+Math.sin(d.ph)*0.15;
+    if(d.y<-4){d.y=STAGE_H+4;d.x=Math.random()*STAGE_W;}
+    ctx.globalAlpha=d.a*(0.6+0.4*Math.sin(d.ph));
+    ctx.fillStyle='#ffe9c0';ctx.shadowBlur=4;ctx.shadowColor='#ffd9a0';
+    ctx.beginPath();ctx.arc(d.x,d.y,d.r,0,6.28);ctx.fill();
+  }
+  ctx.shadowBlur=0;ctx.globalAlpha=1;
+  for(let i=smoke.length-1;i>=0;i--){
+    const s=smoke[i];
+    s.vy*=0.99; s.x+=s.vx; s.y+=s.vy; s.r+=0.4; s.life-=s.decay;
+    if(s.life<=0){smoke.splice(i,1);continue;}
+    ctx.globalAlpha=s.life*0.35;
+    ctx.fillStyle='rgba('+s.color+',1)';
+    ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,6.28);ctx.fill();
+  }
+  ctx.globalAlpha=1;
+  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i];
+    p.vy+=p.grav; p.x+=p.vx; p.y+=p.vy; p.life-=p.decay;
+    if(p.life<=0){particles.splice(i,1);continue;}
+    ctx.globalAlpha=Math.max(0,p.life);
+    if(p.glow){ctx.shadowBlur=10;ctx.shadowColor=p.color;}else ctx.shadowBlur=0;
+    ctx.fillStyle=p.color;
+    ctx.beginPath();ctx.arc(p.x,p.y,p.size*p.life+0.4,0,6.28);ctx.fill();
+  }
+  ctx.shadowBlur=0;
+  for(let i=confetti.length-1;i>=0;i--){
+    const c=confetti[i];
+    c.vy+=c.g;c.x+=c.vx;c.y+=c.vy;c.rot+=c.vr;c.vx*=0.99;
+    if(c.y>STAGE_H+30){confetti.splice(i,1);continue;}
+    ctx.save();ctx.translate(c.x,c.y);ctx.rotate(c.rot);
+    ctx.globalAlpha=1;ctx.fillStyle=c.color;
+    ctx.fillRect(-c.w/2,-c.h/2,c.w,c.h);
+    ctx.restore();
+  }
+  ctx.shadowBlur=0;ctx.globalAlpha=1;
+  requestAnimationFrame(fxLoop);
+}
+
+/* floating toast text */
+function toast(text,color,x,y){
+  const t=document.createElement('div');
+  t.className='toast';t.textContent=text;t.style.color=color||'#7af0d9';
+  const r=stage.getBoundingClientRect();
+  t.style.left=(x/STAGE_W*r.width)+'px';
+  t.style.top =(y/STAGE_H*r.height)+'px';
+  t.style.transform='translate(-50%,0)';
+  stage.appendChild(t);
+  setTimeout(()=>t.remove(),1000);
+}
+function shakeStage(){ stage.classList.add('shake');setTimeout(()=>stage.classList.remove('shake'),360); }
+
+/* =============================================================
+ *  SVG helpers
+ * ============================================================= */
+function el(tag,attrs){
+  const e=document.createElementNS(SVGNS,tag);
+  for(const k in attrs) e.setAttribute(k,attrs[k]);
+  return e;
+}
+const COMMON_DEFS = `
+  <linearGradient id="metal" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#3a4654"/><stop offset="0.5" stop-color="#2b3542"/><stop offset="1" stop-color="#1d2531"/>
+  </linearGradient>
+  <linearGradient id="concrete" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#5a6472"/><stop offset="0.5" stop-color="#48515e"/><stop offset="1" stop-color="#363e49"/>
+  </linearGradient>
+  <linearGradient id="wood" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#caa15e"/><stop offset="0.5" stop-color="#a87b3c"/><stop offset="1" stop-color="#7a5526"/>
+  </linearGradient>
+  <linearGradient id="steel" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#d7dde4"/><stop offset="0.5" stop-color="#8d97a3"/><stop offset="1" stop-color="#4b5560"/>
+  </linearGradient>
+  <linearGradient id="handle" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#ff8a3c"/><stop offset="1" stop-color="#c14a14"/>
+  </linearGradient>
+  <linearGradient id="pipe" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#ffd98a"/><stop offset="0.5" stop-color="#e8a33b"/><stop offset="1" stop-color="#a86c1c"/>
+  </linearGradient>
+  <radialGradient id="dose" cx="0.4" cy="0.35" r="0.75">
+    <stop offset="0" stop-color="#fff4dc"/><stop offset="0.5" stop-color="#e0c081"/><stop offset="1" stop-color="#8a6a32"/>
+  </radialGradient>
+  <filter id="soft"><feGaussianBlur stdDeviation="2.2"/></filter>
+  <filter id="ds" x="-30%" y="-30%" width="160%" height="160%">
+    <feDropShadow dx="0" dy="5" stdDeviation="5" flood-color="#000" flood-opacity="0.5"/>
+  </filter>`;
+function addDefs(svg){ const d=el('defs',{}); d.innerHTML=COMMON_DEFS; svg.appendChild(d); }
+
+/* =============================================================
+ *  AFFORDANCE HELPERS — show the player WHAT to do
+ * ============================================================= */
+const _seenSteps = {};
+function firstVisit(step){ if(_seenSteps[step]) return false; _seenSteps[step]=true; return true; }
+
+function addDragPath(svg,x1,y1,x2,y2,col){
+  col = col || '#7af0d9';
+  const g=el('g',{class:'ghost'});
+  g.appendChild(el('line',{x1,y1,x2,y2,stroke:col,'stroke-width':3,'stroke-linecap':'round',opacity:0.85,class:'dragPath'}));
+  const ang=Math.atan2(y2-y1,x2-x1), L=13, w=7;
+  const ax=x2-Math.cos(ang)*2, ay=y2-Math.sin(ang)*2;
+  const p1x=ax-Math.cos(ang)*L+Math.cos(ang+Math.PI/2)*w, p1y=ay-Math.sin(ang)*L+Math.sin(ang+Math.PI/2)*w;
+  const p2x=ax-Math.cos(ang)*L+Math.cos(ang-Math.PI/2)*w, p2y=ay-Math.sin(ang)*L+Math.sin(ang-Math.PI/2)*w;
+  g.appendChild(el('path',{d:`M ${ax} ${ay} L ${p1x} ${p1y} L ${p2x} ${p2y} Z`,fill:col,class:'pathArrow'}));
+  svg.appendChild(g);
+  return g;
+}
+
+/* ghost hand that travels from (x1,y1) to (x2,y2), looping `reps` times. */
+function ghostDemo(svg,x1,y1,x2,y2,opt){
+  opt=opt||{};
+  const reps=opt.reps||1, dur=opt.dur||1100, hold=opt.hold||260;
+  const hand=el('g',{class:'ghost'});
+  hand.appendChild(el('circle',{cx:0,cy:0,r:17,fill:'rgba(255,255,255,.14)',stroke:'#fff','stroke-width':1.4,opacity:0.7}));
+  hand.appendChild(el('path',{d:'M -3 -2 q 0 -12 4 -12 q 4 0 4 12 l 0 6 q 6 -1 8 3 q 3 5 -1 12 q -4 6 -12 5 q -7 -1 -9 -8 l -2 -9 q 0 -4 4 -3 l 5 1 Z',
+    fill:'#f4f7fa',stroke:'#10151c','stroke-width':1,transform:'translate(2,4) scale(.9)'}));
+  svg.appendChild(hand);
+  let rep=0, raf=null, killed=false;
+  function run(){
+    const t0=performance.now();
+    (function a(t){
+      if(killed) return;
+      let k=Math.min(1,(t-t0)/dur);
+      const e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+      const hx=x1+(x2-x1)*e, hy=y1+(y2-y1)*e;
+      hand.setAttribute('transform','translate('+hx+','+hy+')');
+      hand.setAttribute('opacity', k<0.12?(k/0.12):(k>0.92?(1-(k-0.92)/0.08):1));
+      if(opt.onStep) opt.onStep(e);
+      if(k<1){ raf=requestAnimationFrame(a); }
+      else {
+        rep++;
+        if(rep<reps){ setTimeout(run,hold); }
+        else { hand.remove(); if(opt.done) opt.done(); }
+      }
+    })(performance.now());
+  }
+  run();
+  // allow external cancel
+  return { node:hand, cancel:()=>{ killed=true; if(raf)cancelAnimationFrame(raf); if(hand.parentNode)hand.remove(); } };
+}
+
+function showDoHint(id,html,ms){
+  const e=document.getElementById(id); if(!e) return;
+  e.innerHTML=html; e.classList.add('on');
+  if(ms){ setTimeout(()=>e.classList.remove('on'),ms); }
+}
+function hideDoHint(id){ const e=document.getElementById(id); if(e) e.classList.remove('on'); }
+
+/* =============================================================
+ *  GAME STATE
+ * ============================================================= */
+let xp=0;
+const xpVal=document.getElementById('xpVal');
+function addXp(n){
+  n=Math.round((Number(n)||0)*0.5); // XP global -50% (Roadmap)
+  const start=xp,end=xp+n,t0=performance.now();
+  (function anim(t){
+    const k=Math.min(1,(t-t0)/600);
+    xp=Math.round(start+(end-start)*(1-Math.pow(1-k,3)));
+    xpVal.textContent=xp;
+    if(k<1)requestAnimationFrame(anim);
+  })(performance.now());
+}
+
+/* step orchestration */
+const STEP_LIST = ['unform','pipes','plan','mark','height'];
+const STEP_TITLES = {
+  unform: ['Ausschalen','Schalbretter von der Betonwand abnehmen'],
+  pipes:  ['Rohre freilegen','Rohre an den Dosen freilegen & abschneiden'],
+  plan:   ['Detailplan lesen','Wo kommen die Dosen hin? (nach Plan)'],
+  mark:   ['Dosen anzeichnen','Markiere die Dosen am richtigen Mass'],
+  height: ['Höhe aufmessen','Höhe ab Rohboden + Unterlagsboden']
+};
+let stepIdx=0;
+const stepsBar=document.getElementById('steps');
+function buildStepsBar(){
+  stepsBar.innerHTML='';
+  STEP_LIST.forEach(()=>{ const d=document.createElement('div'); d.className='sc'; stepsBar.appendChild(d); });
+}
+function setHud(step){
+  const chips=stepsBar.children;
+  for(let i=0;i<chips.length;i++){
+    chips[i].className='sc'+(i<stepIdx?' done':i===stepIdx?' cur':'');
+  }
+  document.getElementById('phaseLbl').textContent='Schritt '+(stepIdx+1)+'/'+STEP_LIST.length;
+  const t=STEP_TITLES[step];
+  document.getElementById('taskTitle').textContent=t[0];
+  document.getElementById('taskSub').textContent=t[1];
+  document.getElementById('planChip').style.display = (step==='plan'||step==='mark'||step==='height') ? 'inline-block':'none';
+  document.getElementById('progFill').style.width=(stepIdx/(STEP_LIST.length-1)*100)+'%';
+}
+
+const SCENE_OF = {
+  unform:'pUnform', pipes:'pPipes', plan:'pPlan', mark:'pMark', height:'pHeight'
+};
+function showScene(step){
+  Object.values(SCENE_OF).forEach(id=>{
+    const e=document.getElementById(id); if(e) e.classList.remove('on');
+  });
+  const tk=document.getElementById('task');
+  tk.style.display=''; tk.style.opacity='';
+  tk.classList.remove('faded');
+  clearTimeout(window.__taskFadeT);
+  if(window.__taskHidden){ tk.classList.add('hidden'); }
+  else { tk.classList.remove('hidden'); window.__taskFadeT=setTimeout(()=>tk.classList.add('faded'),3500); }
+  const cur=document.getElementById(SCENE_OF[step]);
+  setTimeout(()=>cur.classList.add('on'),60);
+}
+
+let _curCleanup=null;            // _cleanup of the currently running builder
+function gotoStep(name){
+  // Listener beim Schrittwechsel entfernen
+  if(typeof _curCleanup==='function'){ try{_curCleanup();}catch(e){} }
+  _curCleanup=null;
+  stepIdx=STEP_LIST.indexOf(name);
+  setHud(name);
+  showScene(name);
+  BUILDERS[name]();
+}
+window.__goto=function(n){ try{gotoStep(n);}catch(e){console.log('goto err',e);} };
+
+// Dev-Sprungleiste (nur mit ?dev in der URL)
+if(typeof location!=='undefined' && /dev/.test(location.search) && document.body){
+  const bar=document.createElement('div');
+  bar.style.cssText='position:fixed;bottom:4px;left:4px;right:4px;z-index:99999;display:flex;flex-wrap:wrap;gap:3px;justify-content:center;';
+  STEP_LIST.forEach((s,i)=>{ const b=document.createElement('button'); b.textContent=(i+1)+'·'+s;
+    b.style.cssText='font-size:10px;font-weight:700;padding:4px 7px;background:#11202c;color:#7af0d9;border:1px solid #2dd4bf;border-radius:7px;cursor:pointer;';
+    b.onclick=()=>gotoStep(s); bar.appendChild(b); });
+  document.body.appendChild(bar);
+}
+function nextStep(){
+  const ni=stepIdx+1;
+  if(ni>=STEP_LIST.length){ return; }
+  gotoStep(STEP_LIST[ni]);
+}
+
+/* =============================================================
+ *  Shared: draw a "Schalung" board, a UP-Dose, a wall background
+ * ============================================================= */
+function drawWallBg(svg,opt){
+  opt=opt||{};
+  // ceiling band (oben) — gibt der Szene Raum-Kontext statt leerem Schwarz
+  svg.appendChild(el('rect',{x:0,y:118,width:390,height:40,fill:'#1c242f'}));
+  svg.appendChild(el('rect',{x:0,y:118,width:390,height:8,fill:'#10151c'}));
+  // concrete wall (etwas hoeher hinauf, fast bis zur Decke)
+  svg.appendChild(el('rect',{x:0,y:150,width:390,height:560,fill:'url(#concrete)'}));
+  // perspektivische linke Wand-Ecke (Raumtiefe andeuten)
+  svg.appendChild(el('polygon',{points:'0,150 30,168 30,694 0,710',fill:'#3a434f',opacity:0.85}));
+  svg.appendChild(el('line',{x1:30,y1:168,x2:30,y2:694,stroke:'#10151c','stroke-width':2,opacity:0.6}));
+  svg.appendChild(el('rect',{x:30,y:150,width:26,height:560,fill:'rgba(0,0,0,.18)'}));
+  // perspektivische rechte Wand-Ecke
+  svg.appendChild(el('polygon',{points:'390,150 360,168 360,694 390,710',fill:'#2f3742',opacity:0.85}));
+  svg.appendChild(el('line',{x1:360,y1:168,x2:360,y2:694,stroke:'#10151c','stroke-width':2,opacity:0.5}));
+  // subtle concrete speckle (volle Wandhoehe)
+  const sp=el('g',{opacity:0.18});
+  for(let i=0;i<60;i++){
+    sp.appendChild(el('circle',{cx:20+Math.random()*350,cy:160+Math.random()*540,r:0.6+Math.random()*1.6,fill:'#1c232e'}));
+  }
+  svg.appendChild(sp);
+  // rohboden (raw floor) strip at bottom
+  svg.appendChild(el('rect',{x:0,y:700,width:390,height:144,fill:'#2a2f38'}));
+  svg.appendChild(el('rect',{x:0,y:700,width:390,height:6,fill:'#151a22'}));
+  // Bodenfugen-Andeutung (perspektivisch)
+  const fg=el('g',{opacity:0.25});
+  fg.appendChild(el('line',{x1:0,y1:746,x2:390,y2:746,stroke:'#1a1f27','stroke-width':1.5}));
+  fg.appendChild(el('line',{x1:0,y1:800,x2:390,y2:800,stroke:'#1a1f27','stroke-width':1.5}));
+  svg.appendChild(fg);
+  const ft=el('text',{x:18,y:724,'font-size':'10','font-weight':'700',fill:'#8b95a3'}); ft.textContent='Rohboden'; svg.appendChild(ft);
+
+  // ---- Baustellen-Requisiten auf dem Rohboden (rein dekorativ, nicht interaktiv) ----
+  const props=el('g',{'pointer-events':'none'});
+  // links: Kabelrolle / KRF-Rohrbund
+  props.appendChild(el('ellipse',{cx:60,cy:808,rx:38,ry:14,fill:'#000',opacity:0.28}));
+  props.appendChild(el('circle',{cx:60,cy:788,r:30,fill:'#1d2531',stroke:'#3a4654','stroke-width':3}));
+  props.appendChild(el('circle',{cx:60,cy:788,r:21,fill:'none',stroke:'#e8a33b','stroke-width':6,opacity:0.85}));
+  props.appendChild(el('circle',{cx:60,cy:788,r:13,fill:'none',stroke:'#caa15e','stroke-width':5,opacity:0.7}));
+  props.appendChild(el('circle',{cx:60,cy:788,r:5,fill:'#11161e'}));
+  // rechts: Eimer / Werkzeugkasten
+  props.appendChild(el('ellipse',{cx:330,cy:818,rx:34,ry:11,fill:'#000',opacity:0.28}));
+  props.appendChild(el('path',{d:'M306 770 L354 770 L349 812 L311 812 Z',fill:'#c14a14',stroke:'#7a2e0c','stroke-width':2}));
+  props.appendChild(el('rect',{x:304,y:766,width:52,height:8,rx:3,fill:'#e07a2c'}));
+  props.appendChild(el('path',{d:'M312 766 Q330 748 348 766',fill:'none',stroke:'#39424d','stroke-width':3}));
+  // liegende Rohrreste (Mitte/rechts)
+  props.appendChild(el('rect',{x:150,y:822,width:120,height:9,rx:4,fill:'url(#pipe)',opacity:0.9}));
+  props.appendChild(el('rect',{x:170,y:832,width:140,height:9,rx:4,fill:'url(#pipe)',opacity:0.75}));
+  // Wasserwaage an die Wand gelehnt (rechts)
+  props.appendChild(el('rect',{x:368,y:560,width:12,height:150,rx:3,fill:'#e8c33b',stroke:'#9a7d12','stroke-width':1.5,transform:'rotate(8 374 635)'}));
+  props.appendChild(el('rect',{x:371,y:625,width:6,height:18,rx:2,fill:'#1d2531',transform:'rotate(8 374 634)',opacity:0.7}));
+  svg.appendChild(props);
+}
+
+/* =============================================================
+ *  STEP 1 — Ausschalen: drag the Schalbretter (formwork boards) off
+ * ============================================================= */
+const svgUnform=document.getElementById('svgUnform');
+const roUnform=document.getElementById('roUnform');
+function buildUnform(){
+  svgUnform.innerHTML=''; addDefs(svgUnform);
+  drawWallBg(svgUnform);
+  const title=el('text',{x:195,y:182,'text-anchor':'middle','font-size':'11','font-weight':'700',fill:'#aeb8c4'});
+  title.textContent='Betonwand frisch ausgehärtet — Schalung weg'; svgUnform.appendChild(title);
+
+  // three formwork boards over the wall, each draggable off to the left
+  const boards=[];
+  const bx=64, bw=262, bh=150;
+  const ys=[200, 360, 520];
+  let removed=0;
+  ys.forEach((by,i)=>{
+    const g=el('g',{cursor:'grab'});
+    g.appendChild(el('rect',{x:bx,y:by,width:bw,height:bh,rx:5,fill:'url(#wood)',stroke:'#5a3e1c','stroke-width':2,filter:'url(#ds)'}));
+    // wood grain
+    for(let k=0;k<3;k++) g.appendChild(el('line',{x1:bx+8,y1:by+18+k*26,x2:bx+bw-8,y2:by+18+k*26,stroke:'#7a5526','stroke-width':2,opacity:0.5}));
+    // nails
+    [bx+16,bx+bw-16].forEach(nx=>{ [by+12,by+bh-12].forEach(ny=>{
+      g.appendChild(el('circle',{cx:nx,cy:ny,r:3,fill:'#cdd8e2',stroke:'#10151c','stroke-width':1}));
+    });});
+    const hit=el('rect',{x:bx,y:by,width:bw,height:bh,fill:'transparent'}); g.appendChild(hit);
+    svgUnform.appendChild(g);
+    boards.push({g,hit,by,bx,removed:false,drag:false,startTf:'translate(0,0)'});
+    g.setAttribute('transform','translate(0,0)');
+  });
+
+  // affordance on first visit
+  let _ghost=null;
+  if(firstVisit('unform')){
+    showDoHint('hintUnform','Nach dem Betonieren wird <b>ausgeschalt</b>: Zieh die <b>Schalbretter</b> nach links von der Wand weg.');
+    _ghost = ghostDemo(svgUnform,bx+bw-30,ys[0]+bh/2,bx-90,ys[0]+bh/2,{dur:1200,reps:1,done:()=>{ hideDoHint('hintUnform'); }});
+  } else { hideDoHint('hintUnform'); }
+
+  roUnform.classList.remove('good');
+  roUnform.innerHTML='Schalbretter abnehmen: <span class="big">0/3</span>';
+
+  let active=null, startX=0;
+  function down(e,b){
+    if(b.removed) return;
+    e.preventDefault(); AC(); b.drag=true; active=b; sndPick();
+    b.g.setAttribute('cursor','grabbing');
+    const p=toSvgFor(svgUnform,e.clientX,e.clientY); startX=p.x;
+    try{b.hit.setPointerCapture(e.pointerId);}catch(_){}
+    if(_ghost){ _ghost.cancel(); _ghost=null; hideDoHint('hintUnform'); }
+  }
+  function move(e){
+    if(!active) return;
+    const p=toSvgFor(svgUnform,e.clientX,e.clientY);
+    let dx=Math.min(0,p.x-startX);     // only pull left
+    active.g.setAttribute('transform','translate('+dx+',0)');
+    if(dx<-120 && !active.removed){ pop(active); }
+  }
+  function pop(b){
+    b.removed=true; b.drag=false; active=null;
+    sndWood(); spark(b.bx+30,b.by+46,12,{color:'#caa15e',speed:3});
+    puff(b.bx+40,b.by+46,4,{size:5,color:'180,160,120'});
+    // slide fully off + fade
+    let t0=performance.now(), from=-130;
+    (function a(t){ const k=Math.min(1,(t-t0)/420);
+      b.g.setAttribute('transform','translate('+(from-k*260)+',0)');
+      b.g.setAttribute('opacity',1-k);
+      if(k<1)requestAnimationFrame(a); else { b.g.setAttribute('opacity',0); b.hit.setAttribute('pointer-events','none'); }
+    })(performance.now());
+    removed++;
+    roUnform.innerHTML='Schalbretter abnehmen: <span class="big">'+removed+'/3</span>';
+    addXp(8);
+    toast('Brett ab ✓','#7af0d9',b.bx+60,b.by);
+    if(removed===3){
+      roUnform.classList.add('good'); roUnform.textContent='Ausgeschalt ✓ — Wand frei';
+      setTimeout(()=>nextStep(),750);
+    }
+  }
+  function up(){ if(active){ if(!active.removed){ active.g.setAttribute('transform','translate(0,0)'); active.g.setAttribute('cursor','grab'); } active.drag=false; active=null; } }
+  boards.forEach(b=>{ b._d=e=>down(e,b); b.hit.addEventListener('pointerdown',b._d); });
+  window.addEventListener('pointermove',move);
+  window.addEventListener('pointerup',up);
+  _curCleanup=()=>{ boards.forEach(b=>b.hit.removeEventListener('pointerdown',b._d)); window.removeEventListener('pointermove',move); window.removeEventListener('pointerup',up); if(_ghost)_ghost.cancel(); };
+}
+
+/* =============================================================
+ *  STEP 2 — Rohre freilegen / abschneiden
+ *  Each UP-Dose has a rohr stub sticking out. Drag the cutter onto
+ *  the stub to free/cut it flush. Gutmütig: nur antippen/ziehen genügt.
+ * ============================================================= */
+const svgPipes=document.getElementById('svgPipes');
+const roPipes=document.getElementById('roPipes');
+function buildPipes(){
+  svgPipes.innerHTML=''; addDefs(svgPipes);
+  drawWallBg(svgPipes);
+  const title=el('text',{x:195,y:182,'text-anchor':'middle','font-size':'11','font-weight':'700',fill:'#aeb8c4'});
+  title.textContent='In den Dosen stehen die Rohre über — freilegen'; svgPipes.appendChild(title);
+
+  // 4 doses with overlong pipe stubs
+  const POS=[ {x:115,y:255}, {x:275,y:320}, {x:115,y:480}, {x:275,y:560} ];
+  let done=0;
+  const items=[];
+  POS.forEach((p,i)=>{
+    const g=el('g',{});
+    // UP-Dose recess in concrete
+    g.appendChild(el('circle',{cx:p.x,cy:p.y,r:26,fill:'#20262f',stroke:'#10151c','stroke-width':3}));
+    g.appendChild(el('circle',{cx:p.x,cy:p.y,r:21,fill:'url(#dose)',opacity:0.55}));
+    // the overlong pipe stub (to be cut). drawn long
+    const stub=el('line',{x1:p.x,y1:p.y,x2:p.x,y2:p.y-58,stroke:'url(#pipe)','stroke-width':12,'stroke-linecap':'round'});
+    g.appendChild(stub);
+    g.appendChild(el('line',{x1:p.x-3,y1:p.y,x2:p.x-3,y2:p.y-54,stroke:'#fff6e0','stroke-width':2,'stroke-linecap':'round',opacity:0.4}));
+    // cut-target ring at flush level
+    const tgt=el('circle',{cx:p.x,cy:p.y-8,r:15,fill:'none',stroke:'#7af0d9','stroke-width':2,'stroke-dasharray':'4 4',class:'pulseTool'});
+    g.appendChild(tgt);
+    svgPipes.appendChild(g);
+    items.push({p,stub,tgt,done:false});
+  });
+
+  // cutter tool that the player drags onto each stub
+  const cutter=el('g',{cursor:'grab',class:'pulseTool'});
+  cutter.appendChild(el('rect',{x:8,y:-26,width:9,height:22,rx:4,fill:'url(#handle)',transform:'rotate(16 12 -15)'}));
+  cutter.appendChild(el('rect',{x:8,y:4,width:9,height:22,rx:4,fill:'url(#handle)',transform:'rotate(-16 12 15)'}));
+  const jawT=el('path',{d:'M -22 -2 L 6 -11 L 12 -8 L -18 4 Z',fill:'url(#steel)',stroke:'#10151c','stroke-width':1.3});
+  const jawB=el('path',{d:'M -22 2 L 6 11 L 12 8 L -18 -4 Z',fill:'url(#steel)',stroke:'#10151c','stroke-width':1.3});
+  cutter.appendChild(jawT); cutter.appendChild(jawB);
+  cutter.appendChild(el('circle',{cx:8,cy:0,r:3.5,fill:'#39424d',stroke:'#10151c','stroke-width':1}));
+  const cgrab=el('text',{x:-6,y:30,'text-anchor':'middle','font-size':'9','font-weight':'800',fill:'#7af0d9'}); cgrab.textContent='greif mich'; cutter.appendChild(cgrab);
+  const chit=el('circle',{cx:-4,cy:0,r:34,fill:'transparent'}); cutter.appendChild(chit);
+  const homeX=195, homeY=640;
+  cutter.setAttribute('transform','translate('+homeX+','+homeY+')');
+  svgPipes.appendChild(cutter);
+
+  let _ghost=null;
+  if(firstVisit('pipes')){
+    showDoHint('hintPipes','Zieh den <b>Seitenschneider</b> auf jeden <b>Rohrüberstand</b> und schneide ihn bündig ab — so legst du die Dose frei.');
+    cutter.classList.remove('pulseTool');
+    _ghost=ghostDemo(svgPipes,homeX,homeY,items[0].p.x,items[0].p.y-30,{dur:1200,onStep:(f)=>{
+      cutter.setAttribute('transform','translate('+(homeX+(items[0].p.x-homeX)*f)+','+(homeY+((items[0].p.y-30)-homeY)*f)+')');
+    },done:()=>{
+      cutter.setAttribute('transform','translate('+homeX+','+homeY+')');
+      cutter.classList.add('pulseTool'); hideDoHint('hintPipes');
+    }});
+  } else { hideDoHint('hintPipes'); }
+
+  roPipes.classList.remove('good');
+  roPipes.innerHTML='Rohre abschneiden: <span class="big">0/4</span>';
+
+  let drag=false, touched=false;
+  function killAff(){ if(!touched){ touched=true; cutter.classList.remove('pulseTool'); cgrab.remove(); hideDoHint('hintPipes'); if(_ghost){_ghost.cancel();_ghost=null;} } }
+  function setPos(px,py){
+    cutter.setAttribute('transform','translate('+px+','+py+')');
+    // check overlap with any not-yet-done stub target
+    items.forEach(it=>{
+      if(it.done) return;
+      if(Math.abs(px-it.p.x)<26 && Math.abs(py-(it.p.y-12))<30){ cutStub(it,px,py); }
+    });
+  }
+  function cutStub(it,px,py){
+    it.done=true;
+    sndSaw(); spark(it.p.x,it.p.y-12,12,{color:'#e8a33b',speed:3});
+    // jaw nip animation
+    let t0=performance.now();
+    (function a(t){ const k=Math.min(1,(t-t0)/160);
+      jawT.setAttribute('transform','rotate('+(k*7)+' 8 0)');
+      jawB.setAttribute('transform','rotate('+(-k*7)+' 8 0)');
+      if(k<1)requestAnimationFrame(a); else { jawT.setAttribute('transform','');jawB.setAttribute('transform',''); }
+    })(performance.now());
+    // shorten stub to flush, drop the cut piece
+    it.stub.setAttribute('y2', it.p.y-6);
+    it.tgt.setAttribute('opacity',0); it.tgt.classList.remove('pulseTool');
+    const fall=el('line',{x1:it.p.x,y1:it.p.y-12,x2:it.p.x,y2:it.p.y-50,stroke:'url(#pipe)','stroke-width':12,'stroke-linecap':'round'});
+    svgPipes.appendChild(fall);
+    let t1=performance.now();
+    (function fa(t){ const k=Math.min(1,(t-t1)/520);
+      fall.setAttribute('transform','translate('+(k*40)+','+(k*k*260)+') rotate('+(k*60)+' '+it.p.x+' '+(it.p.y-30)+')');
+      fall.setAttribute('opacity',1-k);
+      if(k<1)requestAnimationFrame(fa); else fall.remove();
+    })(performance.now());
+    done++; addXp(7);
+    roPipes.innerHTML='Rohre abschneiden: <span class="big">'+done+'/4</span>';
+    toast('bündig ✓','#7af0d9',it.p.x,it.p.y-30);
+    if(done===4){
+      roPipes.classList.add('good'); roPipes.textContent='Alle Dosen freigelegt ✓';
+      // snap cutter back home
+      cutter.setAttribute('transform','translate('+homeX+','+homeY+')');
+      drag=false;
+      setTimeout(()=>nextStep(),750);
+    }
+  }
+  function down(e){ e.preventDefault(); AC(); drag=true; killAff(); cutter.setAttribute('cursor','grabbing'); try{chit.setPointerCapture(e.pointerId);}catch(_){} }
+  function move(e){ if(!drag)return; const p=toSvgFor(svgPipes,e.clientX,e.clientY); setPos(p.x,p.y); }
+  function up(){ if(!drag)return; drag=false; cutter.setAttribute('cursor','grab');
+    // gutmütig: kein Fail. Wenn nicht alle fertig, Werkzeug zurück nach Hause.
+    if(done<4){ cutter.setAttribute('transform','translate('+homeX+','+homeY+')'); }
+  }
+  chit.addEventListener('pointerdown',down);
+  window.addEventListener('pointermove',move);
+  window.addEventListener('pointerup',up);
+  _curCleanup=()=>{ chit.removeEventListener('pointerdown',down); window.removeEventListener('pointermove',move); window.removeEventListener('pointerup',up); if(_ghost)_ghost.cancel(); };
+}
+
+/* =============================================================
+ *  PLAN DATA (used by step 3 overview AND step 4 marking)
+ *  Each dose: id, type, plan label, the wall x (px) where it belongs,
+ *  and the Mass (cm from a reference) shown on the detail plan.
+ * ============================================================= */
+/* Katalog moeglicher Dosen-Typen. Aus diesem Pool werden pro Spiel
+ * zufaellig welche gewaehlt; Positionen + Masse werden randomisiert. */
+const DOSE_CATALOG=[
+  {id:'sd1', type:'Steckdose',      icon:'socket', glyph:'⊙⊙', ref:'Ecke'},
+  {id:'sw1', type:'Lichtschalter',  icon:'switch', glyph:'S',  ref:'Türe'},
+  {id:'st1', type:'Storenschalter', icon:'store',  glyph:'⇅',  ref:'Boden'},
+  {id:'rt1', type:'Raumthermostat', icon:'thermo', glyph:'°C', ref:'Boden'},
+  {id:'sd2', type:'Steckdose T13',  icon:'socket', glyph:'⊙',  ref:'Ecke'},
+  {id:'kt1', type:'Kommunikation',  icon:'data',   glyph:'≋',  ref:'Ecke'}
+];
+function ri(min,max){ return Math.floor(min+Math.random()*(max-min+1)); }
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; const t=a[i];a[i]=a[j];a[j]=t; } return a; }
+
+/* Wand-Layout fuer das Anzeichnen.
+ * Die wallX-Positionen werden in nicht ueberlappende, erreichbare Slots
+ * verteilt; die Mass-Labels werden passend zur zufaelligen Position erzeugt. */
+const WALL_X_MIN=70, WALL_X_MAX=320;   // erreichbarer Bereich an der Wand (px)
+const WALL_MIN_GAP=58;                 // Mindestabstand der Dosen (px), kein Ueberlappen
+
+/* erzeugt pro Spiel ein zufaelliges Set Dosen-Specs (3 oder 4 Stueck),
+ * mit zufaelligen, nicht ueberlappenden wallX-Positionen + passenden Massen. */
+function makeDoseSpecs(){
+  const count = ri(3,4);
+  const picks = shuffle(DOSE_CATALOG.slice()).slice(0,count);
+
+  // count zufaellige, sortierte, nicht ueberlappende x-Positionen ziehen
+  let xs=null;
+  for(let tries=0; tries<200 && !xs; tries++){
+    const cand=[];
+    for(let i=0;i<count;i++) cand.push(ri(WALL_X_MIN, WALL_X_MAX));
+    cand.sort((a,b)=>a-b);
+    let ok=true;
+    for(let i=1;i<count;i++){ if(cand[i]-cand[i-1] < WALL_MIN_GAP){ ok=false; break; } }
+    if(ok) xs=cand;
+  }
+  // Fallback: gleichmaessig verteilen, falls Random nie passt
+  if(!xs){ xs=[]; const span=(WALL_X_MAX-WALL_X_MIN)/(count-1||1);
+    for(let i=0;i<count;i++) xs.push(Math.round(WALL_X_MIN+span*i)); }
+
+  return picks.map((p,i)=>{
+    const x=xs[i];
+    // Mass-Label passend zur zufaelligen Position erzeugen
+    let mass;
+    if(p.ref==='Ecke'){
+      const cm=Math.round((x-WALL_X_MIN)/3)+10;   // grob proportional zur x-Pos
+      mass=cm+' cm ab Ecke';
+    } else if(p.ref==='Türe'){
+      const cm=Math.round((x-WALL_X_MIN)/3)+8;
+      mass=cm+' cm ab Türe';
+    } else {
+      const cm=ri(9,17)*10;                         // 90..170 cm ab Boden
+      mass=cm+' cm ab Boden';
+    }
+    return {id:p.id, type:p.type, icon:p.icon, glyph:p.glyph, mass:mass, planX:x, wallX:x};
+  });
+}
+
+/* einmal pro Spieldurchgang erzeugt; alle Steps lesen daraus -> Pruefung
+ * ist automatisch an die zufaelligen Positionen gekoppelt. */
+let DOSE_SPECS = makeDoseSpecs();
+
+/* draw a small plan-symbol for a dose type at (x,y) into svg group g */
+function drawDoseSymbol(parent,x,y,spec,scale){
+  scale=scale||1; const s=scale;
+  const g=el('g',{transform:'translate('+x+','+y+') scale('+s+')'});
+  g.appendChild(el('circle',{cx:0,cy:0,r:14,fill:'#11161e',stroke:'#7af0d9','stroke-width':2}));
+  const t=el('text',{x:0,y:5,'text-anchor':'middle','font-size':'13','font-weight':'800',fill:'#7af0d9'});
+  t.textContent=spec.glyph; g.appendChild(t);
+  parent.appendChild(g);
+  return g;
+}
+
+/* =============================================================
+ *  STEP 3 — Detailplan lesen (read the room plan, tap each dose)
+ * ============================================================= */
+const svgPlan=document.getElementById('svgPlan');
+const roPlan=document.getElementById('roPlan');
+const planGo=document.getElementById('planGo');
+function buildPlan(){
+  svgPlan.innerHTML=''; addDefs(svgPlan);
+  // plan "paper"
+  svgPlan.appendChild(el('rect',{x:24,y:170,width:342,height:520,rx:10,fill:'#13202b',stroke:'#27506a','stroke-width':2,filter:'url(#ds)'}));
+  svgPlan.appendChild(el('rect',{x:24,y:170,width:342,height:30,rx:8,fill:'#0e1a24'}));
+  const h=el('text',{x:40,y:190,'font-size':'13','font-weight':'800',fill:'#7af0d9'}); h.textContent='DETAILPLAN — Zimmer / Wand A'; svgPlan.appendChild(h);
+
+  // grid
+  const grid=el('g',{opacity:0.18});
+  for(let gx=44;gx<=346;gx+=30) grid.appendChild(el('line',{x1:gx,y1:210,x2:gx,y2:560,stroke:'#3a6b88','stroke-width':1}));
+  for(let gy=210;gy<=560;gy+=30) grid.appendChild(el('line',{x1:44,y1:gy,x2:346,y2:gy,stroke:'#3a6b88','stroke-width':1}));
+  svgPlan.appendChild(grid);
+
+  // wall line (elevation of wall A)
+  svgPlan.appendChild(el('line',{x1:48,y1:520,x2:344,y2:520,stroke:'#9fd4ff','stroke-width':4}));
+  const wl=el('text',{x:196,y:545,'text-anchor':'middle','font-size':'10','font-weight':'700',fill:'#9fd4ff'}); wl.textContent='Wand A (Ansicht) — Detailmasse'; svgPlan.appendChild(wl);
+  // door + window hint
+  svgPlan.appendChild(el('rect',{x:50,y:470,width:34,height:50,fill:'none',stroke:'#6fae44','stroke-width':2}));
+  const dl=el('text',{x:67,y:464,'text-anchor':'middle','font-size':'8',fill:'#9fc97a'}); dl.textContent='Türe'; svgPlan.appendChild(dl);
+
+  // place each dose symbol on the plan with its mass label; tap to "read"
+  let read=0; const nodes=[];
+  DOSE_SPECS.forEach((spec,i)=>{
+    // Plan-Symbol an der zur zufaelligen wallX passenden Stelle zeichnen
+    // py je nach Index gestaffelt -> oberer Planbereich wird genutzt, nicht nur Gitter
+    const px=70+(spec.wallX-WALL_X_MIN)/(WALL_X_MAX-WALL_X_MIN)*260, py=300+(i%3)*70;
+    const g=el('g',{cursor:'pointer'});
+    const sym=drawDoseSymbol(g,px,py,spec,1.05);
+    // leader line to wall
+    g.appendChild(el('line',{x1:px,y1:py+14,x2:px,y2:520,stroke:'#7af0d9','stroke-width':1.4,'stroke-dasharray':'3 3',opacity:0.7}));
+    // mass label
+    const m=el('text',{x:px,y:py-24,'text-anchor':'middle','font-size':'9','font-weight':'800',fill:'#ffd166'}); m.textContent=spec.mass; g.appendChild(m);
+    const ty=el('text',{x:px,y:py+34,'text-anchor':'middle','font-size':'8','font-weight':'700',fill:'#aeb8c4'}); ty.textContent=spec.type; g.appendChild(ty);
+    const hit=el('circle',{cx:px,cy:py,r:30,fill:'transparent'}); g.appendChild(hit);
+    svgPlan.appendChild(g);
+    let done=false;
+    function tap(){ if(done)return; done=true; AC(); sndPen();
+      sym.querySelector('circle').setAttribute('fill','#0c5f4e');
+      spark(px,py,8,{color:'#7af0d9',speed:2}); read++; addXp(4);
+      roPlan.innerHTML='Plan gelesen: <span class="big">'+read+'/'+DOSE_SPECS.length+'</span>';
+      if(read===DOSE_SPECS.length){ roPlan.classList.add('good'); roPlan.textContent='Plan verstanden ✓ — jetzt an die Wand übertragen';
+        planGo.classList.add('on');
+      }
+    }
+    nodes.push({hit,tap,_h:null});
+    hit.addEventListener('pointerdown', nodes[nodes.length-1]._h = ()=>tap());
+  });
+
+  if(firstVisit('plan')){
+    showDoHint('hintPlan','Der <b>Detailplan</b> zeigt, WO die Dosen hinkommen (mit <b>Detailmassen</b>). Tippe jede Dose an, um sie zu lesen.');
+    setTimeout(()=>hideDoHint('hintPlan'),5200);
+  } else { hideDoHint('hintPlan'); }
+
+  roPlan.classList.remove('good');
+  roPlan.innerHTML='Tippe jede Dose im Plan: <span class="big">0/'+DOSE_SPECS.length+'</span>';
+  planGo.classList.remove('on');
+  planGo.onclick=()=>{ if(!planGo.classList.contains('on'))return; sndClick(); nextStep(); };
+
+  _curCleanup=()=>{ nodes.forEach(n=>{ if(n._h) n.hit.removeEventListener('pointerdown',n._h); }); planGo.onclick=null; planGo.classList.remove('on'); };
+}
+
+/* =============================================================
+ *  STEP 4 — Dosen nach Plan an die Wand anzeichnen
+ *  Drag each plan-marker to the correct wall position (by Mass).
+ *  Richtig (nahe Soll) = grün/Häkchen; daneben = sanfter Hinweis.
+ * ============================================================= */
+const svgMark=document.getElementById('svgMark');
+const roMark=document.getElementById('roMark');
+function buildMark(){
+  svgMark.innerHTML=''; addDefs(svgMark);
+  drawWallBg(svgMark);
+  const title=el('text',{x:195,y:178,'text-anchor':'middle','font-size':'11','font-weight':'700',fill:'#aeb8c4'});
+  title.textContent='Übertrage die Markierungen nach Plan an die Wand'; svgMark.appendChild(title);
+
+  // zwei Arbeits-Hoehenbaender an der Wand, damit die Dosen ueber die
+  // ganze Wand verteilt angezeichnet werden (kein totes Mittelband)
+  const ROWS=[290, 510];
+  ROWS.forEach(lineY=>{
+    svgMark.appendChild(el('line',{x1:30,y1:lineY,x2:360,y2:lineY,stroke:'#9fb0c0','stroke-width':2,'stroke-dasharray':'2 6',opacity:0.5}));
+    // small ruler with cm ticks along the wall (reference from left corner)
+    const ruler=el('g',{opacity:0.6});
+    for(let cm=0;cm<=44;cm+=2){ const x=40+cm*7; const big=cm%10===0;
+      ruler.appendChild(el('line',{x1:x,y1:lineY+(big?-10:-6),x2:x,y2:lineY+(big?10:6),stroke:'#7e8ea0','stroke-width':big?1.5:0.8}));
+      if(big){ const n=el('text',{x:x,y:lineY+24,'text-anchor':'middle','font-size':'8',fill:'#7e8ea0'}); n.textContent=cm; ruler.appendChild(n); }
+    }
+    svgMark.appendChild(ruler);
+  });
+
+  // target SOLL slots (faint, where each dose must be marked) — abwechselnd auf beide Baender verteilt
+  const slots=[];
+  DOSE_SPECS.forEach((spec,si)=>{
+    const tx=spec.wallX, ty=ROWS[si%ROWS.length];
+    const ring=el('circle',{cx:tx,cy:ty,r:20,fill:'none',stroke:'#3a4654','stroke-width':2,'stroke-dasharray':'5 5'});
+    svgMark.appendChild(ring);
+    const lbl=el('text',{x:tx,y:ty-30,'text-anchor':'middle','font-size':'8','font-weight':'700',fill:'#6b7787'}); lbl.textContent=spec.mass; svgMark.appendChild(lbl);
+    slots.push({spec,tx,ty,ring,lbl,filled:false});
+  });
+
+  // draggable plan markers along bottom tray
+  let placed=0; const markers=[];
+  DOSE_SPECS.forEach((spec,i)=>{
+    const sx=70+i*72, sy=640;
+    const g=el('g',{cursor:'grab'});
+    g.appendChild(el('circle',{cx:0,cy:0,r:18,fill:'#11161e',stroke:'#ffd166','stroke-width':2}));
+    g.appendChild(el('text',{x:0,y:5,'text-anchor':'middle','font-size':'14','font-weight':'800',fill:'#ffd166'})).textContent=spec.glyph;
+    g.appendChild(el('text',{x:0,y:34,'text-anchor':'middle','font-size':'7.5','font-weight':'700',fill:'#aeb8c4'})).textContent=spec.type;
+    const hit=el('circle',{cx:0,cy:0,r:26,fill:'transparent'}); g.appendChild(hit);
+    g.setAttribute('transform','translate('+sx+','+sy+')');
+    svgMark.appendChild(g);
+    markers.push({spec,g,hit,sx,sy,placed:false,drag:false});
+  });
+
+  let _ghost=null;
+  if(firstVisit('mark')){
+    showDoHint('hintMark','Zieh jede Markierung an ihre <b>Soll-Position</b> an der Wand — nach <b>Mass/Plan</b>. Richtig = grün, daneben = Hinweis.');
+    _ghost=ghostDemo(svgMark,markers[0].sx,markers[0].sy,slots[0].tx,slots[0].ty,{dur:1300,done:()=>hideDoHint('hintMark')});
+  } else { hideDoHint('hintMark'); }
+
+  roMark.classList.remove('good');
+  roMark.innerHTML='Dosen anzeichnen: <span class="big">0/'+DOSE_SPECS.length+'</span>';
+
+  let active=null;
+  function down(e,m){
+    if(m.placed) return;
+    e.preventDefault(); AC(); m.drag=true; active=m; sndPick();
+    m.g.setAttribute('cursor','grabbing');
+    svgMark.appendChild(m.g); // bring to front
+    try{m.hit.setPointerCapture(e.pointerId);}catch(_){}
+    if(_ghost){_ghost.cancel();_ghost=null; hideDoHint('hintMark');}
+  }
+  function nearestSlot(px,py){
+    let best=null,bd=46*46;
+    slots.forEach(s=>{ if(s.filled)return; const dx=s.tx-px,dy=s.ty-py,d=dx*dx+dy*dy; if(d<bd){bd=d;best=s;} });
+    return best;
+  }
+  function move(e){
+    if(!active) return;
+    const p=toSvgFor(svgMark,e.clientX,e.clientY);
+    active.g.setAttribute('transform','translate('+p.x+','+p.y+')');
+    const s=nearestSlot(p.x,p.y);
+    slots.forEach(sl=>{ const near=(s===sl && !sl.filled);
+      sl.ring.setAttribute('stroke', near?'#7af0d9':'#3a4654');
+      sl.ring.setAttribute('stroke-width', near?3:2);
+    });
+  }
+  function up(){
+    if(!active) return;
+    const m=active; active=null; m.drag=false; m.g.setAttribute('cursor','grab');
+    const r=m.g.getAttribute('transform');
+    const mm=/translate\(([-\d.]+),([-\d.]+)\)/.exec(r);
+    const px=mm?parseFloat(mm[1]):m.sx, py=mm?parseFloat(mm[2]):m.sy;
+    const s=nearestSlot(px,py);
+    slots.forEach(sl=>{ sl.ring.setAttribute('stroke','#3a4654'); sl.ring.setAttribute('stroke-width',2); });
+    // correct = nearest free slot belongs to THIS spec and within range
+    if(s && s.spec.id===m.spec.id){
+      placeMark(m,s);
+    } else if(s && s.spec.id!==m.spec.id){
+      // gutmütig: kein Fail/Neustart — sanfter Hinweis, Marker kehrt zurück
+      sndPick(); shakeStage();
+      roMark.classList.remove('good');
+      roMark.textContent='Das ist die '+s.spec.type+'-Position — gehört nicht hierher. Schau aufs Mass.';
+      bounceBack(m);
+    } else {
+      sndPick();
+      roMark.classList.remove('good');
+      roMark.textContent='Genau auf die Soll-Position ('+m.spec.mass+') ziehen';
+      bounceBack(m);
+    }
+  }
+  function bounceBack(m){
+    const r=m.g.getAttribute('transform'); const mm=/translate\(([-\d.]+),([-\d.]+)\)/.exec(r);
+    const fx0=mm?parseFloat(mm[1]):m.sx, fy0=mm?parseFloat(mm[2]):m.sy;
+    let t0=performance.now();
+    (function a(t){ const k=Math.min(1,(t-t0)/280); const e=1-Math.pow(1-k,3);
+      m.g.setAttribute('transform','translate('+(fx0+(m.sx-fx0)*e)+','+(fy0+(m.sy-fy0)*e)+')');
+      if(k<1)requestAnimationFrame(a);
+    })(performance.now());
+  }
+  function placeMark(m,s){
+    m.placed=true; s.filled=true;
+    sndSnap();
+    m.g.setAttribute('transform','translate('+s.tx+','+s.ty+')');
+    m.hit.setAttribute('pointer-events','none');
+    // draw the wall "Anzeichnung" — pencil cross + dose outline + check
+    s.ring.setAttribute('stroke','#2dd4bf'); s.ring.setAttribute('stroke-dasharray','none'); s.ring.setAttribute('stroke-width',3);
+    svgMark.appendChild(el('line',{x1:s.tx-10,y1:s.ty,x2:s.tx+10,y2:s.ty,stroke:'#2dd4bf','stroke-width':2}));
+    svgMark.appendChild(el('line',{x1:s.tx,y1:s.ty-10,x2:s.tx,y2:s.ty+10,stroke:'#2dd4bf','stroke-width':2}));
+    const ck=el('text',{x:s.tx+18,y:s.ty-14,'font-size':'14','font-weight':'800',fill:'#2dd4bf'}); ck.textContent='✓'; svgMark.appendChild(ck);
+    s.lbl.setAttribute('fill','#7af0d9');
+    spark(s.tx,s.ty,14,{color:'#2dd4bf',speed:3,up:0.5});
+    toast('nach Plan ✓','#7af0d9',s.tx,s.ty-30);
+    placed++; addXp(10);
+    roMark.classList.remove('good'); // reset bad text
+    roMark.innerHTML='Dosen anzeichnen: <span class="big">'+placed+'/'+DOSE_SPECS.length+'</span>';
+    if(placed===DOSE_SPECS.length){
+      roMark.classList.add('good'); roMark.textContent='Alle Dosen nach Plan angezeichnet ✓';
+      setTimeout(()=>nextStep(),800);
+    }
+  }
+  markers.forEach(m=>{ m._d=e=>down(e,m); m.hit.addEventListener('pointerdown',m._d); });
+  window.addEventListener('pointermove',move);
+  window.addEventListener('pointerup',up);
+  _curCleanup=()=>{ markers.forEach(m=>m.hit.removeEventListener('pointerdown',m._d)); window.removeEventListener('pointermove',move); window.removeEventListener('pointerup',up); if(_ghost)_ghost.cancel(); };
+}
+
+/* =============================================================
+ *  STEP 5 — Aufmessung: Höhe ab Rohboden + Unterlagsboden
+ *  Player drags the Meter (tape) to set the dose height. Because the
+ *  Unterlagsboden is missing, the correct height = Soll-Höhe + Unterlagsboden.
+ * ============================================================= */
+const svgHeight=document.getElementById('svgHeight');
+const roHeight=document.getElementById('roHeight');
+function buildHeight(){
+  svgHeight.innerHTML=''; addDefs(svgHeight);
+  drawWallBg(svgHeight);
+
+  // geometry: wall section, rohboden at bottom; UNTERLAGSBODEN missing band
+  const rohbodenY=700;             // raw floor level (px)
+  const PX_PER_CM=2.6;             // vertical scale
+  // randomisiert pro Durchgang: Unterlagsboden-Staerke + Soll-Hoehe + Dosen-x
+  const ULB_CM = ri(8,15);                 // Unterlagsboden + Belag thickness (cm)
+  const SOLL_CM = ri(8,14)*10;             // dose target height above FINISHED floor (80..140 cm)
+  // correct measuring height ABOVE ROHBODEN = SOLL + ULB
+  const targetCm = SOLL_CM + ULB_CM;
+  const targetY  = rohbodenY - targetCm*PX_PER_CM;
+
+  // future finished-floor line (Unterlagsboden) — drawn as a hatched band
+  const ffY = rohbodenY - ULB_CM*PX_PER_CM;
+  const band=el('g',{});
+  band.appendChild(el('rect',{x:0,y:ffY,width:390,height:rohbodenY-ffY,fill:'rgba(122,240,217,.10)',stroke:'#2dd4bf','stroke-width':1.4,'stroke-dasharray':'5 5'}));
+  band.appendChild(el('line',{x1:0,y1:ffY,x2:390,y2:ffY,stroke:'#7af0d9','stroke-width':2,'stroke-dasharray':'7 5'}));
+  const fl=el('text',{x:200,y:ffY-6,'font-size':'9','font-weight':'800',fill:'#7af0d9'}); fl.textContent='künftiger Fertigboden (Unterlagsboden '+ULB_CM+' cm fehlt noch)'; band.appendChild(fl);
+  svgHeight.appendChild(band);
+
+  // the dose stub on the wall (we set its mark height) — x randomisiert
+  const doseX=ri(150,260);
+  svgHeight.appendChild(el('line',{x1:doseX,y1:170,x2:doseX,y2:rohbodenY,stroke:'#3a4654','stroke-width':1,'stroke-dasharray':'2 4',opacity:0.4}));
+
+  // SOLL target marker (the correct height ABOVE rohboden) — drawn faint
+  const tgt=el('g',{});
+  tgt.appendChild(el('line',{x1:doseX-40,y1:targetY,x2:doseX+60,y2:targetY,stroke:'#2dd4bf','stroke-width':2,'stroke-dasharray':'5 5',opacity:0.85}));
+  tgt.appendChild(el('rect',{x:doseX+18,y:targetY-12,width:70,height:22,rx:6,fill:'#0c5f4e'}));
+  const tt=el('text',{x:doseX+53,y:targetY+3,'text-anchor':'middle','font-size':'9','font-weight':'800',fill:'#aef7e4'}); tt.textContent='Soll '+targetCm+' cm'; tgt.appendChild(tt);
+  svgHeight.appendChild(tgt);
+
+  // info: how the height is computed
+  const info=el('g',{});
+  info.appendChild(el('rect',{x:24,y:200,width:200,height:62,rx:10,fill:'rgba(16,21,28,.85)',stroke:'#27506a','stroke-width':1.5}));
+  const i1=el('text',{x:36,y:220,'font-size':'10','font-weight':'700',fill:'#cdd8e2'}); i1.textContent='Plan-Höhe (ab Fertigboden): '+SOLL_CM+' cm'; info.appendChild(i1);
+  const i2=el('text',{x:36,y:236,'font-size':'10','font-weight':'700',fill:'#ffd166'}); i2.textContent='+ Unterlagsboden: '+ULB_CM+' cm'; info.appendChild(i2);
+  const i3=el('text',{x:36,y:254,'font-size':'11','font-weight':'800',fill:'#7af0d9'}); i3.textContent='= ab Rohboden messen: '+targetCm+' cm'; info.appendChild(i3);
+  svgHeight.appendChild(info);
+
+  // measuring tape: vertical line from rohboden up to the draggable head
+  const tape=el('line',{x1:doseX,y1:rohbodenY,x2:doseX,y2:rohbodenY,stroke:'#ffd166','stroke-width':4});
+  svgHeight.appendChild(tape);
+
+  // draggable measuring head + dose mark
+  const head=el('g',{cursor:'grab',class:'pulseTool'});
+  head.appendChild(el('rect',{x:-26,y:-14,width:52,height:28,rx:6,fill:'url(#steel)',stroke:'#10151c','stroke-width':1.6}));
+  head.appendChild(el('circle',{cx:0,cy:0,r:14,fill:'none',stroke:'#10151c','stroke-width':2}));
+  const hLbl=el('text',{x:0,y:4,'text-anchor':'middle','font-size':'10','font-weight':'800',fill:'#10151c'}); hLbl.textContent='□'; head.appendChild(hLbl);
+  const hHit=el('rect',{x:-34,y:-26,width:68,height:52,fill:'transparent'}); head.appendChild(hHit);
+  let headY=rohbodenY-40;
+  head.setAttribute('transform','translate('+doseX+','+headY+')');
+  svgHeight.appendChild(head);
+
+  let _ghost=null;
+  if(firstVisit('height')){
+    showDoHint('hintHeight','Der <b>Unterlagsboden</b> fehlt noch. Miss die Höhe <b>ab Rohboden</b> = Plan-Höhe <b>+ Unterlagsboden</b>. Zieh den Meter aufs Soll-Mass.');
+    head.classList.remove('pulseTool');
+    _ghost=ghostDemo(svgHeight,doseX,headY,doseX,targetY,{dur:1400,onStep:(f)=>{
+      const yy=headY+(targetY-headY)*f;
+      head.setAttribute('transform','translate('+doseX+','+yy+')');
+      tape.setAttribute('y2',yy);
+    },done:()=>{
+      head.setAttribute('transform','translate('+doseX+','+headY+')'); tape.setAttribute('y2',headY);
+      head.classList.add('pulseTool'); hideDoHint('hintHeight');
+    }});
+  } else { hideDoHint('hintHeight'); }
+
+  roHeight.classList.remove('good');
+  setH(headY);
+
+  let drag=false, done=false, touched=false;
+  function killAff(){ if(!touched){ touched=true; head.classList.remove('pulseTool'); if(_ghost){_ghost.cancel();_ghost=null;} hideDoHint('hintHeight'); } }
+  function setH(py){
+    headY=Math.max(rohbodenY-targetCm*PX_PER_CM-70, Math.min(rohbodenY-6, py));
+    head.setAttribute('transform','translate('+doseX+','+headY+')');
+    tape.setAttribute('y2',headY);
+    const cm=Math.round((rohbodenY-headY)/PX_PER_CM);
+    const diff=Math.abs(cm-targetCm);
+    roHeight.classList.toggle('good',diff<=2);
+    roHeight.classList.toggle('bad',false);
+    if(diff<=2) roHeight.innerHTML='Höhe ab Rohboden: <span class="big">'+cm+' cm</span> — passt zum Soll ✓';
+    else roHeight.innerHTML='Höhe ab Rohboden: <span class="big">'+cm+' cm</span> &nbsp;/&nbsp; Soll '+targetCm+' cm';
+  }
+  function down(e){ e.preventDefault(); AC(); drag=true; killAff(); head.setAttribute('cursor','grabbing'); try{hHit.setPointerCapture(e.pointerId);}catch(_){} }
+  function move(e){ if(!drag)return; const p=toSvgFor(svgHeight,e.clientX,e.clientY); setH(p.y); }
+  function up(){ if(!drag||done)return; drag=false; head.setAttribute('cursor','grab');
+    const cm=Math.round((rohbodenY-headY)/PX_PER_CM);
+    if(Math.abs(cm-targetCm)<=2){
+      done=true;
+      sndSnap(); spark(doseX,headY,18,{color:'#2dd4bf',speed:3.5,up:0.5});
+      // draw the dose mark at this height
+      svgHeight.appendChild(el('line',{x1:doseX-12,y1:headY,x2:doseX+12,y2:headY,stroke:'#2dd4bf','stroke-width':3}));
+      svgHeight.appendChild(el('line',{x1:doseX,y1:headY-12,x2:doseX,y2:headY+12,stroke:'#2dd4bf','stroke-width':3}));
+      toast('Höhe korrekt ✓','#7af0d9',doseX,headY-26);
+      addXp(20);
+      roHeight.classList.add('good'); roHeight.textContent='Aufgemesst: '+targetCm+' cm ab Rohboden ✓';
+      setTimeout(()=>triggerWin(),700);
+    } else {
+      // gutmütig: kein Fail — Hinweis, weiter ziehen
+      tone(420,0.08,'sine',0.12);
+    }
+  }
+  hHit.addEventListener('pointerdown',down);
+  window.addEventListener('pointermove',move);
+  window.addEventListener('pointerup',up);
+  _curCleanup=()=>{ hHit.removeEventListener('pointerdown',down); window.removeEventListener('pointermove',move); window.removeEventListener('pointerup',up); if(_ghost)_ghost.cancel(); };
+}
+
+/* =============================================================
+ *  WIN
+ * ============================================================= */
+let won=false;
+function triggerWin(){
+  if(won) return; won=true;
+  if(typeof _curCleanup==='function'){ try{_curCleanup();}catch(e){} _curCleanup=null; }
+  document.getElementById('progFill').style.width='100%';
+  // light up the last step chip
+  const chips=stepsBar.children; for(let i=0;i<chips.length;i++) chips[i].className='sc done';
+  sndWin(); burstConfetti();
+  spark(STAGE_W/2,STAGE_H*0.4,40,{color:'#ffd166',speed:6,up:2});
+  setTimeout(()=>{
+    const win=document.getElementById('win');win.classList.add('show');
+    addXp(45);
+    const sts=document.querySelectorAll('#stars .st');
+    sts.forEach((s,i)=>setTimeout(()=>{s.classList.add('lit');sndSnap();},300+i*260));
+    const xb=document.getElementById('xpBig');let v=0;const tt=performance.now();
+    (function cc(t){const k=Math.min(1,(t-tt)/900);v=Math.round(120*(1-Math.pow(1-k,3)));xb.textContent='+'+v+' XP';if(k<1)requestAnimationFrame(cc);})(performance.now());
+  },650);
+}
+document.getElementById('again').onclick=()=>location.reload();
+
+/* =============================================================
+ *  BUILDERS registry + boot
+ * ============================================================= */
+const BUILDERS = {
+  unform: buildUnform,
+  pipes:  buildPipes,
+  plan:   buildPlan,
+  mark:   buildMark,
+  height: buildHeight
+};
+
+/* =============================================================
+ *  MAIN LOOP + dust
+ * ============================================================= */
+let dust=[];
+function initDust(){
+  for(let i=0;i<22;i++) dust.push({
+    x:Math.random()*STAGE_W,y:Math.random()*STAGE_H,
+    vy:-(0.1+Math.random()*0.25),vx:(Math.random()-.5)*0.2,
+    r:0.5+Math.random()*1.4,a:0.05+Math.random()*0.18,ph:Math.random()*6.28
+  });
+}
+
+function boot(){
+  sizeCanvas();
+  initDust();
+  buildStepsBar();
+  fxLoop();
+  gotoStep('unform');
+}
+window.addEventListener('resize',sizeCanvas);
+
+/* ---- Aufgaben-Box ein-/ausklappbar (verdeckt sonst die Spielflaeche) ---- */
+window.__taskHidden=false;
+(function(){
+  const tt=document.getElementById('taskToggle');
+  const tk=document.getElementById('task');
+  if(!tt||!tk) return;
+  function apply(){
+    if(window.__taskHidden){
+      clearTimeout(window.__taskFadeT);
+      tk.classList.add('hidden'); tk.classList.remove('faded');
+      tt.textContent='Aufgabe einblenden';
+    } else {
+      tk.classList.remove('hidden','faded');
+      tt.textContent='Aufgabe ausblenden';
+      clearTimeout(window.__taskFadeT);
+      window.__taskFadeT=setTimeout(()=>tk.classList.add('faded'),3500);
+    }
+  }
+  tt.addEventListener('click',()=>{ window.__taskHidden=!window.__taskHidden; apply(); });
+  tt.addEventListener('pointerenter',()=>{ if(!window.__taskHidden) tk.classList.remove('faded'); });
+})();
+
+boot();
+
+})();
+</script>
+</body>
+</html>

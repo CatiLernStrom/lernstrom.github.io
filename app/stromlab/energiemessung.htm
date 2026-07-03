@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>StromLab — Energiemessung (3-Phasen-Leistung)</title>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;min-height:100vh;background:radial-gradient(130% 100% at 50% 0%,#15222e 0%,#0b1017 70%);
+    color:#e8edf2;font-family:'Segoe UI',system-ui,sans-serif;padding:18px 14px 40px}
+  .wrap{max-width:620px;margin:0 auto}
+  .backlink{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:#8aa0b2;
+    text-decoration:none;margin-bottom:10px;padding:5px 11px;border-radius:20px;
+    border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);transition:.15s}
+  .backlink:hover{color:#7af0d9;border-color:rgba(45,212,191,.35);background:rgba(45,212,191,.08)}
+  .backlink svg{width:13px;height:13px;display:block}
+  header h1{font-size:24px;font-weight:900;margin:0;letter-spacing:.3px}
+  header h1 .lab{color:#7af0d9}
+  header .sub{font-size:12.5px;color:#8da0b2;font-weight:600;margin-top:3px}
+  header .tag{display:inline-block;margin-top:8px;font-size:10.5px;font-weight:800;letter-spacing:.5px;
+    text-transform:uppercase;color:#7af0d9;background:rgba(45,212,191,.12);border:1px solid rgba(45,212,191,.3);
+    padding:4px 10px;border-radius:20px}
+  .card{background:linear-gradient(180deg,#172230,#101824);border:1px solid rgba(255,255,255,.07);
+    border-radius:18px;padding:16px;margin-top:14px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+  .result{display:flex;align-items:center;gap:16px;background:linear-gradient(180deg,#10302a,#0e1c1a);
+    border:1px solid rgba(45,212,191,.35);box-shadow:0 0 30px rgba(45,212,191,.12)}
+  .result .big{font-size:44px;font-weight:900;color:#7af0d9;line-height:1;font-variant-numeric:tabular-nums}
+  .result .unit{font-size:18px;color:#9fe9da;font-weight:800}
+  .result .lbl{font-size:12px;color:#9fb0c0;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+  .result .calc{font-size:11.5px;color:#8da0b2;margin-top:6px;font-weight:600}
+  .result .calc b{color:#cfe}
+  .grp{margin-top:16px}
+  .grp .h{font-size:11px;font-weight:800;color:#8da0b2;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;display:flex;justify-content:space-between}
+  .grp .h .v{color:#7af0d9}
+  .pills{display:flex;flex-wrap:wrap;gap:6px}
+  .pill{padding:8px 12px;border-radius:11px;border:1px solid rgba(255,255,255,.1);background:#1b2735;
+    color:#cdd8e2;font-weight:800;font-size:13px;cursor:pointer;transition:.15s}
+  .pill small{display:block;font-size:9.5px;color:#8093a4;font-weight:600;margin-top:1px}
+  .pill:hover{transform:translateY(-2px)}
+  .pill.on{background:linear-gradient(180deg,#2dd4bf,#14b8a6);color:#06281f;border-color:#2dd4bf;box-shadow:0 0 16px rgba(45,212,191,.4)}
+  .pill.on small{color:#06403a}
+  .pill.opt.on{background:linear-gradient(180deg,#2dd4bf,#14b8a6)}
+  input[type=range]{width:100%;accent-color:#2dd4bf}
+  input[type=number]{background:#0e1722;border:1px solid rgba(255,255,255,.12);color:#e8edf2;
+    border-radius:9px;padding:6px 8px;font-size:13px;font-weight:700;width:100%;font-family:inherit}
+  input[type=number]:focus{outline:none;border-color:#2dd4bf}
+  .seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .fld label{display:block;font-size:10.5px;font-weight:800;color:#8da0b2;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
+  table{width:100%;border-collapse:collapse;margin-top:6px;font-size:12.5px}
+  th,td{padding:8px 4px;text-align:right;border-bottom:1px solid rgba(255,255,255,.05)}
+  th{color:#8da0b2;font-size:10.5px;font-weight:800;text-transform:uppercase}
+  th:first-child,td:first-child{text-align:left;padding-left:8px}
+  td.mm{color:#cdd8e2;font-weight:800}
+  td.val{color:#9fb0c0;font-variant-numeric:tabular-nums}
+  td.diff.bad{color:#fca5a5;font-weight:800}
+  td.diff.ok{color:#7af0d9;font-weight:800}
+  .warn{margin-top:10px;padding:9px 11px;border-radius:10px;font-size:12px;font-weight:700;line-height:1.45}
+  .warn.bad{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.4);color:#fca5a5}
+  .warn.ok{background:rgba(45,212,191,.1);border:1px solid rgba(45,212,191,.35);color:#7af0d9}
+  .note{font-size:11px;color:#6f8093;margin-top:12px;line-height:1.5}
+  .note b{color:#9fb0c0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="backlink" href="index.htm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>StromLab</a>
+  <header>
+    <h1><span class="lab">StromLab</span> · Energiemessung</h1>
+    <div class="sub">3-Phasen-Leistungsmessung — Messschaltung, Wandler &amp; Fehleranalyse</div>
+    <div class="tag">P · Q · S · cosφ · Original vs. Messung</div>
+  </header>
+
+  <div class="card result">
+    <div>
+      <div class="lbl">Gemessene Wirkleistung P</div>
+      <div><span class="big" id="rVal">–</span> <span class="unit" id="rUnit">MW</span></div>
+      <div class="calc" id="rCalc"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="grp">
+      <div class="h"><span>Messschaltung</span><span class="v" id="scV"></span></div>
+      <div class="pills" id="scRow"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="grp">
+      <div class="h"><span>Spannung U (Leiter-Leiter)</span><span class="v" id="uV"></span></div>
+      <input type="range" id="uSl" min="85" max="115" step="1" value="100">
+    </div>
+    <div class="grp">
+      <div class="h"><span>Strom I je Phase</span><span class="v" id="iV"></span></div>
+      <input type="range" id="iSl" min="0" max="10" step="0.1" value="5">
+    </div>
+    <div class="grp">
+      <div class="h"><span>Phasenwinkel φ</span><span class="v" id="pV"></span></div>
+      <input type="range" id="pSl" min="-90" max="90" step="1" value="0">
+    </div>
+    <div class="seg" style="margin-top:14px">
+      <div class="fld"><label>U<sub>N</sub> Nennspannung [kV]</label><input type="number" id="uN" value="11.5" step="0.5"></div>
+      <div class="fld"><label>Spannungswandler ü<sub>U</sub> (z.B. 110)</label><input type="number" id="kU" value="100" step="1"></div>
+      <div class="fld"><label>I<sub>prim</sub> Nennstrom [A]</label><input type="number" id="iN" value="100" step="5"></div>
+      <div class="fld"><label>Stromwandler ü<sub>I</sub> (z.B. 100)</label><input type="number" id="kI" value="100" step="1"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="grp"><div class="h"><span>Optionen (Fehlerquellen)</span></div>
+      <div class="pills" id="optRow"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="grp"><div class="h"><span>Vergleich</span><span class="v">Original · Messung · Differenz</span></div></div>
+    <table id="cmpTbl"></table>
+    <div class="warn" id="warn"></div>
+  </div>
+
+  <div class="card">
+    <div class="grp"><div class="h"><span>Energie &amp; Kosten (optional)</span><span class="v" id="enV"></span></div></div>
+    <div class="seg">
+      <div class="fld"><label>Tarif [CHF/kWh]</label><input type="number" id="tar" value="0.21" step="0.01"></div>
+      <div class="fld"><label>Betriebsstunden [h]</label><input type="number" id="hrs" value="2000" step="100"></div>
+    </div>
+    <table id="enTbl"></table>
+    <div class="note" id="footnote"></div>
+  </div>
+</div>
+
+<script>
+/* ===== StromLab Energiemessung — 3-Phasen-Leistung & Fehlmessung =====
+   Original (wahre Last): symmetrisch, P=√3·U·I·cosφ, Q=√3·U·I·sinφ, S=√3·U·I.
+   Messung: hängt von Messschaltung (Anzahl Strom-/Spannungspfade) und
+   Wandlerverhältnissen ab. Falsche Schaltung/Wandler -> systematische Abweichung. */
+
+const $=id=>document.getElementById(id);
+const SCH=[
+  {id:'3I3U', lbl:'3I3U', d:'3 Strom-, 3 Spannungswandler — vollständig'},
+  {id:'3U3I', lbl:'3U3I', d:'wie 3I3U (Vier-/Dreileiter), korrekt'},
+  {id:'2U2I', lbl:'2U2I', d:'Aron-Schaltung — 2 Wandler, 3-Leiter'},
+  {id:'2U',   lbl:'2U',   d:'nur 2 Spannungen — unvollständig'}
+];
+const OPTS=[
+  {id:'rueck', lbl:'Rückspeisung', d:'φ>90° wirkt'},
+  {id:'links', lbl:'linkes Drehfeld', d:'L1-L3-L2'},
+  {id:'sym',   lbl:'symmetrisch', d:'gleiche Phasen'}
+];
+
+let st={ sc:'3I3U', opt:{rueck:false,links:false,sym:true} };
+
+const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e};
+
+function buildPills(){
+  const r=$('scRow'); r.innerHTML='';
+  SCH.forEach(s=>{const p=el('button','pill'+(s.id===st.sc?' on':''),s.lbl+'<small>'+s.d+'</small>');
+    p.onclick=()=>{st.sc=s.id;render();}; r.appendChild(p);});
+  const o=$('optRow'); o.innerHTML='';
+  OPTS.forEach(s=>{const p=el('button','pill opt'+(st.opt[s.id]?' on':''),s.lbl+'<small>'+s.d+'</small>');
+    p.onclick=()=>{st.opt[s.id]=!st.opt[s.id];render();}; o.appendChild(p);});
+}
+
+function compute(){
+  const Upct=+$('uSl').value/100, Isec=+$('iSl').value, phiDeg=+$('pSl').value;
+  const uN=+$('uN').value*1000;          // V prim Nenn
+  const iN=+$('iN').value;               // A prim Nenn
+  const kU=+$('kU').value, kI=+$('kI').value;
+
+  // wahre Primärgrößen
+  const U = uN * Upct;                    // V (LL)
+  const Iprim = Isec * kI;               // A prim (Sekundärstrom 0..10 A × Stromwandler-Verhältnis)
+  const phi = phiDeg*Math.PI/180;
+
+  // ----- ORIGINAL (wahre Last) -----
+  const cos = Math.cos(phi), sin=Math.sin(phi);
+  const P0 = Math.sqrt(3)*U*Iprim*cos;
+  const Q0 = Math.sqrt(3)*U*Iprim*sin;
+  const S0 = Math.sqrt(3)*U*Iprim;
+
+  // ----- MESSUNG (abhängig von Schaltung & Wandler) -----
+  let fP=1, fQ=1, msg='', bad=false;
+  switch(st.sc){
+    case '3I3U': case '3U3I': fP=1; fQ=1; break;           // korrekt
+    case '2U2I': // Aron: korrekt nur bei symmetrischer Last; sonst Fehler bei Unsymmetrie
+      if(st.opt.sym){ fP=1; fQ=1; }
+      else { fP=0.97; fQ=1.08; bad=true; msg='Aron (2U2I): bei Unsymmetrie Abweichung.'; }
+      break;
+    case '2U': // unvollständig -> nur Teil erfasst
+      fP=2/3; fQ=2/3; bad=true; msg='2U-Schaltung erfasst nur 2 von 3 Strängen → P zu niedrig.';
+      break;
+  }
+  // linkes Drehfeld bei Aron -> Vorzeichenfehler eines Pfades (grobe Abweichung)
+  if(st.opt.links && st.sc==='2U2I'){ fP*=0.5; bad=true; msg=(msg?msg+' ':'')+'Linkes Drehfeld: Wandler vertauscht → grobe Abweichung.'; }
+  // falsche Wandlerverhältnisse: Messung rechnet mit Nenn-ü, real anders -> Skalierung
+  // hier: angezeigt = wahr * (kU_richtig/kU)*(kI_richtig/kI) — wir nehmen Referenz kU=110,kI gemäß iN
+  // Demo: Wenn kU abweicht vom „korrekten" 110 bzw kI von 100 -> Fehler
+  const kUref=110, kIref=100;
+  const wErr=(kU/kUref)*(kI/kIref);
+  let kuWrong = (Math.abs(kU-kUref)>0.5 || Math.abs(kI-kIref)>0.5);
+  if(kuWrong){ bad=true; msg=(msg?msg+' ':'')+'Wandlerverhältnis ≠ Nenn (ü_U='+kUref+', ü_I='+kIref+') → Skalierungsfehler ×'+wErr.toFixed(2)+'.'; }
+
+  const Pm = P0*fP*wErr;
+  const Qm = Q0*fQ*wErr;
+  const Sm = Math.hypot(Pm,Qm);
+  const cosM = Sm>0 ? Pm/Sm : 0;
+  const cos0 = S0>0 ? P0/S0 : 0;
+
+  return {U,Iprim,phiDeg,P0,Q0,S0,cos0,Pm,Qm,Sm,cosM,bad,msg};
+}
+
+function fmtMW(w){ const mw=w/1e6; return Math.abs(mw)>=1? mw.toFixed(2):(w/1e3).toFixed(1); }
+function unit(w){ return Math.abs(w/1e6)>=1?'M':'k'; }
+
+let animRaf=0;
+function animTo(node,to){
+  cancelAnimationFrame(animRaf);const from=parseFloat(node.textContent)||0;const t0=performance.now();
+  (function a(t){const k=Math.min(1,(t-t0)/450);const v=from+(to-from)*(1-Math.pow(1-k,3));
+    node.textContent=v.toFixed(2);if(k<1)animRaf=requestAnimationFrame(a);else node.textContent=to.toFixed(2);})(performance.now());
+}
+
+function render(){
+  buildPills();
+  const r=compute();
+  $('uV').textContent=$('uSl').value+' % ('+(r.U/1000).toFixed(2)+' kV)';
+  $('iV').textContent=(+$('iSl').value).toFixed(1)+' A → '+r.Iprim.toFixed(0)+' A prim';
+  $('pV').textContent=r.phiDeg+'°';
+  $('scV').textContent=st.sc;
+
+  const PmMW=r.Pm/1e6;
+  $('rUnit').textContent=unit(r.Pm)+'W';
+  animTo($('rVal'), unit(r.Pm)==='M'? r.Pm/1e6 : r.Pm/1e3);
+  $('rCalc').innerHTML='cosφ <b>'+r.cosM.toFixed(3)+'</b> · Original P <b>'+fmtMW(r.P0)+' '+unit(r.P0)+'W</b>';
+
+  // Vergleichstabelle
+  const t=$('cmpTbl'); t.innerHTML='';
+  const hr=el('tr'); ['Größe','Original','Messung','Diff'].forEach(h=>hr.appendChild(el('th',null,h))); t.appendChild(hr);
+  const row=(name,o,m,u,unitFn)=>{
+    const tr=el('tr'); tr.appendChild(el('td','mm',name));
+    const ostr=unitFn?fmtMW(o)+' '+unit(o)+u:o.toFixed(3);
+    const mstr=unitFn?fmtMW(m)+' '+unit(m)+u:m.toFixed(3);
+    tr.appendChild(el('td','val',ostr)); tr.appendChild(el('td','val',mstr));
+    const d = o!==0? (m-o)/o*100 : 0;
+    const dc=el('td','diff '+(Math.abs(d)<0.5?'ok':'bad'), (d>=0?'+':'')+d.toFixed(1)+'%');
+    tr.appendChild(dc); t.appendChild(tr);
+  };
+  row('P', r.P0, r.Pm, 'W', true);
+  row('Q', r.Q0, r.Qm, 'var', true);
+  row('S', r.S0, r.Sm, 'VA', true);
+  // cosphi row
+  {const tr=el('tr'); tr.appendChild(el('td','mm','cosφ'));
+   tr.appendChild(el('td','val',r.cos0.toFixed(3))); tr.appendChild(el('td','val',r.cosM.toFixed(3)));
+   const d=r.cos0!==0?(r.cosM-r.cos0)/r.cos0*100:0;
+   tr.appendChild(el('td','diff '+(Math.abs(d)<0.5?'ok':'bad'),(d>=0?'+':'')+d.toFixed(1)+'%')); t.appendChild(tr);}
+
+  const w=$('warn');
+  const icoWarn='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><path d="M12 3 2 20h20L12 3z"/><line x1="12" y1="9" x2="12" y2="14"/><line x1="12" y1="17.5" x2="12" y2="17.5"/></svg>';
+  const icoOk='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><path d="M4 12.5 9.5 18 20 6"/></svg>';
+  if(r.bad){ w.className='warn bad'; w.innerHTML=icoWarn+'Fehlmessung: '+r.msg; }
+  else { w.className='warn ok'; w.innerHTML=icoOk+'Schaltung &amp; Wandler korrekt — Messung = Original.'; }
+
+  // Energie/Kosten
+  const tar=+$('tar').value, hrs=+$('hrs').value;
+  const E0=r.P0/1e3*hrs, Em=r.Pm/1e3*hrs;  // kWh
+  const et=$('enTbl'); et.innerHTML='';
+  const eh=el('tr'); ['','Original','Messung','Diff'].forEach(h=>eh.appendChild(el('th',null,h))); et.appendChild(eh);
+  const erow=(n,o,m,fmt)=>{const tr=el('tr'); tr.appendChild(el('td','mm',n));
+    tr.appendChild(el('td','val',fmt(o))); tr.appendChild(el('td','val',fmt(m)));
+    const d=o!==0?(m-o)/o*100:0; tr.appendChild(el('td','diff '+(Math.abs(d)<0.5?'ok':'bad'),(d>=0?'+':'')+d.toFixed(1)+'%')); et.appendChild(tr);};
+  erow('Energie [kWh]',E0,Em,v=>v.toLocaleString('de-CH',{maximumFractionDigits:0}));
+  erow('Kosten [CHF]',E0*tar,Em*tar,v=>v.toLocaleString('de-CH',{maximumFractionDigits:0}));
+  $('enV').textContent=tar+' CHF/kWh';
+
+  $('footnote').innerHTML=
+    '<b>Formeln (symmetrisch):</b> P=√3·U·I·cosφ, Q=√3·U·I·sinφ, S=√3·U·I. '+
+    '<b>3I3U/3U3I</b> messen vollständig (korrekt). <b>2U2I (Aron)</b> ist nur bei '+
+    'symmetrischer Last exakt. <b>2U</b> erfasst nur 2 Stränge → P zu niedrig. '+
+    'Abweichende Wandlerverhältnisse (ü<sub>U</sub>/ü<sub>I</sub> ≠ Nenn 110/100) skalieren die Anzeige fehlerhaft. '+
+    'Beispiel-Datensatz: U=11,5 kV, I=100 A, φ=0 → P≈3,46 MW.';
+}
+
+['uSl','iSl','pSl','uN','kU','iN','kI','tar','hrs'].forEach(id=>$(id).addEventListener('input',render));
+render();
+</script>
+</body>
+</html>

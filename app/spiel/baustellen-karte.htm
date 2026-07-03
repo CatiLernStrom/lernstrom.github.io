@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="de"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LernStrom — Elektriker-Spiel · Baustellen-Reise</title>
+<style>
+  :root{ --bg:#0b0f15; --card:#141b24; --card2:#10161e; --line:#222c38; --teal:#2dd4bf; --teal2:#16a394;
+    --txt:#e6ebf2; --dim:#8597a8; --gold:#ffd166; --lock:#3a4250; }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:#05080c}
+  body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;color:var(--txt);
+    display:flex;justify-content:center;}
+  .phone{width:430px;min-height:100vh;background:
+      radial-gradient(120% 50% at 50% 0%, #15212c 0%, var(--bg) 55%);
+    position:relative;overflow-x:hidden;padding-bottom:60px;}
+  /* header */
+  .hd{position:sticky;top:0;z-index:20;backdrop-filter:blur(8px);
+    background:linear-gradient(180deg,rgba(8,12,17,.92),rgba(8,12,17,.55));
+    border-bottom:1px solid var(--line);padding:14px 18px 12px;}
+  .hd h1{margin:0;font-size:18px;font-weight:800;letter-spacing:.2px}
+  .hd .sub{font-size:11.5px;color:var(--dim);margin-top:2px}
+  .pbar{height:7px;border-radius:5px;background:#0e1620;margin-top:10px;overflow:hidden;border:1px solid var(--line)}
+  .pfill{height:100%;width:14%;background:linear-gradient(90deg,var(--teal),#7af0d9);box-shadow:0 0 12px rgba(45,212,191,.6)}
+  .pnum{font-size:11px;color:var(--dim);margin-top:5px}
+  /* house */
+  .house{display:flex;justify-content:center;padding:14px 0 6px}
+  /* journey */
+  .road{position:relative;padding:8px 20px 0}
+  .road::before{content:"";position:absolute;left:50px;top:0;bottom:0;width:4px;
+    background:repeating-linear-gradient(180deg,#26323f 0 10px,transparent 10px 20px);border-radius:3px}
+  .st{position:relative;display:flex;gap:14px;align-items:flex-start;margin:0 0 14px;padding-left:0}
+  .dot{flex:0 0 60px;display:flex;flex-direction:column;align-items:center;z-index:2}
+  .num{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:17px;border:2px solid var(--line);background:var(--card2)}
+  .card{flex:1;background:linear-gradient(180deg,var(--card),var(--card2));border:1px solid var(--line);
+    border-radius:16px;padding:12px 14px;box-shadow:0 6px 18px rgba(0,0,0,.35)}
+  .card h3{margin:0 0 3px;font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px}
+  .card p{margin:0;font-size:12px;color:var(--dim);line-height:1.45}
+  .badge{display:inline-block;font-size:9.5px;font-weight:900;letter-spacing:.5px;text-transform:uppercase;
+    padding:3px 8px;border-radius:20px;margin-top:8px}
+  .b-done{background:rgba(45,212,191,.16);color:var(--teal)}
+  .b-next{background:rgba(255,209,102,.16);color:var(--gold)}
+  .b-soon{background:rgba(120,135,152,.14);color:var(--dim)}
+  .play{display:inline-block;margin-top:9px;font-size:12.5px;font-weight:800;text-decoration:none;
+    background:linear-gradient(135deg,var(--teal),var(--teal2));color:#04221d;padding:8px 14px;border-radius:11px;
+    box-shadow:0 4px 14px rgba(45,212,191,.3)}
+  /* states */
+  .done .num{border-color:var(--teal);color:var(--teal);box-shadow:0 0 14px rgba(45,212,191,.4)}
+  .next .num{border-color:var(--gold);color:var(--gold);box-shadow:0 0 16px rgba(255,209,102,.5);animation:pulse 1.6s infinite}
+  .soon .num{color:var(--lock)}
+  .soon .card{opacity:.72}
+  .soon h3{color:#aeb9c6}
+  @keyframes pulse{0%,100%{box-shadow:0 0 12px rgba(255,209,102,.4)}50%{box-shadow:0 0 22px rgba(255,209,102,.8)}}
+  .foot{text-align:center;color:var(--dim);font-size:11px;padding:6px 24px 0;line-height:1.5}
+</style></head>
+<body>
+<div class="phone">
+  <div class="hd">
+    <h1>⚡ Elektriker-Spiel — Baustellen-Reise</h1>
+    <div class="sub">Vom Anruf bis zur Kontrolle · ein EFH komplett verkabeln</div>
+    <div class="pbar"><div class="pfill" id="pfill"></div></div>
+    <div class="pnum" id="pnum"></div>
+  </div>
+
+  <div class="house">
+    <svg width="240" height="150" viewBox="0 0 240 150">
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#16242f"/><stop offset="1" stop-color="#0b0f15"/></linearGradient>
+        <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a3947"/><stop offset="1" stop-color="#1c2731"/></linearGradient>
+      </defs>
+      <rect x="0" y="0" width="240" height="150" fill="url(#sky)"/>
+      <!-- Boden -->
+      <rect x="20" y="128" width="200" height="10" rx="3" fill="#243140"/>
+      <!-- Rohbau-Haus -->
+      <rect x="60" y="70" width="120" height="58" fill="url(#wall)" stroke="#0e151c" stroke-width="2"/>
+      <polygon points="54,72 120,38 186,72" fill="#33475a" stroke="#0e151c" stroke-width="2"/>
+      <!-- Fenster (leuchten = Fortschritt) -->
+      <rect x="76" y="86" width="26" height="26" rx="2" fill="#0e1620" stroke="#0e151c" stroke-width="1.5"/>
+      <rect x="138" y="86" width="26" height="26" rx="2" fill="#0e1620" stroke="#0e151c" stroke-width="1.5"/>
+      <rect x="108" y="98" width="24" height="30" rx="2" fill="#0e1620" stroke="#0e151c" stroke-width="1.5"/>
+      <!-- Strom-Funke -->
+      <text x="120" y="60" text-anchor="middle" font-size="22" fill="#2dd4bf">⚡</text>
+    </svg>
+  </div>
+
+  <div class="road" id="road"></div>
+
+  <div class="foot">Tipp: Fertige Module direkt anspielen. Der Rest entsteht Schritt für Schritt —
+    am Ende ein durchgehendes Spiel.</div>
+</div>
+
+<script>
+// Phasen aus der Konzept-/Word-Datei (Bauherr-Anruf → Kontrolle)
+const STAGES = [
+  {ic:'📞', t:'Büro: Auftrag & Angebot', d:'Anruf/Mail in der Filiale, Chef-Lehrling-Dialog, Angebotssumme wählen & pokern.', s:'done', play:'buero-intro.htm'},
+  {ic:'📦', t:'Materialliste & Beladen', d:'Materialliste erstellen, im Magazin/Hochregallager holen, Lieferwagen beladen (zu viel/zu wenig = Minus).', s:'done', play:'buero-intro.htm'},
+  {ic:'🔌', t:'Bauprovisorium-Anschluss', d:'Baustromverteiler verkabeln: Querschnitt/Sicherung, abmanteln, Kabelschuh pressen, Schrumpfschlauch, anschliessen, spannungsfrei messen.', s:'done', play:'baustromverteiler-v2.htm'},
+  {ic:'⚡', t:'Fundamenterdung', d:'8 mm Kupferband rundherum, alle 5 m + in den Ecken anschliessen, Aufsteller setzen, Fotos für die Doku.', s:'done', play:'fundamenterdung.htm'},
+  {ic:'🧱', t:'Decke 1 aufnageln & einlegen', d:'Abzweigdosen / Spotbüchsen / Schalungsschoner an die Schalung nageln, nach dem Eisenleger Rohre einlegen, betonieren.', s:'done', play:'decke-einlegen.htm'},
+  {ic:'🧱', t:'Wände einlegen', d:'Dosen aufnageln, Rohre/Einlagen in die Wände, betonieren — danach die letzte Decke.', s:'next'},
+  {ic:'✂️', t:'Ausschalen & Dosen anzeichnen', d:'Ausschalen/ausnageln, Rohre in den Dosen abschneiden, Dosen für Steckdosen nach Plan anzeichnen (Küche/Bad Detailplan, Masse, Unterlagsboden).', s:'done', play:'dosen-anzeichnen.htm'},
+  {ic:'🪚', t:'Schlitzen & Rohre setzen', d:'Spitzen/schlitzen, Rohre + Dosen + Muffen einsetzen — danach wirft der Maurer die Schlitze zu.', s:'done', play:'schlitzen.htm'},
+  {ic:'🧵', t:'Kabel & Drähte einziehen', d:'Drähte bis zur Hauptverteilung und in alle Dosen einziehen, Aderfarben wählen, Kabel beschriften.', s:'done', play:'kabel-einziehen.htm'},
+  {ic:'🔗', t:'Abzweigdosen verdrahten', d:'Die ganze Abzweigdose wie in echt: Rohre erkennen, Adern nach Farbe richtig verbinden — dann Papier einstopfen (Gipser).', s:'done', play:'abzweigdose-verdrahten.htm'},
+  {ic:'🏛️', t:'Hauptverteilung bauen', d:'Zähler & Rundsteuerempfänger setzen, Rahmen bauen, Sicherungen, fertig verdrahten, platzieren, Zuleitung auf den Hausanschlusskasten.', s:'done', play:'hauptverteilung.htm'},
+  {ic:'🎨', t:'Apparate setzen', d:'Nach dem Maler: Steckdosen, Schalter & Raumthermostate nach Plan setzen (Küche: die hinteren zuerst).', s:'done', play:'apparate-setzen.htm'},
+  {ic:'✅', t:'Kontrolle & Abnahme', d:'Funktionskontrolle: gehen alle Schalter? Schutzleiter verbunden? Spannungen messen (L-L, L-N, L-PE, N-PE) — Abnahme.', s:'done', play:'kontrolle.htm'},
+  {ic:'🧪', t:'Erstprüfung (NIV-Messungen)', d:'Baubegleitende Erstprüfung nach NIN 2025: Sichtprüfung, Schutzleiter-/Durchgangsmessung, Isolation 500 V DC ≥ 1 MΩ, Kurzschlussstrom Ik, RCD/FI, Drehfeld — dann Mess-/Prüfprotokoll für den Sicherheitsnachweis.', s:'done', play:'erstpruefung.htm'},
+];
+const road=document.getElementById('road');
+STAGES.forEach((st,i)=>{
+  const el=document.createElement('div'); el.className='st '+st.s;
+  const badge = st.s==='done'?'<span class="badge b-done">✓ spielbar</span>'
+              : st.s==='next'?'<span class="badge b-next">▶ als Nächstes</span>'
+              : '<span class="badge b-soon">🔒 kommt noch</span>';
+  const play = st.play?'<br><a class="play" href="'+st.play+'">▶ Anspielen</a>':'';
+  el.innerHTML='<div class="dot"><div class="num">'+(i+1)+'</div></div>'+
+    '<div class="card"><h3>'+st.ic+' '+st.t+'</h3><p>'+st.d+'</p>'+badge+play+'</div>';
+  road.appendChild(el);
+});
+const done=STAGES.filter(s=>s.s==='done').length;
+document.getElementById('pfill').style.width=Math.round(done/STAGES.length*100)+'%';
+document.getElementById('pnum').textContent=done+' von '+STAGES.length+' Modulen gebaut · '+(STAGES.length-done)+' folgen';
+</script>
+</body></html>

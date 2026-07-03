@@ -1,0 +1,1 @@
+import{a as n,j as s}from"./vendor-F8FsCsBL.js";function t({eyebrow:a,title:e,onBack:i}){const c=n();return s.jsxs("div",{children:[s.jsx("button",{className:"linkbtn",onClick:i??(()=>c(-1)),children:"← Zurück"}),s.jsx("div",{className:"spacer-sm"}),a&&s.jsx("div",{className:"eyebrow",children:a}),s.jsx("h1",{children:e}),s.jsx("div",{className:"spacer"})]})}export{t as H};

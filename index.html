@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<script>try{var _t=localStorage.getItem('ls-theme');if(_t)document.documentElement.setAttribute('data-theme',_t);}catch(e){}</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon_32.png">
+<link rel="apple-touch-icon" href="appicon_192.png">
+<title>LernStrom – Von der Primarschule bis zum QV · Lernplattform Schweiz</title>
+<meta name="description" content="Schweizer Lernplattform für Schule und Beruf. Repetitionsfragen, Karteikarten, Duelle & dein eigenes Dossier — von der Primarschule bis zum QV. App, Web & Laptop.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LernStrom">
+<meta property="og:title" content="LernStrom – Lern smart. Für Schule und Beruf.">
+<meta property="og:description" content="Von der Primarschule bis zum QV. Quiz, Karteikarten, Duelle & dein eigenes Dossier — Schweizer Lernplattform.">
+<meta property="og:url" content="https://lernstrom.ch/">
+<meta property="og:image" content="https://lernstrom.ch/appicon_192.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="LernStrom – Lern smart. Für Schule und Beruf.">
+<meta name="twitter:description" content="Von der Primarschule bis zum QV. Schweizer Lernplattform.">
+<meta name="twitter:image" content="https://lernstrom.ch/appicon_192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "0392124d9ec44878ab51af052ba26aa4"}'></script>
+<style>
+  /* ── LernStrom „Schaltpult" — Landingpage (eigenständige Styles) ── */
+  :root{
+    --bg:#E9F3EE; --panel:#fff; --panel2:#F3F9F6; --ink:#0E3B31; --muted:#5D7167;
+    --teal:#0C9488; --teal-ink:#0A7A70; --on-teal:#fff; --line:#D3E5DD; --gold:#B97F14;
+    --grid:rgba(12,148,136,.06); --numstroke:#CADFD6;
+    --shadow:0 1px 0 rgba(14,59,49,.04), 0 22px 46px -26px rgba(14,59,49,.22);
+  }
+  html[data-theme="dark"]{
+    --bg:#0E211B; --panel:#15302A; --panel2:#1A3A33; --ink:#EAF4EF; --muted:#92AEA3;
+    --teal:#3CC9B0; --teal-ink:#54D6BE; --on-teal:#04130f; --line:#274A41; --gold:#E0A93B;
+    --grid:rgba(60,201,176,.05); --numstroke:#274A41;
+    --shadow:0 22px 46px -26px rgba(0,0,0,.5);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);transition:background .35s ease,color .35s ease;
+    font-family:'Instrument Sans','Segoe UI',Roboto,sans-serif;font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden;
+    background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:46px 46px;}
+  .wrap{max-width:1200px;margin:0 auto;padding:0 30px}
+  a{color:inherit;text-decoration:none}
+  .mono{font-family:'JetBrains Mono',monospace}
+  .scroll-progress{position:fixed;top:0;left:0;height:2px;width:0;background:var(--teal);z-index:100;transition:width .1s linear}
+
+  @keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+  @keyframes drawline{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+  @keyframes pulse{0%,100%{opacity:.5}50%{opacity:1}}
+  .rise{opacity:0;animation:rise .8s cubic-bezier(.16,1,.3,1) forwards}
+  .d1{animation-delay:.05s}.d2{animation-delay:.16s}.d3{animation-delay:.3s}.d4{animation-delay:.42s}.d5{animation-delay:.54s}.d6{animation-delay:.66s}
+
+  nav{border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:blur(8px);position:sticky;top:0;z-index:50}
+  nav .navwrap{max-width:1200px;margin:0 auto;padding:0 30px;display:flex;align-items:center;justify-content:space-between;height:68px}
+  .brand{display:flex;align-items:center;gap:11px;font-family:'Fraunces';font-weight:600;font-size:20px;letter-spacing:-.3px}
+  .brand img{width:30px;height:30px;border-radius:8px}
+  .nl{display:flex;align-items:center;gap:22px;font-size:13.5px;color:var(--muted)}
+  .nl a:hover{color:var(--ink)}
+  .nl .web{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--teal);color:var(--ink);padding:8px 14px;border-radius:7px;font-weight:600}
+  .nl .web:hover{background:var(--teal);color:var(--on-teal)}
+  .nl .web img{width:18px;height:18px;border-radius:5px}
+  .nl .ig{display:inline-flex;align-items:center;gap:6px}.nl .ig svg{width:17px;height:17px}
+  .tt{width:38px;height:38px;border:1px solid var(--line);border-radius:50%;background:var(--panel);color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .3s ease,border-color .2s ease}
+  .tt:hover{border-color:var(--teal);transform:rotate(-16deg)}
+  html[data-theme="light"] .moon{display:none}html[data-theme="dark"] .sun{display:none}
+  @media(max-width:820px){.nl .lk,.nl .ig,.nw-full{display:none}}
+
+  .head{padding:54px 0 26px}
+  .head .ey{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--teal-ink);font-weight:500}
+  .head .claim{font-family:'Fraunces';font-weight:500;font-size:clamp(30px,4.6vw,56px);letter-spacing:-1.5px;line-height:1.03;margin:14px 0 0}
+  .head .claim i{font-style:italic;font-weight:400;color:var(--teal-ink)}
+
+  .rail{height:2px;background:linear-gradient(90deg,transparent,var(--line) 6%,var(--line) 94%,transparent);position:relative;margin:32px 0 0;transform-origin:left;animation:drawline 1s .5s cubic-bezier(.16,1,.3,1) backwards}
+  .rail .node{position:absolute;top:-4px;width:10px;height:10px;border-radius:50%;background:var(--teal);box-shadow:0 0 14px 2px color-mix(in srgb,var(--teal) 60%,transparent);animation:pulse 2.6s infinite}
+  .rail .n1{left:16.6%}.rail .n2{left:50%}.rail .n3{left:83.3%}
+  .rail .lbl{position:absolute;top:14px;left:50%;transform:translateX(-50%);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--muted)}
+
+  .board{display:grid;grid-template-columns:1.12fr 1fr 1fr;gap:0;margin-top:42px;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:var(--panel);box-shadow:var(--shadow)}
+  @media(max-width:880px){.board{grid-template-columns:1fr}}
+  .ch{position:relative;display:flex;flex-direction:column;padding:30px 28px 26px;border-right:1px solid var(--line);min-height:430px;transition:background .25s ease}
+  .ch:last-child{border-right:none}
+  @media(max-width:880px){.ch{border-right:none;border-bottom:1px solid var(--line);min-height:auto}}
+  .ch:hover{background:var(--panel2)}
+  .ch::before{content:"";position:absolute;top:0;left:28px;width:2px;height:0;background:linear-gradient(180deg,var(--teal),transparent);transition:height .4s cubic-bezier(.16,1,.3,1)}
+  .ch:hover::before{height:64px}
+  .ch .num{font-family:'Fraunces';font-weight:500;font-size:84px;line-height:.8;letter-spacing:-3px;color:transparent;-webkit-text-stroke:1.4px var(--numstroke);transition:-webkit-text-stroke-color .25s ease}
+  .ch:hover .num{-webkit-text-stroke-color:var(--teal)}
+  .ch .nm{font-family:'Fraunces';font-weight:500;font-size:26px;letter-spacing:-.5px;margin:22px 0 8px}
+  .ch p{color:var(--muted);font-size:14px;line-height:1.55;margin:0;max-width:30ch}
+  .ch .chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:16px}
+  .ch .chip{border:1px solid var(--line);color:var(--muted);font-size:11px;font-weight:600;padding:4px 10px;border-radius:30px}
+  .ch .go{margin-top:auto;padding-top:24px;font-weight:600;font-size:14.5px;color:var(--teal-ink);display:inline-flex;align-items:center;gap:8px}
+  .ch .go .ar{transition:transform .22s ease} .ch:hover .go .ar{transform:translateX(6px)}
+  .ch .tag{position:absolute;top:30px;right:28px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--gold);font-weight:700}
+  .ch.lead{background:linear-gradient(168deg,#10322A,#0B211C);color:#EAF4EF}
+  .ch.lead .num{-webkit-text-stroke-color:#2C5B4F}
+  .ch.lead:hover{background:linear-gradient(168deg,#123a31,#0C241E)} .ch.lead:hover .num{-webkit-text-stroke-color:var(--teal)}
+  .ch.lead p{color:#A6C4B9} .ch.lead .chip{border-color:#2A554A;color:#A6C4B9} .ch.lead .go{color:#54D6BE}
+
+  .specs{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:18px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--panel)}
+  @media(max-width:680px){.specs{grid-template-columns:repeat(2,1fr)}}
+  .spec{padding:18px 20px;border-right:1px solid var(--line)} .spec:last-child{border-right:none}
+  .spec b{display:block;font-family:'Fraunces';font-weight:500;font-size:24px;letter-spacing:-.5px}
+  .spec span{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+
+  .dl{padding:74px 0}
+  .dl .row{display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:start}
+  @media(max-width:860px){.dl .row{grid-template-columns:1fr;gap:26px}}
+  .dl .ey{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--teal-ink)}
+  .dl h2{font-family:'Fraunces';font-weight:500;font-size:clamp(26px,3.4vw,42px);letter-spacing:-1.2px;margin:12px 0 0}
+  .dl p{color:var(--muted);margin:14px 0 0;max-width:44ch}
+  .dl .small{font-size:13px;color:var(--muted);margin-top:14px}
+  .dl .small a{color:var(--teal-ink);text-decoration:underline}
+  .btn{display:inline-flex;align-items:center;gap:8px;border-radius:9px;padding:13px 22px;font-weight:600;font-size:15px;transition:transform .15s ease}
+  .btn.solid{background:var(--teal);color:var(--on-teal)} .btn.solid:hover{transform:translateY(-2px)}
+  .btn.ghost{border:1px solid var(--line);color:var(--ink);background:var(--panel)} .btn.ghost:hover{border-color:var(--teal)}
+  .steps{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--panel)}
+  .stp{display:flex;gap:14px;padding:16px 20px;border-bottom:1px solid var(--line)} .stp:last-child{border-bottom:none}
+  .stp .n{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13px;color:var(--teal-ink);width:24px;padding-top:2px;flex:0 0 auto}
+  .stp b{display:block;font-size:14px} .stp span{font-size:13px;color:var(--muted)}
+
+  .closing{padding:56px 0 70px;border-top:1px solid var(--line)}
+  .closing .row{display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap}
+  .closing h2{font-family:'Fraunces';font-weight:500;font-size:clamp(28px,4vw,46px);letter-spacing:-1.5px;margin:0}
+  .closing h2 i{font-style:italic;color:var(--teal-ink)}
+
+  footer{border-top:1px solid var(--line);padding:34px 0;font-size:13px;color:var(--muted)}
+  footer .row{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}
+  footer .flinks{display:flex;gap:18px;flex-wrap:wrap} footer a:hover{color:var(--ink)}
+
+  /* ── Mobile ── */
+  @media(max-width:600px){
+    .wrap{padding:0 18px}
+    nav .navwrap{padding:0 18px;height:62px}
+    .head{padding:40px 0 18px}
+    .head .claim{font-size:clamp(30px,9vw,40px)}
+    .ch{padding:26px 22px 24px;min-height:auto}
+    .ch .num{font-size:70px}
+    .rail{margin-top:26px}
+    .dl{padding:54px 0}
+    .specs{grid-template-columns:repeat(2,1fr)}
+    .closing .row{flex-direction:column;align-items:flex-start;gap:18px}
+    footer .row{flex-direction:column;align-items:flex-start;gap:12px}
+  }
+</style>
+</head>
+<body>
+<div class="scroll-progress" id="scroll-progress"></div>
+
+<nav>
+  <div class="navwrap">
+    <a class="brand" href="index.html"><img src="appicon_192.png" alt="LernStrom Logo">LernStrom</a>
+    <div class="nl">
+      <a class="lk" href="schule.html">Schule</a>
+      <a class="lk" href="berufe.html">Berufe</a>
+      <a class="lk" href="berufspruefung.html">Berufsprüfung</a>
+      <a class="web" href="https://lernstrom.ch/app/"><img src="appicon_192.png" alt=""><span class="nw-full">Web-App öffnen</span></a>
+      <a class="ig lk" href="https://instagram.com/lernstrom.ch" target="_blank" rel="noopener" aria-label="Instagram @lernstrom.ch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r="1.1" fill="currentColor" stroke="none"/></svg></a>
+      <button class="tt" onclick="toggleTheme()" aria-label="Hell/Dunkel umschalten">
+        <svg class="sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M1.5 12h3M19.5 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>
+        <svg class="moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a7 7 0 1 0 10.5 10.5z"/></svg>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<header class="head">
+  <div class="wrap">
+    <div class="ey rise d1">Schweizer Lernplattform</div>
+    <div class="claim rise d2">Lern smart.<br><i>Für Schule und Beruf.</i></div>
+    <div class="rail rise">
+      <span class="node n1"></span><span class="node n2"></span><span class="node n3"></span>
+      <span class="lbl mono">↓ &nbsp;wähle deinen kanal&nbsp; ↓</span>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <div class="board">
+      <a class="ch lead rise d3" href="schule.html">
+        <span class="tag">GRATIS</span>
+        <div class="num">01</div>
+        <div class="nm">Obligatorische Schule</div>
+        <p>Primar &amp; Oberstufe nach Lehrplan 21. Jedes Fach einzeln üben — pro Kind ein eigenes Profil.</p>
+        <div class="chips"><span class="chip">Primar 1–6</span><span class="chip">Oberstufe 7–9</span></div>
+        <span class="go">Kanal öffnen <span class="ar">→</span></span>
+      </a>
+      <a class="ch rise d4" href="berufe.html">
+        <div class="num">02</div>
+        <div class="nm">Berufe</div>
+        <p>ÜK &amp; QV. Elektro, KV, Koch, Metzger u. v. m. — mit Quiz, Karteikarten, Duell &amp; Dossier.</p>
+        <div class="chips"><span class="chip">QV</span><span class="chip">ÜK</span><span class="chip">20+ Berufe</span></div>
+        <span class="go">Kanal öffnen <span class="ar">→</span></span>
+      </a>
+      <a class="ch rise d5" href="berufspruefung.html">
+        <div class="num">03</div>
+        <div class="nm">Berufsprüfung</div>
+        <p>Weiterbildung &amp; eidg. Fachausweis. Aktuell Elektro-Projektleiter — weitere folgen.</p>
+        <div class="chips"><span class="chip">Elektro-Projektleiter</span><span class="chip">bald mehr</span></div>
+        <span class="go">Kanal öffnen <span class="ar">→</span></span>
+      </a>
+    </div>
+
+    <div class="specs rise d6">
+      <div class="spec"><b>25 000+</b><span>geprüfte Fragen</span></div>
+      <div class="spec"><b>1×</b><span>kaufen · für immer</span></div>
+      <div class="spec"><b>0</b><span>Abo · keine Werbung</span></div>
+      <div class="spec"><b>3</b><span>Geräte · synchron</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="dl" id="download">
+  <div class="wrap">
+    <div class="row">
+      <div>
+        <div class="ey">App herunterladen</div>
+        <h2>Überall dabei.</h2>
+        <p>Im Google Play Store holen oder direkt im Browser starten — App, Web &amp; Laptop, alles synchron mit deinem Konto.</p>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:22px">
+          <a class="btn solid" href="https://play.google.com/store/apps/details?id=com.lernstrom.app" target="_blank" rel="noopener">▶ Im Play Store</a>
+          <a class="btn ghost" href="https://lernstrom.ch/app/">Im Browser öffnen</a>
+        </div>
+        <div class="small"><a href="https://lernstrom.ch/LernStrom.apk" download>oder Android-APK direkt herunterladen</a></div>
+      </div>
+      <div class="steps">
+        <div class="stp"><span class="n">01</span><div><b>Android</b><span>„Im Play Store" → Installieren — fertig, wie jede App. Updates kommen automatisch.</span></div></div>
+        <div class="stp"><span class="n">02</span><div><b>iPhone / iPad</b><span>Im Browser öffnen → „Teilen → Zum Home-Bildschirm" — läuft wie eine App.</span></div></div>
+        <div class="stp"><span class="n">03</span><div><b>Laptop</b><span>lernstrom.ch/app — synchron mit deinem Konto.</span></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="closing">
+  <div class="wrap">
+    <div class="row">
+      <h2>Lernen, das <i>bleibt.</i></h2>
+      <a class="btn solid" href="berufe.html">Kanal wählen →</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="row">
+      <span class="mono">© 2026 LERNSTROM · LERNPLATTFORM SCHWEIZ</span>
+      <div class="flinks">
+        <a href="mailto:info@lernstrom.ch">info@lernstrom.ch</a>
+        <a href="impressum.html">Impressum</a>
+        <a href="agb.html">AGB</a>
+        <a href="datenschutz.html">Datenschutz</a>
+        <a href="konto-loeschen.html">Konto löschen</a>
+        <a href="https://instagram.com/lernstrom.ch" target="_blank" rel="noopener">Instagram</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+function toggleTheme(){var h=document.documentElement;var n=h.getAttribute('data-theme')==='dark'?'light':'dark';h.setAttribute('data-theme',n);try{localStorage.setItem('ls-theme',n);}catch(e){}}
+var sp=document.getElementById('scroll-progress');
+window.addEventListener('scroll',function(){var st=document.documentElement.scrollTop||document.body.scrollTop;var h=document.documentElement.scrollHeight-document.documentElement.clientHeight;if(sp)sp.style.width=(h>0?(st/h)*100:0)+'%';});
+</script>
+</body>
+</html>

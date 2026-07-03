@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>StromLab · Überstromschutz</title>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;min-height:100vh;background:radial-gradient(130% 100% at 50% 0%,#15222e 0%,#0b1017 70%);
+    color:#e8edf2;font-family:'Segoe UI',system-ui,sans-serif;padding:18px 14px 40px}
+  .wrap{max-width:620px;margin:0 auto}
+  .backlink{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:#8aa0b2;
+    text-decoration:none;margin-bottom:10px;padding:5px 11px;border-radius:20px;
+    border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);transition:.15s}
+  .backlink:hover{color:#7af0d9;border-color:rgba(45,212,191,.35);background:rgba(45,212,191,.08)}
+  .backlink svg{width:13px;height:13px;display:block}
+  header h1{font-size:24px;font-weight:900;margin:0;letter-spacing:.3px}
+  header h1 .lab{color:#7af0d9}
+  header .sub{font-size:12.5px;color:#8da0b2;font-weight:600;margin-top:3px}
+  header .tag{display:inline-block;margin-top:8px;font-size:10.5px;font-weight:800;letter-spacing:.5px;
+    text-transform:uppercase;color:#7af0d9;background:rgba(45,212,191,.12);border:1px solid rgba(45,212,191,.3);
+    padding:4px 10px;border-radius:20px}
+  .card{background:linear-gradient(180deg,#172230,#101824);border:1px solid rgba(255,255,255,.07);
+    border-radius:18px;padding:16px;margin-top:14px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+  .result{display:flex;align-items:center;gap:16px;background:linear-gradient(180deg,#10302a,#0e1c1a);
+    border:1px solid rgba(45,212,191,.35);box-shadow:0 0 30px rgba(45,212,191,.12)}
+  .result .big{font-size:44px;font-weight:900;color:#7af0d9;line-height:1;font-variant-numeric:tabular-nums}
+  .result .unit{font-size:18px;color:#9fe9da;font-weight:800}
+  .result .lbl{font-size:12px;color:#9fb0c0;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+  .result .calc{font-size:11.5px;color:#8da0b2;margin-top:6px;font-weight:600}
+  .result .calc b{color:#cfe}
+  .verdict{margin-top:10px;font-weight:900;font-size:13px;padding:7px 12px;border-radius:11px;display:inline-block}
+  .ok{background:rgba(45,212,191,.16);color:#7af0d9;border:1px solid rgba(45,212,191,.4)}
+  .bad{background:rgba(248,113,113,.16);color:#fca5a5;border:1px solid rgba(248,113,113,.45)}
+  .grp{margin-top:16px}.grp:first-child{margin-top:0}
+  .grp .h{font-size:11px;font-weight:800;color:#8da0b2;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;display:flex;justify-content:space-between}
+  .grp .h .v{color:#7af0d9}
+  .pills{display:flex;flex-wrap:wrap;gap:6px}
+  .pill{padding:8px 12px;border-radius:11px;border:1px solid rgba(255,255,255,.1);background:#1b2735;
+    color:#cdd8e2;font-weight:800;font-size:13px;cursor:pointer;transition:.15s}
+  .pill:hover{transform:translateY(-2px)}
+  .pill.on{background:linear-gradient(180deg,#2dd4bf,#14b8a6);color:#06281f;border-color:#2dd4bf;box-shadow:0 0 16px rgba(45,212,191,.4)}
+  .field{display:flex;flex-direction:column;gap:4px}
+  .field label{font-size:10.5px;font-weight:800;color:#8da0b2;text-transform:uppercase;letter-spacing:.4px}
+  .field input{background:#0e1722;border:1px solid rgba(255,255,255,.12);border-radius:10px;color:#e8edf2;
+    font-size:14px;font-weight:700;padding:9px 10px;width:100%;font-variant-numeric:tabular-nums}
+  .field input:focus{outline:none;border-color:#2dd4bf;box-shadow:0 0 0 2px rgba(45,212,191,.2)}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  .sech{font-size:11px;font-weight:800;color:#7af0d9;text-transform:uppercase;letter-spacing:.6px;margin:14px 0 8px}
+  .sech:first-child{margin-top:0}
+  canvas{width:100%;height:250px;display:block;margin-top:8px;border-radius:12px;background:#0b121b;border:1px solid rgba(255,255,255,.06)}
+  .leg{display:flex;flex-wrap:wrap;gap:14px;margin-top:8px;font-size:11px;color:#9fb0c0;font-weight:700}
+  .leg i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:5px;vertical-align:middle}
+  .note{font-size:11px;color:#6f8093;margin-top:12px;line-height:1.5}
+  .mini{display:flex;gap:14px;flex-wrap:wrap;margin-top:6px}
+  .mini div{font-size:12px;color:#9fb0c0;font-weight:700}.mini b{color:#cfe}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="backlink" href="index.htm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>StromLab</a>
+  <header>
+    <h1><span class="lab">StromLab</span> · Überstromschutz</h1>
+    <div class="sub">Fehlerstrom I<sub>Σ</sub> aus Trafo + Leitungen, Auslösung prüfen</div>
+    <div class="tag">NIN / IEC 60364 · gG / LS</div>
+  </header>
+
+  <div class="card result">
+    <div>
+      <div class="lbl">Fehlerstrom I<sub>Σ</sub> (am Schutzorgan)</div>
+      <div><span class="big" id="rVal">–</span> <span class="unit">kA</span></div>
+      <div class="calc" id="rCalc"></div>
+      <div class="mini">
+        <div>t<sub>min</sub> <b id="tmin">–</b></div>
+        <div>t<sub>max</sub> <b id="tmax">–</b></div>
+        <div>I<sub>cs</sub>-Reserve <b id="icsr">–</b></div>
+      </div>
+      <div id="verdict" class="verdict ok"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="grp">
+      <div class="h"><span>Betriebsmodus</span><span class="v" id="modeV"></span></div>
+      <div class="pills" id="modeRow"></div>
+    </div>
+
+    <div class="sech">Transformator</div>
+    <div class="row3">
+      <div class="field"><label>S [kVA]</label><input id="S" type="number" value="250"></div>
+      <div class="field"><label>u<sub>k</sub> [%]</label><input id="uk" type="number" value="4"></div>
+      <div class="field"><label>P<sub>Cu</sub> [W]</label><input id="PCu" type="number" value="3250"></div>
+    </div>
+    <div class="row">
+      <div class="field"><label>U<sub>0</sub> [V]</label><input id="U0" type="number" value="231"></div>
+      <div class="field"><label>X<sub>T</sub> / R<sub>T</sub> [mΩ]</label><input id="XTRT" type="text" value="24.2 / 8.32" disabled></div>
+    </div>
+
+    <div class="sech">Leitungen (Schleife)</div>
+    <div class="row">
+      <div class="field"><label>R<sub>L1</sub> [mΩ] (95 mm², 100 m)</label><input id="RL1" type="number" value="23.2" step="0.1"></div>
+      <div class="field"><label>R<sub>L2</sub> [mΩ] (16 mm², 10 m)</label><input id="RL2" type="number" value="13.8" step="0.1"></div>
+    </div>
+    <div class="row">
+      <div class="field"><label>R<sub>F</sub> Verbraucher [mΩ]</label><input id="RF" type="number" value="0" step="0.1"></div>
+      <div class="field"><label>X-Anteil Leitung [%]</label><input id="XpctL" type="number" value="0"></div>
+    </div>
+
+    <div class="sech">Schutzorgan</div>
+    <div class="grp" style="margin-top:0">
+      <div class="h"><span>Charakteristik</span><span class="v" id="charV"></span></div>
+      <div class="pills" id="charRow"></div>
+    </div>
+    <div class="row3" style="margin-top:10px">
+      <div class="field"><label>I<sub>n</sub> [A]</label><input id="In" type="number" value="63"></div>
+      <div class="field"><label>I<sub>cs</sub> [kA]</label><input id="Ics" type="number" value="50"></div>
+      <div class="field"><label>k·I<sub>n</sub> Auslöse</label><input id="kfac" type="text" value="–" disabled></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="grp"><div class="h"><span>I-t-Kennlinie</span><span class="v">log-log</span></div></div>
+    <canvas id="cv" width="620" height="230"></canvas>
+    <div class="leg">
+      <span><i style="background:#2dd4bf"></i>Schutzkennlinie</span>
+      <span><i style="background:#f59e0b"></i>I<sub>Σ</sub> (Fehlerstrom)</span>
+      <span><i style="background:#f87171"></i>I<sub>cs</sub> (Schaltvermögen)</span>
+    </div>
+    <div class="note" id="footnote"></div>
+  </div>
+</div>
+
+<script>
+/* ===== StromLab · Überstromschutz ===== */
+/* Datenquelle: ueberstromschutz.json (belvoto4.ch)
+   Trafo 250 kVA, uk 4%, PCu 3250 W -> XT 24.2 mOhm / RT 8.32 mOhm; U0 231 V
+   Leitung1 95mm²/100m RL1 23.2 mOhm ; Leitung2 16mm²/10m RL2 13.8 mOhm
+   Schutz gG In 63 A, Ics 50 kA  ->  IΣ = 2.69 kA, tmin/tmax = 10 ms  */
+var XT=24.2, RT=8.32;  /* aus JSON (Trafo-Werte fix gehalten) */
+
+var st={mode:'kurz', char:'gG'};
+
+function $(id){return document.getElementById(id);}
+function el(t,c,h){var e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;}
+
+/* gG-Schmelzsicherung 63 A: groesseres Strom = kuerzere Zeit. Anhaltskurve I-t.
+   Punkte (I/In , t[s]) nach IEC 60269 gG Band; LS C nach IEC 60898 (5..10 x In magn.). */
+function gGtime(I, In){ /* Sekunden, Mittelwert */
+  var x=I/In;
+  if(x<=1.05) return 1e6;          /* haelt */
+  if(x<1.3)  return 7200;          /* konv. 2h Bereich */
+  if(x<1.6)  return 600;
+  if(x<2)    return 60;
+  if(x<3)    return 5;
+  if(x<5)    return 0.4;
+  if(x<8)    return 0.04;
+  return 0.01;                     /* >8x: ~10 ms */
+}
+function lsCtime(I, In){
+  var x=I/In;
+  if(x<=1.13) return 1e6;
+  if(x<1.45) return 3600;
+  if(x<2)    return 120;
+  if(x<3)    return 12;
+  if(x<5)    return 0.1;           /* untere magn. Schwelle 5x */
+  if(x<10)   return 0.012;         /* magnetische Schnellausl. */
+  return 0.008;
+}
+function tCurve(I,In){ return st.char==='gG'?gGtime(I,In):lsCtime(I,In); }
+
+function compute(){
+  var U0=parseFloat($('U0').value)||231;
+  var RL1=parseFloat($('RL1').value)||0, RL2=parseFloat($('RL2').value)||0, RF=parseFloat($('RF').value)||0;
+  var xpct=(parseFloat($('XpctL').value)||0)/100;
+  var In=parseFloat($('In').value)||63, Ics=parseFloat($('Ics').value)||50;
+  /* Schleifenimpedanz: Trafo (RT,XT) + Leitungen als Schleife (Hin+Rueck => x2) */
+  var Rsum=RT+2*(RL1+RL2)+RF;
+  var Xsum=XT+2*(RL1+RL2)*xpct;
+  var Z=Math.sqrt(Rsum*Rsum+Xsum*Xsum);          /* mOhm */
+  var Isig=U0/(Z/1000);                            /* A */
+  return {U0:U0,Z:Z,Rsum:Rsum,Xsum:Xsum,Isig:Isig,In:In,Ics:Ics};
+}
+
+function buildPills(){
+  var mr=$('modeRow'); mr.innerHTML='';
+  [['ueber','Schutz bei Überlast'],['kurz','Schutz bei Kurzschluss']].forEach(function(o){
+    var p=el('button','pill'+(o[0]===st.mode?' on':''),o[1]); p.onclick=function(){st.mode=o[0];render();}; mr.appendChild(p); });
+  var cr=$('charRow'); cr.innerHTML='';
+  [['gG','gG (Schmelz)'],['C','LS Char. C']].forEach(function(o){
+    var p=el('button','pill'+(o[0]===st.char?' on':''),o[1]); p.onclick=function(){st.char=o[0];render();}; cr.appendChild(p); });
+}
+
+/* log-log Kennlinie */
+function drawCurve(c){
+  var cv=$('cv'), g=cv.getContext('2d'); var W=cv.width,H=cv.height;
+  g.clearRect(0,0,W,H);
+  var pad={l:52,r:14,t:14,b:30};
+  var Imin=1, Imax=10000, tmin=0.01, tmax=10000;
+  function X(I){return pad.l+(Math.log10(I)-Math.log10(Imin))/(Math.log10(Imax)-Math.log10(Imin))*(W-pad.l-pad.r);}
+  function Y(t){return pad.t+(Math.log10(tmax)-Math.log10(t))/(Math.log10(tmax)-Math.log10(tmin))*(H-pad.t-pad.b);}
+  /* grid */
+  g.strokeStyle='rgba(255,255,255,.06)'; g.fillStyle='#7c8da0'; g.font='10px Segoe UI'; g.lineWidth=1;
+  g.textAlign='center';
+  [1,10,100,1000,10000].forEach(function(I){var x=X(I);g.beginPath();g.moveTo(x,pad.t);g.lineTo(x,H-pad.b);g.stroke();
+    g.fillText(I>=1000?(I/1000)+'k':''+I, x, H-pad.b+15);});
+  g.textAlign='right';
+  [0.01,0.1,1,10,100,1000,10000].forEach(function(t){var y=Y(t);g.beginPath();g.moveTo(pad.l,y);g.lineTo(W-pad.r,y);g.stroke();
+    g.fillText(t<1?t.toFixed(2):(t>=1000?(t/1000)+'ks':t+'s'), pad.l-5, y+3);});
+  g.textAlign='left';
+  /* Achsentitel */
+  g.fillStyle='#9fb0c0'; g.font='700 11px Segoe UI';
+  g.fillText('Strom I [A]', W-pad.r-66, H-4);
+  g.save(); g.translate(13,pad.t+58); g.rotate(-Math.PI/2); g.fillText('Zeit t [s]', 0,0); g.restore();
+  g.font='9px Segoe UI'; g.textAlign='left';
+  /* Schutzkennlinie */
+  g.strokeStyle='#2dd4bf'; g.lineWidth=2.4; g.beginPath(); var started=false;
+  for(var lg=0; lg<=4.001; lg+=0.02){ var I=Math.pow(10,lg); var t=tCurve(I,c.In); if(t>tmax)continue;
+    var tt=Math.max(tmin,Math.min(tmax,t)); var x=X(I),y=Y(tt);
+    if(!started){g.moveTo(x,y);started=true;} else g.lineTo(x,y); }
+  g.stroke();
+  /* IΣ vertikale Linie */
+  var xS=X(Math.min(Imax,c.Isig));
+  g.strokeStyle='#f59e0b'; g.lineWidth=2; g.setLineDash([5,4]); g.beginPath(); g.moveTo(xS,pad.t); g.lineTo(xS,H-pad.b); g.stroke();
+  /* Ics */
+  var xC=X(Math.min(Imax,c.Ics*1000));
+  g.strokeStyle='#f87171'; g.beginPath(); g.moveTo(xC,pad.t); g.lineTo(xC,H-pad.b); g.stroke();
+  g.setLineDash([]);
+  /* Schnittpunkt-Marker */
+  var tHit=tCurve(c.Isig,c.In); var yHit=Y(Math.max(tmin,Math.min(tmax,tHit)));
+  g.fillStyle='#f59e0b'; g.beginPath(); g.arc(xS,yHit,4,0,7); g.fill();
+}
+
+function render(){
+  buildPills();
+  var c=compute();
+  var Isig=c.Isig, kA=Isig/1000;
+  var tHit=tCurve(Isig,c.In);            /* s */
+  /* gG-Toleranzband -> tmin/tmax. Bei sehr hohem Strom 10 ms fix (wie JSON). */
+  var tms=tHit*1000;
+  var tmin, tmax;
+  if(Isig/c.In>=8){ tmin=10; tmax=10; }
+  else { tmin=Math.round(tms*0.7); tmax=Math.round(tms*1.3); }
+  $('charV').textContent=(st.char==='gG'?'gG Schmelz':'LS C');
+  $('modeV').textContent=(st.mode==='kurz'?'Kurzschluss':'Überlast');
+  $('kfac').value=(st.char==='gG'?'~1.6×In (gG)':'5–10×In (C)');
+  $('rCalc').innerHTML='U<sub>0</sub> <b>'+c.U0+' V</b> / Z<sub>S</sub> <b>'+(Math.round(c.Z*100)/100)+' mΩ</b> &nbsp;(R '+(Math.round(c.Rsum*100)/100)+' · X '+(Math.round(c.Xsum*100)/100)+')';
+  animTo($('rVal'), kA);
+  $('tmin').textContent=tmin+' ms'; $('tmax').textContent=tmax+' ms';
+  var reserve=c.Ics - kA;
+  $('icsr').textContent=(Math.round(reserve*100)/100)+' kA';
+  /* Verdict */
+  var icoOk='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.16em;margin-right:5px"><path d="M5 13l4 4L19 7"/></svg>';
+  var icoNo='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.16em;margin-right:5px"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+  var icoWarn='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.16em;margin-right:5px"><path d="M12 4L2 20h20L12 4z"/><path d="M12 10v4M12 17.5v.01"/></svg>';
+  var vd=$('verdict'); var trips=(tCurve(Isig,c.In)<7200);
+  var icsOk=(kA<=c.Ics);
+  if(st.mode==='kurz'){
+    if(trips && icsOk){ vd.className='verdict ok'; vd.innerHTML=icoOk+'Unterbrochen in '+(tmin===tmax?tmin:tmin+'–'+tmax)+' ms · I'+'cs reicht'; }
+    else if(trips && !icsOk){ vd.className='verdict bad'; vd.innerHTML=icoNo+'Schutzorgan löst aus, aber I'+'Σ > I'+'cs — Schaltvermögen überschritten!'; }
+    else { vd.className='verdict bad'; vd.innerHTML=icoNo+'Kein sicheres Auslösen — Fehlerstrom zu klein'; }
+  } else {
+    var x=Isig/c.In;
+    if(x>1.45){ vd.className='verdict ok'; vd.innerHTML=icoOk+'Überlast erkannt — Auslösung im konventionellen Band'; }
+    else if(x>1.05){ vd.className='verdict bad'; vd.innerHTML=icoWarn+'Grenzbereich — nur langsame / unsichere Auslösung'; }
+    else { vd.className='verdict bad'; vd.innerHTML=icoNo+'Keine Überlast-Auslösung (I < 1.05×In)'; }
+  }
+  drawCurve(c);
+  $('footnote').innerHTML='I<sub>Σ</sub> = U<sub>0</sub> / Z<sub>Schleife</sub> mit Z = √((R<sub>T</sub>+2·ΣR<sub>L</sub>+R<sub>F</sub>)² + (X<sub>T</sub>+X<sub>L</sub>)²) — Leitungen als Hin-/Rückschleife. '+
+    'Trafo-Werte X<sub>T</sub>=24,2 / R<sub>T</sub>=8,32 mΩ (250 kVA, u<sub>k</sub> 4 %). '+
+    'Referenz aus Daten: I<sub>Σ</sub>=2,69 kA, t<sub>min</sub>/t<sub>max</sub>=10 ms. Eingaben editierbar.';
+}
+
+var animRaf=0;
+function animTo(node,to){
+  cancelAnimationFrame(animRaf); var from=parseFloat(node.textContent)||0; var t0=performance.now();
+  (function a(t){ var k=Math.min(1,(t-t0)/450); var v=from+(to-from)*(1-Math.pow(1-k,3));
+    node.textContent=v.toFixed(2); if(k<1)animRaf=requestAnimationFrame(a); else node.textContent=(Math.round(to*100)/100).toFixed(2); })(performance.now());
+}
+
+['U0','RL1','RL2','RF','XpctL','In','Ics'].forEach(function(id){ $(id).addEventListener('input',render); });
+render();
+</script>
+</body>
+</html>

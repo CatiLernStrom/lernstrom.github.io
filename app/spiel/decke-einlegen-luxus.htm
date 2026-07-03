@@ -1,0 +1,1676 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>LernStrom — Decke aufnageln & einlegen</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    background:radial-gradient(circle at 50% 30%, #1a2230 0%, #0c1018 70%, #06080d 100%);
+    font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:#e8edf2;
+    display:flex;align-items:center;justify-content:center;
+    overflow:hidden;
+    user-select:none;-webkit-user-select:none;
+    touch-action:none;
+  }
+  /* phone stage */
+  #stage{
+    position:relative;
+    width:390px;height:844px;
+    max-height:100vh;
+    border-radius:34px;
+    overflow:hidden;
+    box-shadow:0 30px 90px rgba(0,0,0,.7), 0 0 0 10px #0a0d13, 0 0 0 12px #1c232e, inset 0 0 60px rgba(0,0,0,.4);
+    background:
+      radial-gradient(120% 60% at 50% -10%, rgba(45,212,191,.10), transparent 60%),
+      linear-gradient(180deg,#26303d 0%, #1a212c 35%, #141a23 100%);
+  }
+  @media (max-height:860px){ #stage{transform:scale(calc(100vh / 860));} }
+
+  /* warm workshop vignette */
+  #stage::after{
+    content:"";position:absolute;inset:0;border-radius:34px;pointer-events:none;
+    box-shadow:inset 0 0 120px rgba(0,0,0,.55), inset 0 -40px 80px rgba(0,0,0,.5);
+    background:radial-gradient(140% 90% at 50% 120%, rgba(120,80,30,.16), transparent 55%);
+    z-index:60;
+  }
+
+  canvas#fx{position:absolute;inset:0;z-index:40;pointer-events:none;}
+
+  /* ---------- HUD ---------- */
+  #hud{position:absolute;top:0;left:0;right:0;z-index:50;padding:14px 16px 8px;display:flex;align-items:center;gap:10px;}
+  .badge{
+    display:flex;align-items:center;gap:7px;
+    background:linear-gradient(180deg,#202a37,#161d27);
+    border:1px solid rgba(255,255,255,.07);
+    border-radius:14px;padding:7px 11px;font-size:13px;font-weight:700;
+    box-shadow:0 4px 10px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.05);
+  }
+  .badge .dot{width:9px;height:9px;border-radius:50%;background:#2dd4bf;box-shadow:0 0 8px #2dd4bf;}
+  #xpBadge{color:#ffd166;}
+  #xpBadge .ico{filter:drop-shadow(0 0 5px rgba(255,209,102,.6));}
+  .spacer{flex:1;}
+  #mute{
+    width:38px;height:38px;border-radius:12px;cursor:pointer;
+    background:linear-gradient(180deg,#202a37,#161d27);
+    border:1px solid rgba(255,255,255,.07);
+    display:flex;align-items:center;justify-content:center;font-size:17px;
+    box-shadow:0 4px 10px rgba(0,0,0,.4);
+  }
+  #mute:active{transform:scale(.92);}
+
+  /* step progress bar */
+  #prog{position:absolute;top:58px;left:16px;right:16px;z-index:50;height:8px;border-radius:6px;
+    background:rgba(0,0,0,.4);overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,.6);}
+  #progFill{height:100%;width:0%;border-radius:6px;
+    background:linear-gradient(90deg,#2dd4bf,#7af0d9);transition:width .5s cubic-bezier(.2,1.3,.4,1);
+    box-shadow:0 0 12px rgba(45,212,191,.7);}
+
+  /* ---------- title / instruction ---------- */
+  #task{position:absolute;top:74px;left:0;right:0;z-index:50;text-align:center;pointer-events:none;padding:0 14px;transition:opacity .6s, transform .6s;}
+  #task.faded{opacity:0;transform:translateY(-8px);}
+  #task h1{font-size:15px;font-weight:800;letter-spacing:.3px;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.6);}
+  #task p{font-size:12px;margin-top:3px;color:#9fb0c0;font-weight:600;line-height:1.4;}
+
+  /* step chips row */
+  #steps{position:absolute;top:38px;left:16px;right:16px;z-index:49;display:flex;gap:3px;justify-content:center;pointer-events:none;}
+  #steps .sc{flex:1;height:4px;border-radius:3px;background:rgba(255,255,255,.08);transition:background .4s, box-shadow .4s;}
+  #steps .sc.done{background:linear-gradient(90deg,#2dd4bf,#7af0d9);box-shadow:0 0 8px rgba(45,212,191,.6);}
+  #steps .sc.cur{background:#ffd166;box-shadow:0 0 10px rgba(255,209,102,.7);}
+
+  /* generic scene container */
+  .prep{position:absolute;inset:0;z-index:30;opacity:0;pointer-events:none;transition:opacity .55s;}
+  .prep.on{opacity:1;pointer-events:auto;}
+  .prep svg{position:absolute;inset:0;width:100%;height:100%;display:block;}
+
+  /* part picker tray (bottom) */
+  #tray{position:absolute;left:10px;right:10px;bottom:18px;z-index:38;display:flex;gap:8px;justify-content:center;
+    opacity:0;pointer-events:none;transition:opacity .4s;}
+  #tray.on{opacity:1;pointer-events:auto;}
+  .partBtn{
+    flex:1;max-width:118px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;
+    background:linear-gradient(180deg,#202a37,#161d27);
+    border:2px solid rgba(255,255,255,.08);border-radius:16px;padding:8px 4px 7px;
+    box-shadow:0 6px 16px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.05);
+    transition:transform .18s, border-color .25s, box-shadow .25s;
+  }
+  .partBtn:active{transform:scale(.95);}
+  .partBtn.sel{border-color:#2dd4bf;box-shadow:0 0 0 1px #2dd4bf, 0 0 22px rgba(45,212,191,.45);transform:translateY(-3px);}
+  .partBtn .pn{font-size:10.5px;font-weight:800;color:#cdd8e2;text-align:center;line-height:1.15;}
+  .partBtn .pic{width:46px;height:38px;}
+
+  /* decision tray (pipe end: down vs up) */
+  #choice{position:absolute;left:14px;right:14px;bottom:96px;z-index:39;display:flex;gap:10px;justify-content:center;
+    opacity:0;pointer-events:none;transition:opacity .35s, transform .35s;transform:translateY(10px);}
+  #choice.on{opacity:1;pointer-events:auto;transform:translateY(0);}
+  .choiceBtn{
+    flex:1;max-width:160px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;
+    background:linear-gradient(180deg,#202a37,#161d27);
+    border:2px solid rgba(255,255,255,.1);border-radius:16px;padding:10px 6px 8px;
+    box-shadow:0 8px 20px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.05);
+    transition:transform .15s, border-color .25s;
+  }
+  .choiceBtn:active{transform:scale(.95);}
+  .choiceBtn .ci{font-size:24px;line-height:1;}
+  .choiceBtn .ct{font-size:12px;font-weight:900;color:#fff;}
+  .choiceBtn .cs{font-size:9.5px;font-weight:700;color:#8ea0b2;text-align:center;line-height:1.25;}
+  .choiceBtn.down{border-color:rgba(138,180,255,.5);}
+  .choiceBtn.up{border-color:rgba(255,174,66,.5);}
+
+  .readout{position:absolute;left:50%;transform:translateX(-50%);bottom:128px;z-index:35;
+    font-size:13px;font-weight:800;color:#fff;background:linear-gradient(180deg,#202a37,#141a23);
+    padding:7px 16px;border-radius:20px;border:1px solid rgba(45,212,191,.3);
+    box-shadow:0 6px 18px rgba(0,0,0,.5);pointer-events:none;text-align:center;min-width:170px;max-width:320px;}
+  .readout .big{color:#7af0d9;font-size:16px;}
+  .readout.bad{border-color:#ff6b6b;color:#ffb3b3;}
+  .readout.good{border-color:#2dd4bf;}
+
+  /* WIN overlay */
+  #win{position:absolute;inset:0;z-index:70;display:none;flex-direction:column;align-items:center;justify-content:center;
+    background:radial-gradient(circle at 50% 40%, rgba(45,212,191,.18), rgba(6,9,14,.86) 60%);
+    backdrop-filter:blur(2px);}
+  #win.show{display:flex;animation:winIn .5s;}
+  @keyframes winIn{from{opacity:0}to{opacity:1}}
+  #win .card{
+    width:300px;padding:26px 22px 24px;border-radius:24px;text-align:center;
+    background:linear-gradient(180deg,#222d3a,#161d27);
+    border:1px solid rgba(45,212,191,.3);
+    box-shadow:0 30px 70px rgba(0,0,0,.7), 0 0 40px rgba(45,212,191,.2), inset 0 1px 0 rgba(255,255,255,.06);
+    transform:scale(.6);animation:pop .6s cubic-bezier(.2,1.6,.4,1) forwards;
+  }
+  @keyframes pop{to{transform:scale(1)}}
+  #win h2{font-size:23px;font-weight:900;color:#fff;letter-spacing:.5px;}
+  #win .sub{font-size:13px;color:#9fb0c0;margin-top:5px;font-weight:600;}
+  #stars{display:flex;gap:8px;justify-content:center;margin:16px 0 6px;}
+  #stars .st{font-size:34px;color:#2a3340;transform:scale(0);}
+  #stars .st.lit{color:#ffd166;text-shadow:0 0 16px rgba(255,209,102,.8);animation:starPop .5s cubic-bezier(.2,1.8,.4,1) forwards;}
+  @keyframes starPop{0%{transform:scale(0) rotate(-40deg)}70%{transform:scale(1.4) rotate(10deg)}100%{transform:scale(1) rotate(0)}}
+  #xpBig{font-size:30px;font-weight:900;color:#ffd166;margin:8px 0 4px;text-shadow:0 0 18px rgba(255,209,102,.5);}
+  #win .ok{margin-top:16px;padding:12px 0;border-radius:14px;cursor:pointer;font-weight:800;font-size:15px;color:#06281f;
+    background:linear-gradient(180deg,#5cf0d6,#2dd4bf);box-shadow:0 8px 20px rgba(45,212,191,.4);}
+  #win .ok:active{transform:scale(.96);}
+
+  .toast{position:absolute;z-index:55;font-weight:900;font-size:15px;pointer-events:none;
+    text-shadow:0 2px 6px rgba(0,0,0,.6);animation:toastUp 1s ease-out forwards;}
+  @keyframes toastUp{0%{opacity:0;transform:translateY(0) scale(.6)}15%{opacity:1;transform:translateY(-6px) scale(1.1)}100%{opacity:0;transform:translateY(-46px) scale(1)}}
+
+  .shake{animation:shakeStage .35s;}
+  @keyframes shakeStage{0%,100%{transform:translate(0,0)}20%{transform:translate(-6px,2px)}40%{transform:translate(6px,-2px)}60%{transform:translate(-4px,1px)}80%{transform:translate(4px,-1px)}}
+
+  /* affordances */
+  .pulseTool{animation:toolPulse 1.1s ease-in-out infinite;}
+  @keyframes toolPulse{0%,100%{filter:drop-shadow(0 0 1px rgba(45,212,191,.3))}50%{filter:drop-shadow(0 0 10px rgba(45,212,191,.95)) drop-shadow(0 0 4px rgba(122,240,217,.9))}}
+  .dragPath{stroke-dasharray:7 7;animation:dashMove 1s linear infinite;}
+  @keyframes dashMove{to{stroke-dashoffset:-28;}}
+  .ghost{pointer-events:none;}
+  .pathArrow{animation:arrowGlow 1.1s ease-in-out infinite;}
+  @keyframes arrowGlow{0%,100%{opacity:.55}50%{opacity:1}}
+  /* SCHMALE "do this" Hinweisbox, links, verdeckt das Ziel nicht */
+  .doHint{position:absolute;left:12px;top:116px;transform:none;z-index:36;max-width:170px;
+    font-size:11.5px;font-weight:800;color:#fff;text-align:left;line-height:1.4;
+    background:linear-gradient(180deg,rgba(32,42,55,.95),rgba(20,26,35,.95));
+    padding:9px 14px;border-radius:16px;border:1px solid rgba(45,212,191,.4);
+    box-shadow:0 8px 22px rgba(0,0,0,.5), 0 0 22px rgba(45,212,191,.18);
+    pointer-events:none;opacity:0;transition:opacity .4s;}
+  .doHint.on{opacity:1;}
+  .doHint b{color:#7af0d9;}
+
+  /* ---- HUD mini-buttons: Aufgabe ein/aus + Plan öffnen ---- */
+  .hudBtn{
+    height:38px;min-width:38px;padding:0 9px;border-radius:12px;cursor:pointer;
+    background:linear-gradient(180deg,#202a37,#161d27);
+    border:1px solid rgba(255,255,255,.07);
+    display:flex;align-items:center;justify-content:center;gap:6px;
+    font-size:11px;font-weight:800;color:#cdd8e2;
+    box-shadow:0 4px 10px rgba(0,0,0,.4);white-space:nowrap;}
+  .hudBtn:active{transform:scale(.92);}
+  .hudBtn svg{display:block;}
+  #planBtn{color:#7af0d9;border-color:rgba(45,212,191,.4);}
+  /* collapsed task: fully hidden + non-interactive */
+  #task.collapsed{opacity:0!important;transform:translateY(-8px);pointer-events:none;}
+
+  /* ---- Plan overlay ---- */
+  #planOv{position:absolute;inset:0;z-index:68;display:none;flex-direction:column;
+    align-items:center;justify-content:center;padding:18px;
+    background:radial-gradient(circle at 50% 35%, rgba(20,28,38,.92), rgba(6,9,14,.95) 70%);}
+  #planOv.show{display:flex;animation:winIn .35s;}
+  #planOv .planCard{
+    width:330px;max-width:94%;max-height:88%;border-radius:20px;overflow:hidden;
+    background:linear-gradient(180deg,#222d3a,#161d27);
+    border:1px solid rgba(45,212,191,.3);
+    box-shadow:0 26px 64px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.06);
+    display:flex;flex-direction:column;}
+  #planOv .planHd{display:flex;align-items:center;gap:8px;padding:12px 14px;
+    border-bottom:1px solid rgba(255,255,255,.07);}
+  #planOv .planHd .pt{font-size:14px;font-weight:900;color:#fff;flex:1;}
+  #planOv .planClose{width:30px;height:30px;border-radius:9px;cursor:pointer;
+    background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
+    display:flex;align-items:center;justify-content:center;}
+  #planOv .planClose:active{transform:scale(.9);}
+  #planOv .planBody{padding:10px 12px 14px;overflow:auto;}
+  #planOv .planBody svg{width:100%;height:auto;display:block;border-radius:10px;background:#0e1620;}
+  #planOv .planLeg{margin-top:9px;font-size:11px;font-weight:600;color:#9fb0c0;line-height:1.5;}
+  #planOv .planLeg b{color:#7af0d9;}
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <canvas id="fx"></canvas>
+
+  <!-- HUD -->
+  <div id="hud">
+    <div class="badge"><span class="dot"></span><span id="phaseLbl">Schritt 1</span></div>
+    <div class="spacer"></div>
+    <div class="badge" id="xpBadge"><span class="ico">⚡</span><span id="xpVal">0</span> XP</div>
+    <div class="hudBtn" id="planBtn" title="Plan öffnen">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="13" y2="16"/></svg>
+      <span>Plan</span>
+    </div>
+    <div class="hudBtn" id="taskToggle" title="Aufgabe ein-/ausblenden">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+    </div>
+    <div id="mute">🔇</div>
+  </div>
+
+  <div id="steps"></div>
+  <div id="prog"><div id="progFill"></div></div>
+
+  <div id="task">
+    <h1 id="taskTitle">Decke einlegen (Luxus) — mehr Rohre</h1>
+    <p id="taskSub">Plan lesen, Bauteile setzen, Rohre einlegen</p>
+  </div>
+
+  <!-- STEP SCENES -->
+  <div class="prep" id="pMark"><svg id="svgMark" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"></svg><div class="doHint" id="hintMark"></div><div class="readout" id="roMark">Zeichne die Punkte nach Plan an</div></div>
+  <div class="prep" id="pNail"><svg id="svgNail" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"></svg><div class="doHint" id="hintNail"></div><div class="readout" id="roNail">Wähle ein Bauteil und nagle es auf den Punkt</div></div>
+  <div class="prep" id="pPipe"><svg id="svgPipe" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"></svg><div class="doHint" id="hintPipe"></div><div class="readout" id="roPipe">Ziehe Leerrohre von Dose zu Dose</div></div>
+  <div class="prep" id="pIron"><svg id="svgIron" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"></svg><div class="doHint" id="hintIron"></div><div class="readout" id="roIron">Eisenleger legt die Bewehrung</div></div>
+  <div class="prep" id="pPour"><svg id="svgPour" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"></svg><div class="doHint" id="hintPour"></div><div class="readout" id="roPour">Beton einbringen — halten</div></div>
+
+  <!-- part picker tray (only on Aufnageln step) -->
+  <div id="tray"></div>
+
+  <!-- decision tray (pipe-end: runterbohren vs hochstehen) -->
+  <div id="choice">
+    <div class="choiceBtn down" id="choiceDown">
+      <div class="ci">⬇</div><div class="ct">Runterbohren</div>
+      <div class="cs">durch die Schalung nach unten — Wand drunter</div>
+    </div>
+    <div class="choiceBtn up" id="choiceUp">
+      <div class="ci">⬆</div><div class="ct">Hochstehen lassen</div>
+      <div class="cs">Rohr-Ende ragt hoch — Anschluss ein Stock höher</div>
+    </div>
+  </div>
+
+  <!-- PLAN OVERLAY -->
+  <div id="planOv">
+    <div class="planCard">
+      <div class="planHd">
+        <div class="pt">Deckenplan / Installationsplan</div>
+        <div class="planClose" id="planClose" title="Plan schliessen">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#cdd8e2" stroke-width="2.4" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+        </div>
+      </div>
+      <div class="planBody" id="planBody"></div>
+    </div>
+  </div>
+
+  <!-- WIN -->
+  <div id="win">
+    <div class="card">
+      <h2>DECKE FERTIG!</h2>
+      <div class="sub">Angezeichnet, genagelt, Rohre verlegt, betoniert</div>
+      <div id="stars"><span class="st">★</span><span class="st">★</span><span class="st">★</span></div>
+      <div id="xpBig">+120 XP</div>
+      <div class="sub" id="winNote">Schalung sauber eingelegt nach Plan</div>
+      <div class="ok" id="again">Nochmal spielen</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+"use strict";
+/* ============================================================= *
+ *  LernStrom — "Decke aufnageln & einlegen"  (single-file demo) *
+ *  Blick von unten auf die Schalung/Decke.                      *
+ *  Schritte: 1) Anzeichnen  2) Bauteile aufnageln               *
+ *            3) Leerrohre einlegen + runterbohren/hochstehen    *
+ *            4) Eisenleger abwarten  5) Betonieren              *
+ *  Pure SVG + Canvas particle FX + WebAudio. Offline file://.   *
+ * ============================================================= */
+
+const STAGE_W = 390, STAGE_H = 844;
+const SVGNS   = "http://www.w3.org/2000/svg";
+const stage   = document.getElementById('stage');
+const fx      = document.getElementById('fx');
+const ctx     = fx.getContext('2d');
+
+/* client px -> svg viewbox px */
+function toSvgFor(svg, clientX, clientY){
+  const r = svg.getBoundingClientRect();
+  return {
+    x: (clientX - r.left) / r.width  * STAGE_W,
+    y: (clientY - r.top ) / r.height * STAGE_H
+  };
+}
+
+/* =============================================================
+ *  AUDIO  (tiny WebAudio synth) — muted by default
+ * ============================================================= */
+let audioCtx=null, muted=true;
+function AC(){ if(!audioCtx){ try{audioCtx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){} } return audioCtx; }
+function tone(freq, dur, type, vol, slideTo){
+  if(muted) return; const c=AC(); if(!c) return;
+  const o=c.createOscillator(), g=c.createGain();
+  o.type=type||'sine'; o.frequency.value=freq;
+  if(slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, c.currentTime+dur);
+  g.gain.value=0.0001;
+  g.gain.exponentialRampToValueAtTime(vol||0.2, c.currentTime+0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime+dur);
+  o.connect(g); g.connect(c.destination);
+  o.start(); o.stop(c.currentTime+dur+0.02);
+}
+function sndClick(){ tone(680,0.07,'triangle',0.25,1200); setTimeout(()=>tone(1500,0.05,'sine',0.12),20); }
+function sndSnap(){ tone(440,0.05,'square',0.18,900); setTimeout(()=>tone(1320,0.12,'triangle',0.22),30); }
+function sndBuzz(){ if(muted)return; const c=AC(); if(!c)return;
+  const o=c.createOscillator(),g=c.createGain(); o.type='sawtooth';o.frequency.value=120;
+  g.gain.value=0.0001;g.gain.exponentialRampToValueAtTime(0.2,c.currentTime+0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+0.25);
+  o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+0.27);
+}
+function sndPick(){ tone(520,0.05,'sine',0.14,720); }
+/* Kreide / anzeichnen: weicher kurzer "tick" */
+function sndChalk(){ tone(900,0.04,'triangle',0.12,1300); }
+/* Hammerschlag: harter tiefer "Tock" mit hellem Anschlag */
+function sndHammer(){ tone(150,0.06,'square',0.32,70); setTimeout(()=>tone(2400,0.04,'square',0.16),30); setTimeout(()=>tone(900,0.06,'triangle',0.14),50); }
+/* Rohr rutscht/legt sich */
+function sndPipe(){ tone(300,0.12,'sine',0.16,520); }
+/* Bohrer durch die Schalung */
+function sndDrill(){ if(muted)return; const c=AC(); if(!c)return;
+  const o=c.createOscillator(),o2=c.createOscillator(),g=c.createGain();
+  o.type='sawtooth';o.frequency.value=180;o.frequency.exponentialRampToValueAtTime(120,c.currentTime+0.3);
+  o2.type='square';o2.frequency.value=90;
+  g.gain.value=0.0001;g.gain.exponentialRampToValueAtTime(0.12,c.currentTime+0.03);
+  g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+0.34);
+  o.connect(g);o2.connect(g);g.connect(c.destination);
+  o.start();o2.start();o.stop(c.currentTime+0.36);o2.stop(c.currentTime+0.36);
+}
+/* Rohr hochstellen: aufsteigender "wupp" */
+function sndUp(){ tone(280,0.18,'triangle',0.18,720); }
+/* Eisenleger / Stahl klirrt */
+function sndClang(){ tone(700,0.08,'square',0.16,500); setTimeout(()=>tone(1100,0.12,'triangle',0.14,800),40); }
+/* Betonfluss-Rauschen (kurz) */
+function sndPour(){ if(muted)return; const c=AC(); if(!c)return;
+  const o=c.createOscillator(),g=c.createGain(); o.type='sawtooth';o.frequency.value=90;
+  g.gain.value=0.0001;g.gain.exponentialRampToValueAtTime(0.05,c.currentTime+0.05);
+  g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+0.4);
+  o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+0.42);
+}
+function sndWin(){ [523,659,784,1047,1319].forEach((f,i)=>setTimeout(()=>tone(f,0.3,'triangle',0.2),i*110)); }
+
+document.getElementById('mute').onclick=function(){
+  muted=!muted; this.textContent=muted?'🔇':'🔊';
+  if(!muted){ AC(); tone(880,0.06,'sine',0.15); }
+};
+
+/* =============================================================
+ *  PARTICLE / FX ENGINE  (canvas)
+ * ============================================================= */
+function sizeCanvas(){
+  const r=stage.getBoundingClientRect();
+  const dpr=window.devicePixelRatio||1;
+  fx.width=STAGE_W*dpr; fx.height=STAGE_H*dpr;
+  fx.style.width=r.width+'px'; fx.style.height=r.height+'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+let particles=[];
+function spark(x,y,n,opt){
+  opt=opt||{};
+  for(let i=0;i<n;i++){
+    const a=Math.random()*Math.PI*2, sp=(opt.speed||3)*(0.4+Math.random());
+    particles.push({
+      x,y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp - (opt.up||0),
+      life:1, decay:0.012+Math.random()*0.02,
+      size:(opt.size||2.4)*(0.6+Math.random()),
+      color:opt.color|| (Math.random()<.5?'#ffd166':'#ffae42'),
+      grav:opt.grav!=null?opt.grav:0.06, glow:opt.glow!==false
+    });
+  }
+}
+let smoke=[];
+function puff(x,y,n,opt){
+  opt=opt||{};
+  for(let i=0;i<n;i++){
+    smoke.push({
+      x:x+(Math.random()-.5)*10, y:y+(Math.random()-.5)*6,
+      vx:(Math.random()-.5)*0.7, vy:-(0.4+Math.random()*0.8),
+      r:(opt.size||6)*(0.5+Math.random()), life:1, decay:0.01+Math.random()*0.01,
+      color:opt.color||'200,210,220'
+    });
+  }
+}
+let confetti=[];
+function burstConfetti(){
+  const cols=['#2dd4bf','#ffd166','#ff6b6b','#7af0d9','#ffffff','#ffae42','#8ab4ff'];
+  for(let i=0;i<140;i++){
+    confetti.push({
+      x:STAGE_W/2+(Math.random()-.5)*60, y:STAGE_H*0.42,
+      vx:(Math.random()-.5)*9, vy:-Math.random()*11-3,
+      g:0.22+Math.random()*0.1, w:5+Math.random()*6, h:8+Math.random()*8,
+      rot:Math.random()*6.28, vr:(Math.random()-.5)*0.4,
+      color:cols[(Math.random()*cols.length)|0], life:1
+    });
+  }
+}
+
+function fxLoop(){
+  ctx.clearRect(0,0,STAGE_W,STAGE_H);
+  // dust
+  for(const d of dust){
+    d.ph+=0.02; d.y+=d.vy; d.x+=d.vx+Math.sin(d.ph)*0.15;
+    if(d.y<-4){d.y=STAGE_H+4;d.x=Math.random()*STAGE_W;}
+    ctx.globalAlpha=d.a*(0.6+0.4*Math.sin(d.ph));
+    ctx.fillStyle='#ffe9c0';ctx.shadowBlur=4;ctx.shadowColor='#ffd9a0';
+    ctx.beginPath();ctx.arc(d.x,d.y,d.r,0,6.28);ctx.fill();
+  }
+  ctx.shadowBlur=0;ctx.globalAlpha=1;
+  // smoke / dust puffs
+  for(let i=smoke.length-1;i>=0;i--){
+    const s=smoke[i];
+    s.vy*=0.99; s.x+=s.vx; s.y+=s.vy; s.r+=0.4; s.life-=s.decay;
+    if(s.life<=0){smoke.splice(i,1);continue;}
+    ctx.globalAlpha=s.life*0.35;
+    ctx.fillStyle='rgba('+s.color+',1)';
+    ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,6.28);ctx.fill();
+  }
+  ctx.globalAlpha=1;
+  // sparks
+  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i];
+    p.vy+=p.grav; p.x+=p.vx; p.y+=p.vy; p.life-=p.decay;
+    if(p.life<=0){particles.splice(i,1);continue;}
+    ctx.globalAlpha=Math.max(0,p.life);
+    if(p.glow){ctx.shadowBlur=10;ctx.shadowColor=p.color;}else ctx.shadowBlur=0;
+    ctx.fillStyle=p.color;
+    ctx.beginPath();ctx.arc(p.x,p.y,p.size*p.life+0.4,0,6.28);ctx.fill();
+  }
+  ctx.shadowBlur=0;
+  // confetti
+  for(let i=confetti.length-1;i>=0;i--){
+    const c=confetti[i];
+    c.vy+=c.g;c.x+=c.vx;c.y+=c.vy;c.rot+=c.vr;c.vx*=0.99;
+    if(c.y>STAGE_H+30){confetti.splice(i,1);continue;}
+    ctx.save();ctx.translate(c.x,c.y);ctx.rotate(c.rot);
+    ctx.globalAlpha=1;ctx.fillStyle=c.color;
+    ctx.fillRect(-c.w/2,-c.h/2,c.w,c.h);
+    ctx.restore();
+  }
+  ctx.shadowBlur=0;ctx.globalAlpha=1;
+  requestAnimationFrame(fxLoop);
+}
+
+/* floating toast text */
+function toast(text,color,x,y){
+  const t=document.createElement('div');
+  t.className='toast';t.textContent=text;t.style.color=color||'#7af0d9';
+  const r=stage.getBoundingClientRect();
+  t.style.left=(x/STAGE_W*r.width)+'px';
+  t.style.top =(y/STAGE_H*r.height)+'px';
+  t.style.transform='translate(-50%,0)';
+  stage.appendChild(t);
+  setTimeout(()=>t.remove(),1000);
+}
+function shakeStage(){ stage.classList.add('shake');setTimeout(()=>stage.classList.remove('shake'),360); }
+
+/* =============================================================
+ *  SVG helpers
+ * ============================================================= */
+function el(tag,attrs){
+  const e=document.createElementNS(SVGNS,tag);
+  for(const k in attrs) e.setAttribute(k,attrs[k]);
+  return e;
+}
+const COMMON_DEFS = `
+  <linearGradient id="metal" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#3a4654"/><stop offset="0.5" stop-color="#2b3542"/><stop offset="1" stop-color="#1d2531"/>
+  </linearGradient>
+  <linearGradient id="wood" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#7a5a32"/><stop offset="0.5" stop-color="#634626"/><stop offset="1" stop-color="#4c3519"/>
+  </linearGradient>
+  <linearGradient id="woodPlank" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#6b4d2a"/><stop offset="0.5" stop-color="#5a4023"/><stop offset="1" stop-color="#4a3419"/>
+  </linearGradient>
+  <linearGradient id="steel" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#d7dde4"/><stop offset="0.5" stop-color="#8d97a3"/><stop offset="1" stop-color="#4b5560"/>
+  </linearGradient>
+  <linearGradient id="handle" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#ff8a3c"/><stop offset="1" stop-color="#c14a14"/>
+  </linearGradient>
+  <radialGradient id="boxPlastic" cx="0.4" cy="0.35" r="0.8">
+    <stop offset="0" stop-color="#ffb74d"/><stop offset="0.6" stop-color="#e8901f"/><stop offset="1" stop-color="#a85f10"/>
+  </radialGradient>
+  <radialGradient id="spotMetal" cx="0.4" cy="0.35" r="0.8">
+    <stop offset="0" stop-color="#e8edf2"/><stop offset="0.5" stop-color="#aab4bf"/><stop offset="1" stop-color="#566069"/>
+  </radialGradient>
+  <radialGradient id="shoner" cx="0.4" cy="0.35" r="0.8">
+    <stop offset="0" stop-color="#7af0d9"/><stop offset="0.6" stop-color="#2dd4bf"/><stop offset="1" stop-color="#13796b"/>
+  </radialGradient>
+  <linearGradient id="pipe" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#fff3c4"/><stop offset="0.5" stop-color="#f2c33a"/><stop offset="1" stop-color="#b8881c"/>
+  </linearGradient>
+  <linearGradient id="rebar" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#c7ccd2"/><stop offset="0.5" stop-color="#8d97a3"/><stop offset="1" stop-color="#565f69"/>
+  </linearGradient>
+  <linearGradient id="concrete" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#aab0b6"/><stop offset="0.5" stop-color="#8f969d"/><stop offset="1" stop-color="#6f767d"/>
+  </linearGradient>
+  <filter id="soft"><feGaussianBlur stdDeviation="2.2"/></filter>
+  <filter id="ds" x="-30%" y="-30%" width="160%" height="160%">
+    <feDropShadow dx="0" dy="5" stdDeviation="5" flood-color="#000" flood-opacity="0.5"/>
+  </filter>`;
+function addDefs(svg){ const d=el('defs',{}); d.innerHTML=COMMON_DEFS; svg.appendChild(d); }
+
+/* draw the timber-shuttering (Schalung) background as seen from below.
+   Returns the <g> so it sits behind everything. */
+function drawShuttering(svg){
+  const g=el('g',{});
+  const TOP=104, BOT=844, HH=BOT-TOP;
+  // dark base — füllt jetzt fast die ganze Bühne (oben 104 statt 120)
+  g.appendChild(el('rect',{x:0,y:TOP,width:390,height:HH,fill:'#2a2014'}));
+  // wooden planks running vertically (the formwork boards)
+  for(let i=0;i<8;i++){
+    const px=4+i*49;
+    g.appendChild(el('rect',{x:px,y:TOP,width:46,height:HH,fill:'url(#woodPlank)',stroke:'#3a2a14','stroke-width':1.4}));
+    // a couple of grain streaks
+    g.appendChild(el('line',{x1:px+12,y1:TOP+10,x2:px+12,y2:BOT-14,stroke:'#4a3419','stroke-width':1,opacity:0.5}));
+    g.appendChild(el('line',{x1:px+32,y1:TOP+10,x2:px+32,y2:BOT-14,stroke:'#7a5a32','stroke-width':1,opacity:0.3}));
+  }
+  // ---- DEKO: Querbalken / Joche (horizontale Träger), füllen die Fläche realistischer ----
+  for(let jy=TOP+70; jy<BOT-30; jy+=168){
+    g.appendChild(el('rect',{x:0,y:jy,width:390,height:13,fill:'url(#wood)',stroke:'#2e2110','stroke-width':1.2,opacity:0.92}));
+    g.appendChild(el('line',{x1:0,y1:jy+3,x2:390,y2:jy+3,stroke:'#8a6838','stroke-width':1,opacity:0.35}));
+    // ein paar Schraub-/Nagelköpfe auf dem Joch
+    for(let sx=26; sx<390; sx+=64){
+      g.appendChild(el('circle',{cx:sx,cy:jy+6.5,r:2.1,fill:'#2a1d0d',stroke:'#5a4220','stroke-width':0.8}));
+    }
+  }
+  // ---- DEKO: Raumbegrenzung / Wandanschlüsse links + rechts (Bezug zum Plan-Mass) ----
+  g.appendChild(el('rect',{x:0,y:TOP,width:9,height:HH,fill:'#1c140a'}));
+  g.appendChild(el('rect',{x:381,y:TOP,width:9,height:HH,fill:'#1c140a'}));
+  g.appendChild(el('line',{x1:9.5,y1:TOP,x2:9.5,y2:BOT,stroke:'#4a3419','stroke-width':2,opacity:0.6}));
+  g.appendChild(el('line',{x1:380.5,y1:TOP,x2:380.5,y2:BOT,stroke:'#4a3419','stroke-width':2,opacity:0.6}));
+  // obere Raumkante (Wandanschluss oben) — füllt den vorher toten Streifen 104..120
+  g.appendChild(el('rect',{x:0,y:TOP,width:390,height:11,fill:'#1c140a'}));
+  g.appendChild(el('line',{x1:0,y1:TOP+11,x2:390,y2:TOP+11,stroke:'#4a3419','stroke-width':1.5,opacity:0.6}));
+  // ---- DEKO: herumliegendes Material in den unteren Ecken (füllt die tote Zone) ----
+  // links: kleiner Stapel Schalungs-/Kantholz
+  const stk=el('g',{opacity:0.95});
+  for(let i=0;i<3;i++){
+    stk.appendChild(el('rect',{x:14,y:798+i*12,width:96,height:10,rx:2,fill:'url(#woodPlank)',stroke:'#2e2110','stroke-width':1}));
+    stk.appendChild(el('rect',{x:14,y:798+i*12,width:9,height:10,rx:2,fill:'#3a2a14'}));
+  }
+  g.appendChild(stk);
+  // rechts: aufgerollte Leerrohr-Bunde (gelb), nur Deko
+  const coil=el('g',{opacity:0.95});
+  coil.appendChild(el('circle',{cx:344,cy:812,r:22,fill:'none',stroke:'url(#pipe)','stroke-width':5}));
+  coil.appendChild(el('circle',{cx:344,cy:812,r:14,fill:'none',stroke:'url(#pipe)','stroke-width':5,opacity:0.85}));
+  coil.appendChild(el('circle',{cx:344,cy:812,r:6,fill:'#1a1408'}));
+  g.appendChild(coil);
+  // soft warm light + Vignette/Schatten an den Rändern
+  g.appendChild(el('rect',{x:0,y:TOP,width:390,height:HH,fill:'rgba(40,28,12,.25)'}));
+  g.appendChild(el('rect',{x:0,y:TOP,width:390,height:34,fill:'rgba(0,0,0,.30)'}));
+  g.appendChild(el('rect',{x:0,y:BOT-40,width:390,height:40,fill:'rgba(0,0,0,.30)'}));
+  return g;
+}
+
+/* =============================================================
+ *  AFFORDANCE HELPERS
+ * ============================================================= */
+const _seenSteps = {};
+function firstVisit(step){ if(_seenSteps[step]) return false; _seenSteps[step]=true; return true; }
+
+function addDragPath(svg,x1,y1,x2,y2,col){
+  col = col || '#7af0d9';
+  const g=el('g',{class:'ghost'});
+  g.appendChild(el('line',{x1,y1,x2,y2,stroke:col,'stroke-width':3,'stroke-linecap':'round',opacity:0.85,class:'dragPath'}));
+  const ang=Math.atan2(y2-y1,x2-x1), L=13, w=7;
+  const ax=x2-Math.cos(ang)*2, ay=y2-Math.sin(ang)*2;
+  const p1x=ax-Math.cos(ang)*L+Math.cos(ang+Math.PI/2)*w, p1y=ay-Math.sin(ang)*L+Math.sin(ang+Math.PI/2)*w;
+  const p2x=ax-Math.cos(ang)*L+Math.cos(ang-Math.PI/2)*w, p2y=ay-Math.sin(ang)*L+Math.sin(ang-Math.PI/2)*w;
+  g.appendChild(el('path',{d:`M ${ax} ${ay} L ${p1x} ${p1y} L ${p2x} ${p2y} Z`,fill:col,class:'pathArrow'}));
+  svg.appendChild(g);
+  return g;
+}
+
+/* ghost hand travelling from (x1,y1) to (x2,y2), looping `reps` times.
+   Returns {stop} so callers can tear it down on cleanup. */
+function ghostDemo(svg,x1,y1,x2,y2,opt){
+  opt=opt||{};
+  const reps=opt.reps||1, dur=opt.dur||1100, hold=opt.hold||260;
+  const hand=el('g',{class:'ghost'});
+  hand.appendChild(el('circle',{cx:0,cy:0,r:17,fill:'rgba(255,255,255,.14)',stroke:'#fff','stroke-width':1.4,opacity:0.7}));
+  hand.appendChild(el('path',{d:'M -3 -2 q 0 -12 4 -12 q 4 0 4 12 l 0 6 q 6 -1 8 3 q 3 5 -1 12 q -4 6 -12 5 q -7 -1 -9 -8 l -2 -9 q 0 -4 4 -3 l 5 1 Z',
+    fill:'#f4f7fa',stroke:'#10151c','stroke-width':1,transform:'translate(2,4) scale(.9)'}));
+  svg.appendChild(hand);
+  let rep=0, raf=0;
+  function run(){
+    const t0=performance.now();
+    (function a(t){
+      let k=Math.min(1,(t-t0)/dur);
+      const e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+      const hx=x1+(x2-x1)*e, hy=y1+(y2-y1)*e;
+      hand.setAttribute('transform','translate('+hx+','+hy+')');
+      hand.setAttribute('opacity', k<0.12?(k/0.12):(k>0.92?(1-(k-0.92)/0.08):1));
+      if(opt.onStep) opt.onStep(e);
+      if(k<1){ raf=requestAnimationFrame(a); }
+      else {
+        rep++;
+        if(rep<reps){ setTimeout(run,hold); }
+        else { hand.remove(); if(opt.done) opt.done(); }
+      }
+    })(performance.now());
+  }
+  run();
+  return { stop:()=>{ cancelAnimationFrame(raf); if(hand.parentNode) hand.remove(); } };
+}
+
+function showDoHint(id,html,ms){
+  const e=document.getElementById(id); if(!e) return;
+  e.innerHTML=html; e.classList.add('on');
+  if(ms){ setTimeout(()=>e.classList.remove('on'),ms); }
+}
+function hideDoHint(id){ const e=document.getElementById(id); if(e) e.classList.remove('on'); }
+
+/* =============================================================
+ *  GAME STATE
+ * ============================================================= */
+let xp=0;
+const xpVal=document.getElementById('xpVal');
+function addXp(n){
+  n=Math.round((Number(n)||0)*0.5); // XP global -50% (Roadmap)
+  const start=xp,end=xp+n,t0=performance.now();
+  (function anim(t){
+    const k=Math.min(1,(t-t0)/600);
+    xp=Math.round(start+(end-start)*(1-Math.pow(1-k,3)));
+    xpVal.textContent=xp;
+    if(k<1)requestAnimationFrame(anim);
+  })(performance.now());
+}
+
+/* =============================================================
+ *  STEP ORCHESTRATION
+ * ============================================================= */
+const STEP_LIST = ['mark','nail','pipe','iron','pour'];
+const STEP_TITLES = {
+  mark: ['Decke anzeichnen','Tippe die geplanten Punkte an die Schalung'],
+  nail: ['Bauteile aufnageln','Setze an jeden Punkt das richtige Bauteil'],
+  pipe: ['Leerrohre einlegen','Rohr ziehen, dann je Ende: runterbohren oder hochstehen'],
+  iron: ['Eisenleger abwarten','Bewehrung wird gelegt — gib die Decke frei'],
+  pour: ['Beton einbringen','Halte gedrückt und betoniere die Decke']
+};
+let stepIdx=0;
+const stepsBar=document.getElementById('steps');
+function buildStepsBar(){
+  stepsBar.innerHTML='';
+  STEP_LIST.forEach(()=>{ const d=document.createElement('div'); d.className='sc'; stepsBar.appendChild(d); });
+}
+function setHud(step){
+  const chips=stepsBar.children;
+  for(let i=0;i<chips.length;i++){
+    chips[i].className='sc'+(i<stepIdx?' done':i===stepIdx?' cur':'');
+  }
+  document.getElementById('phaseLbl').textContent='Etappe '+ETAPPE+'/3 · Schritt '+(stepIdx+1)+'/'+STEP_LIST.length;
+  const t=STEP_TITLES[step];
+  document.getElementById('taskTitle').textContent=t[0];
+  document.getElementById('taskSub').textContent=t[1];
+  document.getElementById('progFill').style.width=(stepIdx/(STEP_LIST.length-1)*100)+'%';
+}
+/* sub-progress within a step contributes one STEP_LIST slice of the bar */
+function setSubProgress(frac){
+  frac=Math.max(0,Math.min(1,frac));
+  const base=stepIdx/(STEP_LIST.length-1)*100;
+  const slice=(1/(STEP_LIST.length-1))*100;
+  document.getElementById('progFill').style.width=(base+frac*slice)+'%';
+}
+
+const SCENE_OF = { mark:'pMark', nail:'pNail', pipe:'pPipe', iron:'pIron', pour:'pPour' };
+function showScene(step){
+  Object.values(SCENE_OF).forEach(id=>{
+    document.getElementById(id).classList.remove('on');
+  });
+  document.getElementById('tray').classList.toggle('on', step==='nail');
+  document.getElementById('choice').classList.remove('on'); // only pipe shows it, on demand
+  const tk=document.getElementById('task');
+  clearTimeout(window.__taskFadeT);
+  if(!taskCollapsed){
+    tk.style.opacity='';
+    tk.classList.remove('faded');
+    window.__taskFadeT=setTimeout(()=>tk.classList.add('faded'),3500);
+  }
+  const cur=document.getElementById(SCENE_OF[step]);
+  setTimeout(()=>cur.classList.add('on'),60);
+}
+/* ---- Aufgabenbox ein-/ausblenden (verdeckt sonst die Szene) ---- */
+let taskCollapsed=false;
+(function(){
+  const tk=document.getElementById('task');
+  const tg=document.getElementById('taskToggle');
+  if(!tk||!tg) return;
+  tg.addEventListener('click',function(){
+    taskCollapsed=!taskCollapsed;
+    if(taskCollapsed){
+      clearTimeout(window.__taskFadeT);
+      tk.classList.add('collapsed'); tk.classList.remove('faded');
+      tg.style.color='#7af0d9';
+    } else {
+      tk.classList.remove('collapsed');
+      tk.style.opacity=''; tk.classList.remove('faded');
+      clearTimeout(window.__taskFadeT);
+      window.__taskFadeT=setTimeout(()=>tk.classList.add('faded'),3500);
+      tg.style.color='';
+    }
+  });
+})();
+/* gotoStep registry: each builder may register builder._cleanup to tear
+   down its global pointer listeners; we always call the previous one. */
+let _activeCleanup=null;
+function gotoStep(name){
+  if(_activeCleanup){ try{_activeCleanup();}catch(e){} _activeCleanup=null; }
+  stepIdx=STEP_LIST.indexOf(name);
+  setHud(name);
+  showScene(name);
+  BUILDERS[name]();
+  _activeCleanup = BUILDERS[name]._cleanup || null;
+}
+window.__goto=function(n){ try{gotoStep(n);}catch(e){console.log('goto err',e);} };
+// Dev-Sprungleiste (nur mit ?dev in der URL)
+if(typeof location!=='undefined' && /dev/.test(location.search) && document.body){
+  const bar=document.createElement('div');
+  bar.style.cssText='position:fixed;bottom:4px;left:4px;right:4px;z-index:99999;display:flex;flex-wrap:wrap;gap:3px;justify-content:center;';
+  STEP_LIST.forEach((s,i)=>{ const b=document.createElement('button'); b.textContent=(i+1)+'·'+s;
+    b.style.cssText='font-size:10px;font-weight:700;padding:4px 7px;background:#11202c;color:#7af0d9;border:1px solid #2dd4bf;border-radius:7px;cursor:pointer;';
+    b.onclick=()=>gotoStep(s); bar.appendChild(b); });
+  document.body.appendChild(bar);
+}
+function nextStep(){
+  const ni=stepIdx+1;
+  if(ni>=STEP_LIST.length) return;
+  gotoStep(STEP_LIST[ni]);
+}
+
+/* =============================================================
+ *  DECKEN-LAYOUT — pro Runde leicht variiert
+ *  type: 'box'   = Abzweigdose
+ *        'spot'  = Spotbüchse (Einbauspot)
+ *        'shoner'= Schalungsschoner
+ *  Diese Punkte werden in allen Schritten wiederverwendet.
+ *
+ *  PIPE_LINKS bekommt zusätzlich pro Ende ein Soll:
+ *    dir: 'down' = Rohr-Ende runterbohren (durch die Schalung)
+ *         'up'   = Rohr-Ende hochstehen lassen
+ *         null   = an dieser Dose endet das Rohr nur (kein Ende-Entscheid)
+ *  buildLayout() würfelt Spot-Positionen + welche Enden runter/hoch.
+ * ============================================================= */
+let POINTS=[];
+let PIPE_LINKS=[];
+// LUXUS-Etappen (Roadmap): "Einlegen in 3 echte Etappen, immer mehr Rohre".
+// ?etappe=1|2|3 steuert, wie viele Dosen/Spots und Leerrohre eingelegt werden.
+// Etappe 1 = wenige Rohre, Etappe 3 = das volle Luxus-Layout.
+const ETAPPE = (function(){
+  try{ var n=parseInt(new URLSearchParams(location.search).get('etappe'),10);
+       return (n>=1&&n<=3)?n:3; }catch(_){ return 3; }
+})();
+function pickRand(arr){ return arr[(Math.random()*arr.length)|0]; }
+function buildLayout(){
+  // Spalten leicht variieren, damit jede Runde anders aussieht
+  const lx = 78 + ((Math.random()*24)|0);     // linke Spalte 78..102 (breiter genutzt)
+  const rx = 290 + ((Math.random()*22)|0);    // rechte Spalte 290..312
+  const cx = 188 + ((Math.random()*16)|0);    // mittig
+  // y-Reihen — über die ganze nutzbare Deckenhöhe gespreizt (statt mittiges Band)
+  const r1=222, r2=410, r3=598;
+  // Typen leicht mischen: ein Spot kann wandern
+  const spotLeft = Math.random()<0.5;
+  // LUXUS: mehr Dosen/Spots -> mehr Leerrohre (Roadmap "immer mehr Rohre")
+  POINTS = [
+    {id:'p1', x:lx, y:r1, type:'box'},
+    {id:'p2', x:rx, y:r1, type: spotLeft?'box':'spot'},
+    {id:'p3', x:lx, y:r2, type:'shoner'},
+    {id:'p4', x:rx, y:r2, type:'box'},
+    {id:'p5', x:cx, y:r3, type: spotLeft?'spot':'box'},
+    {id:'p6', x:lx, y:r3, type:'box'},
+    {id:'p7', x:rx, y:r3, type: spotLeft?'spot':'box'}
+  ];
+  // Leerrohr-Verbindungen + Soll-Entscheid je Ende
+  // 'down' = Wand drunter geplant ; 'up' = Anschluss ein Stock höher
+  // 'bend' (+optionale Stärke) = Rohr wird nicht stumpf gerade, sondern als
+  //   schöner Bogen/Kurve geführt (kreativere Routen, Roadmap Etappe 3).
+  // WICHTIG: kein Leerrohr darf an einem 'shoner' (p3) enden — der bekommt
+  //   keinen Anschluss-Node und wäre dann nicht legbar (Bugfix Etappe 3).
+  const downUp = ()=> Math.random()<0.55 ? 'down' : 'up';
+  PIPE_LINKS = [
+    {a:'p1', b:'p2', aDir:'down', bDir:downUp(), bend:0.16},
+    {a:'p1', b:'p4', aDir:null,   bDir:downUp(), bend:-0.22},
+    {a:'p4', b:'p5', aDir:null,   bDir:'down',   bend:0.26},
+    {a:'p5', b:'p6', aDir:downUp(), bDir:'down', bend:-0.18},
+    {a:'p6', b:'p7', aDir:null,   bDir:downUp(), bend:0.20}
+  ];
+  // Etappen-Zuschnitt: immer mehr Rohre pro Etappe (Roadmap).
+  // Etappe 1 -> 4 Punkte / 2 Rohre, Etappe 2 -> 5 / 3, Etappe 3 -> alle 7 / 5.
+  const PT_BY_ET = { 1:4, 2:5, 3:7 };
+  const PL_BY_ET = { 1:2, 2:3, 3:5 };
+  const keepPts = PT_BY_ET[ETAPPE] || 7;
+  POINTS = POINTS.slice(0, keepPts);
+  const keepIds = new Set(POINTS.map(p=>p.id));
+  PIPE_LINKS = PIPE_LINKS
+    .filter(l=> keepIds.has(l.a) && keepIds.has(l.b))
+    .slice(0, PL_BY_ET[ETAPPE] || 5);
+  // mindestens je 1x down und 1x up garantieren, damit beide vorkommen
+  const dirs=[];
+  PIPE_LINKS.forEach(l=>{ if(l.aDir)dirs.push(['a',l]); if(l.bDir)dirs.push(['b',l]); });
+  const hasDown=dirs.some(([k,l])=>l[k+'Dir']==='down');
+  const hasUp  =dirs.some(([k,l])=>l[k+'Dir']==='up');
+  if(!hasUp && dirs.length){ const [k,l]=pickRand(dirs); l[k+'Dir']='up'; }
+  if(!hasDown && dirs.length){ const [k,l]=pickRand(dirs); l[k+'Dir']='down'; }
+}
+
+const PART_DEFS = {
+  box:    {name:'Abzweigdose',     short:'Dose'},
+  spot:   {name:'Spotbüchse',      short:'Spot'},
+  shoner: {name:'Schalungsschoner',short:'Schoner'}
+};
+
+/* =============================================================
+ *  Leerrohr-ROUTING: schöne Bögen/Kurven statt stumpf gerade.
+ *  Liefert ein SVG-Path-"d". Bei link.bend != 0 wird das Rohr als
+ *  quadratische Bézierkurve seitlich ausgebogen (Kontrollpunkt
+ *  senkrecht zur Verbindung versetzt). bend=0/undefined -> gerade.
+ *  Gleiche Funktion für Geist-Guide, gelegtes Rohr und Eisenleger-
+ *  Ansicht -> konsistente Optik.
+ * ============================================================= */
+function pipePathD(A,B,link){
+  const bend = link && typeof link.bend==='number' ? link.bend : 0;
+  if(!bend){ return 'M '+A.x+' '+A.y+' L '+B.x+' '+B.y; }
+  const mx=(A.x+B.x)/2, my=(A.y+B.y)/2;
+  const dx=B.x-A.x, dy=B.y-A.y, len=Math.hypot(dx,dy)||1;
+  // Normale (senkrecht) zur Verbindung
+  const nx=-dy/len, ny=dx/len;
+  const off=bend*len; // seitlicher Versatz des Kontrollpunkts
+  const cx=mx+nx*off, cy=my+ny*off;
+  return 'M '+A.x+' '+A.y+' Q '+cx.toFixed(1)+' '+cy.toFixed(1)+' '+B.x+' '+B.y;
+}
+
+/* draw a part symbol into an svg group at local origin (for tray previews & ghosts) */
+function drawPart(type,scale){
+  scale=scale||1;
+  const g=el('g',{});
+  if(type==='box'){
+    g.appendChild(el('circle',{cx:0,cy:0,r:20*scale,fill:'url(#boxPlastic)',stroke:'#5a3608','stroke-width':2}));
+    g.appendChild(el('circle',{cx:0,cy:0,r:13*scale,fill:'none',stroke:'#7a4a10','stroke-width':2.4,opacity:0.8}));
+    // cable knockouts around the rim
+    for(let a=0;a<4;a++){ const ang=a*Math.PI/2+Math.PI/4;
+      g.appendChild(el('circle',{cx:Math.cos(ang)*16*scale,cy:Math.sin(ang)*16*scale,r:3.4*scale,fill:'#5a3608'})); }
+  } else if(type==='spot'){
+    g.appendChild(el('circle',{cx:0,cy:0,r:19*scale,fill:'url(#spotMetal)',stroke:'#3a4250','stroke-width':2}));
+    g.appendChild(el('circle',{cx:0,cy:0,r:12*scale,fill:'#1a212c',stroke:'#566069','stroke-width':2}));
+    g.appendChild(el('circle',{cx:0,cy:0,r:6*scale,fill:'#0c1117'}));
+    // spring clips
+    g.appendChild(el('line',{x1:-19*scale,y1:0,x2:-26*scale,y2:0,stroke:'#8d97a3','stroke-width':2.4*scale,'stroke-linecap':'round'}));
+    g.appendChild(el('line',{x1:19*scale,y1:0,x2:26*scale,y2:0,stroke:'#8d97a3','stroke-width':2.4*scale,'stroke-linecap':'round'}));
+  } else if(type==='shoner'){
+    // conical Schalungsschoner / cone spacer seen from below
+    g.appendChild(el('circle',{cx:0,cy:0,r:18*scale,fill:'url(#shoner)',stroke:'#0f5b50','stroke-width':2}));
+    g.appendChild(el('circle',{cx:0,cy:0,r:10*scale,fill:'#0c1f1b',stroke:'#13796b','stroke-width':2}));
+    // little ribs
+    for(let a=0;a<6;a++){ const ang=a*Math.PI/3;
+      g.appendChild(el('line',{x1:Math.cos(ang)*10*scale,y1:Math.sin(ang)*10*scale,x2:Math.cos(ang)*17*scale,y2:Math.sin(ang)*17*scale,stroke:'#0f5b50','stroke-width':1.6*scale})); }
+  }
+  return g;
+}
+
+/* =============================================================
+ *  TRAY (part picker) — used in step "nail"
+ * ============================================================= */
+const tray=document.getElementById('tray');
+let selectedPart=null;
+let onPartSelected=null;
+function buildTray(){
+  tray.innerHTML=''; selectedPart=null;
+  ['box','spot','shoner'].forEach(type=>{
+    const btn=document.createElement('div');
+    btn.className='partBtn'; btn.dataset.type=type;
+    const ns='http://www.w3.org/2000/svg';
+    const svg=document.createElementNS(ns,'svg');
+    svg.setAttribute('class','pic'); svg.setAttribute('viewBox','-30 -26 60 52');
+    const d=el('defs',{}); d.innerHTML=COMMON_DEFS; svg.appendChild(d);
+    svg.appendChild(drawPart(type,1));
+    const nm=document.createElement('div'); nm.className='pn'; nm.textContent=PART_DEFS[type].name;
+    btn.appendChild(svg); btn.appendChild(nm);
+    btn.onclick=()=>selectPart(type,btn);
+    tray.appendChild(btn);
+  });
+}
+function selectPart(type,btn){
+  AC(); sndPick(); selectedPart=type;
+  [...tray.children].forEach(b=>b.classList.toggle('sel',b===btn));
+  if(typeof onPartSelected==='function') onPartSelected(type);
+}
+
+/* =============================================================
+ *  STEP 1 — ANZEICHNEN
+ *  Der Plan zeigt, wo Punkte hinkommen. Tippe jeden geplanten Spot
+ *  an, um ihn an die Schalung anzuzeichnen (Kreidekreuz). Erst wenn
+ *  alle angezeichnet sind, geht es weiter. Gutmütig: kein Fail.
+ * ============================================================= */
+const svgMark=document.getElementById('svgMark');
+const roMark=document.getElementById('roMark');
+function buildMark(){
+  svgMark.innerHTML=''; addDefs(svgMark);
+  svgMark.appendChild(drawShuttering(svgMark));
+
+  // little "Plan" note pinned top-right of the scene (verdeckt kein Punkt-Ziel mehr)
+  const plan=el('g',{});
+  plan.appendChild(el('rect',{x:256,y:132,width:116,height:62,rx:8,fill:'#f2ead6',stroke:'#a9966c','stroke-width':2,filter:'url(#ds)'}));
+  plan.appendChild(el('text',{x:314,y:150,'text-anchor':'middle','font-size':'10','font-weight':'900',fill:'#3a2f18'})).textContent='PLAN';
+  plan.appendChild(el('text',{x:314,y:164,'text-anchor':'middle','font-size':'8','font-weight':'700',fill:'#5a4a28'})).textContent=POINTS.length+' Punkte';
+  for(let i=0;i<POINTS.length;i++){
+    plan.appendChild(el('circle',{cx:272+(i%3)*22,cy:178+((i/3)|0)*12,r:3.4,fill:'none',stroke:'#7a4a10','stroke-width':1.6}));
+  }
+  svgMark.appendChild(plan);
+
+  let markedCount=0;
+  const total=POINTS.length;
+
+  POINTS.forEach((pt,i)=>{
+    const g=el('g',{});
+    // faint planned target: pulsing ring with order number
+    const ring=el('circle',{cx:pt.x,cy:pt.y,r:22,fill:'rgba(45,212,191,.08)',stroke:'#2dd4bf','stroke-width':2,'stroke-dasharray':'4 6',opacity:0.9,class:'pulseTool'});
+    g.appendChild(ring);
+    const num=el('text',{x:pt.x,y:pt.y+4,'text-anchor':'middle','font-size':'12','font-weight':'900',fill:'#7af0d9'});
+    num.textContent=(i+1); g.appendChild(num);
+    const hit=el('circle',{cx:pt.x,cy:pt.y,r:32,fill:'transparent',cursor:'pointer'});
+    g.appendChild(hit);
+    svgMark.appendChild(g);
+    let marked=false;
+    hit.addEventListener('pointerdown',()=>{
+      if(marked) return; AC(); marked=true;
+      ring.classList.remove('pulseTool'); ring.setAttribute('opacity',0); num.setAttribute('opacity',0);
+      hit.setAttribute('pointer-events','none');
+      // chalk cross drawn on the plank
+      const cross=el('g',{});
+      cross.appendChild(el('line',{x1:pt.x-12,y1:pt.y-12,x2:pt.x+12,y2:pt.y+12,stroke:'#f2f2f2','stroke-width':2.6,'stroke-linecap':'round',opacity:0.95}));
+      cross.appendChild(el('line',{x1:pt.x+12,y1:pt.y-12,x2:pt.x-12,y2:pt.y+12,stroke:'#f2f2f2','stroke-width':2.6,'stroke-linecap':'round',opacity:0.95}));
+      cross.appendChild(el('circle',{cx:pt.x,cy:pt.y,r:15,fill:'none',stroke:'#f2f2f2','stroke-width':1.4,'stroke-dasharray':'3 4',opacity:0.7}));
+      svgMark.appendChild(cross);
+      sndChalk(); puff(pt.x,pt.y,3,{size:4,color:'235,235,235'});
+      toast('angezeichnet','#7af0d9',pt.x,pt.y-30);
+      markedCount++; addXp(6);
+      setSubProgress(markedCount/total);
+      roMark.innerHTML='Angezeichnet: <span class="big">'+markedCount+'/'+total+'</span>';
+      if(markedCount>=total){
+        roMark.classList.add('good');
+        roMark.textContent='Alle Punkte angezeichnet ✓';
+        setTimeout(()=>nextStep(),850);
+      }
+    });
+  });
+
+  buildMark._cleanup=null;
+  if(firstVisit('mark')){
+    showDoHint('hintMark','Lies den <b>Plan</b> und <b>tippe</b> jeden geplanten Punkt an der <b>Schalung</b> an — du zeichnest ihn mit Kreide an.',5200);
+  } else { hideDoHint('hintMark'); }
+  roMark.classList.remove('good','bad');
+  roMark.innerHTML='Tippe jeden Punkt — <span class="big">0/'+total+'</span>';
+}
+
+/* =============================================================
+ *  STEP 2 — AUFNAGELN
+ *  Each ceiling point shows a symbol (its required type). Player
+ *  selects the matching part in the tray, then taps the point.
+ *  Wrong part -> gentle hint, NO fail / no reset. Right -> nail it on.
+ * ============================================================= */
+const svgNail=document.getElementById('svgNail');
+const roNail=document.getElementById('roNail');
+function buildNail(){
+  svgNail.innerHTML=''; addDefs(svgNail);
+  svgNail.appendChild(drawShuttering(svgNail));
+  buildTray();
+
+  let placedCount=0;
+  const total=POINTS.length;
+  const slots=[];
+
+  POINTS.forEach(pt=>{
+    const g=el('g',{});
+    // the chalk cross from the marking step stays visible
+    g.appendChild(el('line',{x1:pt.x-10,y1:pt.y-10,x2:pt.x+10,y2:pt.y+10,stroke:'#f2f2f2','stroke-width':1.4,opacity:0.3}));
+    g.appendChild(el('line',{x1:pt.x+10,y1:pt.y-10,x2:pt.x-10,y2:pt.y+10,stroke:'#f2f2f2','stroke-width':1.4,opacity:0.3}));
+    // marked target spot on the shuttering: dashed ring + symbol of the wanted type
+    const ring=el('circle',{cx:pt.x,cy:pt.y,r:26,fill:'rgba(0,0,0,.35)',stroke:'#ffd166','stroke-width':2,'stroke-dasharray':'6 6',opacity:0.95});
+    g.appendChild(ring);
+    // faint ghost symbol showing what belongs here
+    const sym=drawPart(pt.type,0.7);
+    sym.setAttribute('transform','translate('+pt.x+','+pt.y+')');
+    sym.setAttribute('opacity','0.4');
+    g.appendChild(sym);
+    // type label below
+    const lbl=el('text',{x:pt.x,y:pt.y+40,'text-anchor':'middle','font-size':'10','font-weight':'800',fill:'#ffd166'});
+    lbl.textContent=PART_DEFS[pt.type].name; g.appendChild(lbl);
+    // tap hit area
+    const hit=el('circle',{cx:pt.x,cy:pt.y,r:34,fill:'transparent',cursor:'pointer'});
+    g.appendChild(hit);
+    svgNail.appendChild(g);
+    const slot={pt,ring,sym,lbl,hit,filled:false};
+    slots.push(slot);
+    hit.addEventListener('pointerdown',()=>tapPoint(slot));
+  });
+
+  // highlight the points whose type matches the currently selected part
+  function refreshHighlights(){
+    slots.forEach(s=>{
+      if(s.filled){ return; }
+      const match = selectedPart && s.pt.type===selectedPart;
+      s.ring.setAttribute('stroke', match?'#2dd4bf':'#ffd166');
+      if(match){ s.ring.classList.add('pulseTool'); } else { s.ring.classList.remove('pulseTool'); }
+    });
+  }
+  onPartSelected=function(){ refreshHighlights(); roNail.classList.remove('bad');
+    roNail.textContent='Tippe einen Punkt mit dem Symbol „'+PART_DEFS[selectedPart].name+'"'; };
+
+  function tapPoint(slot){
+    if(slot.filled) return; AC();
+    if(!selectedPart){
+      sndPick();
+      roNail.classList.remove('good'); roNail.classList.add('bad');
+      roNail.textContent='Wähle zuerst unten ein Bauteil aus';
+      tray.classList.remove('on'); requestAnimationFrame(()=>tray.classList.add('on'));
+      return;
+    }
+    if(selectedPart!==slot.pt.type){
+      // GUTMÜTIG: kein Fail, nur Hinweis
+      sndBuzz();
+      roNail.classList.remove('good'); roNail.classList.add('bad');
+      roNail.textContent='Hier gehört eine „'+PART_DEFS[slot.pt.type].name+'" hin — anderes Teil wählen';
+      slot.ring.setAttribute('stroke','#ff6b6b');
+      toast('falsches Teil','#ff7a7a',slot.pt.x,slot.pt.y-34);
+      setTimeout(()=>{ if(!slot.filled) slot.ring.setAttribute('stroke','#ffd166'); },700);
+      return;
+    }
+    placePart(slot);
+  }
+
+  function placePart(slot){
+    slot.filled=true;
+    slot.ring.classList.remove('pulseTool');
+    slot.hit.setAttribute('pointer-events','none');
+    slot.ring.setAttribute('opacity',0);
+    slot.sym.setAttribute('opacity',0);
+    slot.lbl.setAttribute('opacity',0);
+    roNail.classList.remove('bad');
+
+    // the real, solid part snaps in
+    const real=drawPart(slot.pt.type,1);
+    real.setAttribute('transform','translate('+slot.pt.x+','+slot.pt.y+') scale(0.4)');
+    svgNail.appendChild(real);
+    // nail glints
+    const nail=el('circle',{cx:slot.pt.x,cy:slot.pt.y,r:3,fill:'#e8edf2',stroke:'#10151c','stroke-width':1});
+    svgNail.appendChild(nail);
+
+    sndHammer();
+    spark(slot.pt.x,slot.pt.y,14,{color:'#ffd166',speed:3,up:0.5});
+    puff(slot.pt.x,slot.pt.y,4,{size:5,color:'150,120,80'});
+    shakeStage();
+    let t0=performance.now();
+    (function a(t){ const k=Math.min(1,(t-t0)/280);
+      const sc=0.4+0.6*(1-Math.pow(1-k,3))*(k<0.85?1.08:1); // tiny overshoot
+      real.setAttribute('transform','translate('+slot.pt.x+','+slot.pt.y+') scale('+sc.toFixed(3)+')');
+      if(k<1)requestAnimationFrame(a); else real.setAttribute('transform','translate('+slot.pt.x+','+slot.pt.y+')');
+    })(performance.now());
+
+    toast('angenagelt ✓','#7af0d9',slot.pt.x,slot.pt.y-34);
+    addXp(12);
+    placedCount++;
+    setSubProgress(placedCount/total);
+    roNail.innerHTML='Angenagelt: <span class="big">'+placedCount+'/'+total+'</span>';
+    refreshHighlights();
+
+    if(placedCount>=total){
+      roNail.classList.add('good');
+      roNail.textContent='Alle Bauteile sitzen ✓';
+      onPartSelected=null;
+      setTimeout(()=>nextStep(),950);
+    }
+  }
+
+  buildNail._cleanup=function(){ onPartSelected=null; };
+  // first-visit guidance
+  if(firstVisit('nail')){
+    showDoHint('hintNail','Wähle unten ein <b>Bauteil</b> (Abzweigdose / Spotbüchse / Schalungsschoner) und <b>tippe</b> den passenden Punkt an. Falsches Teil ist nicht schlimm.',5200);
+  } else { hideDoHint('hintNail'); }
+  roNail.classList.remove('good','bad');
+  roNail.textContent='Wähle unten ein Bauteil und tippe seinen Punkt an';
+}
+
+/* =============================================================
+ *  STEP 3 — LEERROHRE EINLEGEN  (+ Entscheid je Rohr-Ende)
+ *  Phase A: Drag a Leerrohr from one dose to another (planned links).
+ *  Phase B: for every pipe-end that has a Soll (down/up), the choice
+ *           tray pops up; pick "Runterbohren" or "Hochstehen lassen".
+ *           Wrong choice = Fehlversuch (kein Reset, aber kein Fortschritt).
+ * ============================================================= */
+const svgPipe=document.getElementById('svgPipe');
+const roPipe=document.getElementById('roPipe');
+const choiceBox=document.getElementById('choice');
+const choiceDownBtn=document.getElementById('choiceDown');
+const choiceUpBtn=document.getElementById('choiceUp');
+function buildPipe(){
+  svgPipe.innerHTML=''; addDefs(svgPipe);
+  svgPipe.appendChild(drawShuttering(svgPipe));
+
+  const pipeLayer=el('g',{}); svgPipe.appendChild(pipeLayer);
+  const decorLayer=el('g',{}); svgPipe.appendChild(decorLayer);
+  const nodeLayer=el('g',{}); svgPipe.appendChild(nodeLayer);
+
+  // map of points by id, draw the already-nailed parts
+  const byId={};
+  POINTS.forEach(pt=>{
+    byId[pt.id]=pt;
+    const part=drawPart(pt.type,1);
+    part.setAttribute('transform','translate('+pt.x+','+pt.y+')');
+    nodeLayer.appendChild(part);
+    // connectable nodes (only box & spot — Schalungsschoner kriegt kein Rohr)
+    if(pt.type!=='shoner'){
+      const node=el('circle',{cx:pt.x,cy:pt.y,r:30,fill:'transparent',cursor:'grab'});
+      node.dataset.id=pt.id;
+      nodeLayer.appendChild(node);
+      pt._node=node;
+    }
+  });
+
+  // required links as a set of keys
+  const key=(a,b)=>[a,b].slice().sort().join('-');
+  const linkOf={}; PIPE_LINKS.forEach(l=>{ linkOf[key(l.a,l.b)]=l; });
+  const doneLinks={};
+  const totalLinks=PIPE_LINKS.length;
+  let laidCount=0;
+
+  // count how many end-decisions exist in total (for sub-progress weighting)
+  const endTasks=[];
+  PIPE_LINKS.forEach(l=>{
+    if(l.aDir) endTasks.push({link:l,end:'a',ptId:l.a,dir:l.aDir});
+    if(l.bDir) endTasks.push({link:l,end:'b',ptId:l.b,dir:l.bDir});
+  });
+  const totalUnits=totalLinks+endTasks.length;
+  let doneUnits=0;
+  function bumpProgress(){ doneUnits++; setSubProgress(doneUnits/totalUnits); }
+
+  // faint ghost guides showing where pipes should go (gebogen wo geplant)
+  PIPE_LINKS.forEach(l=>{
+    const A=byId[l.a],B=byId[l.b];
+    pipeLayer.appendChild(el('path',{d:pipePathD(A,B,l),fill:'none',stroke:'#7af0d9','stroke-width':2,'stroke-dasharray':'5 7',opacity:0.35}));
+  });
+
+  // queue of end-decisions still to resolve
+  let pendingEnds=[];      // filled as pipes are laid
+  let resolvingEnd=null;   // current end being decided
+
+  // active drag wire
+  let dragFrom=null, dragLine=null;
+  function startDrag(e,pt){
+    if(resolvingEnd) return; // don't allow new drags while deciding
+    e.preventDefault(); AC(); sndPick();
+    dragFrom=pt;
+    dragLine=el('line',{x1:pt.x,y1:pt.y,x2:pt.x,y2:pt.y,stroke:'#f2c33a','stroke-width':7,'stroke-linecap':'round',opacity:0.85});
+    pipeLayer.appendChild(dragLine);
+    try{pt._node.setPointerCapture(e.pointerId);}catch(_){}
+  }
+  function moveDrag(e){
+    if(!dragFrom||!dragLine)return;
+    const p=toSvgFor(svgPipe,e.clientX,e.clientY);
+    dragLine.setAttribute('x2',p.x); dragLine.setAttribute('y2',p.y);
+    const tgt=nearestNode(p.x,p.y,dragFrom);
+    POINTS.forEach(o=>{ if(o._ringEl){o._ringEl.remove();o._ringEl=null;} });
+    if(tgt){
+      const k=key(dragFrom.id,tgt.id);
+      const col=(linkOf[k]&&!doneLinks[k])?'#2dd4bf':'#ff6b6b';
+      const r=el('circle',{cx:tgt.x,cy:tgt.y,r:26,fill:'none',stroke:col,'stroke-width':3,opacity:0.9});
+      nodeLayer.appendChild(r); tgt._ringEl=r;
+    }
+  }
+  function endDrag(e){
+    if(!dragFrom)return;
+    const p=toSvgFor(svgPipe,e.clientX,e.clientY);
+    const tgt=nearestNode(p.x,p.y,dragFrom);
+    POINTS.forEach(o=>{ if(o._ringEl){o._ringEl.remove();o._ringEl=null;} });
+    const from=dragFrom; dragFrom=null;
+    if(dragLine){ dragLine.remove(); dragLine=null; }
+    if(tgt){
+      const k=key(from.id,tgt.id);
+      if(linkOf[k] && !doneLinks[k]){ layPipe(from,tgt,k); return; }
+      if(linkOf[k] && doneLinks[k]){ roPipe.textContent='Dieses Leerrohr liegt schon'; sndPick(); return; }
+      sndBuzz();
+      roPipe.classList.remove('good'); roPipe.textContent='Hier ist kein Rohr geplant — andere Dose wählen';
+      return;
+    }
+    sndPick();
+  }
+  function nearestNode(px,py,exclude){
+    let best=null,bd=44*44;
+    POINTS.forEach(o=>{ if(!o._node||o===exclude)return;
+      const dx=o.x-px,dy=o.y-py,d=dx*dx+dy*dy; if(d<bd){bd=d;best=o;} });
+    return best;
+  }
+  function layPipe(a,b,k){
+    doneLinks[k]=true;
+    const lk=linkOf[k];
+    const d=pipePathD(a,b,lk);
+    const ln=el('path',{d:d,fill:'none',stroke:'#10151c','stroke-width':11,'stroke-linecap':'round'});
+    const ln2=el('path',{d:d,fill:'none',stroke:'url(#pipe)','stroke-width':8,'stroke-linecap':'round'});
+    const ln3=el('path',{d:d,fill:'none',stroke:'#10151c','stroke-width':8,'stroke-linecap':'round','stroke-dasharray':'2 7',opacity:0.4});
+    pipeLayer.appendChild(ln); pipeLayer.appendChild(ln2); pipeLayer.appendChild(ln3);
+    // Pfadlänge: bei Bogen über getTotalLength(), sonst Sehnenlänge.
+    let len=Math.hypot(b.x-a.x,b.y-a.y);
+    try{ if(ln2.getTotalLength){ const tl=ln2.getTotalLength(); if(tl>0) len=tl; } }catch(_){}
+    [ln,ln2,ln3].forEach(l=>{ l.setAttribute('stroke-dasharray',len+' '+len); l.setAttribute('stroke-dashoffset',len); });
+    let t0=performance.now();
+    (function a2(t){ const k2=Math.min(1,(t-t0)/360);
+      [ln,ln2].forEach(l=>l.setAttribute('stroke-dashoffset',len*(1-k2)));
+      if(k2<1)requestAnimationFrame(a2); else { ln.removeAttribute('stroke-dasharray'); ln2.removeAttribute('stroke-dasharray'); ln3.setAttribute('stroke-dasharray','2 7'); ln3.removeAttribute('stroke-dashoffset'); }
+    })(performance.now());
+    sndPipe(); spark((a.x+b.x)/2,(a.y+b.y)/2,12,{color:'#f2c33a',speed:3});
+    toast('Leerrohr ✓','#7af0d9',(a.x+b.x)/2,(a.y+b.y)/2-16);
+    addXp(14);
+    laidCount++; bumpProgress();
+    // queue this link's end-decisions
+    const link=linkOf[k];
+    if(link.aDir) pendingEnds.push({link,end:'a',ptId:link.a,dir:link.aDir});
+    if(link.bDir) pendingEnds.push({link,end:'b',ptId:link.b,dir:link.bDir});
+
+    if(laidCount>=totalLinks){
+      // all pipes laid -> move into decision phase
+      roPipe.classList.remove('good');
+      roPipe.textContent='Rohre liegen ✓ — jetzt jedes Rohr-Ende entscheiden';
+      setTimeout(()=>nextEnd(),650);
+    } else {
+      roPipe.innerHTML='Verlegt: <span class="big">'+laidCount+'/'+totalLinks+'</span> Rohre';
+    }
+  }
+
+  /* ---- decision phase: runterbohren vs hochstehen ---- */
+  let endMarker=null;
+  function nextEnd(){
+    // clear previous marker
+    if(endMarker){ endMarker.remove(); endMarker=null; }
+    if(!pendingEnds.length){ finishStep(); return; }
+    resolvingEnd=pendingEnds[0];
+    const pt=byId[resolvingEnd.ptId];
+    // highlight which end we are deciding
+    endMarker=el('g',{});
+    endMarker.appendChild(el('circle',{cx:pt.x,cy:pt.y,r:30,fill:'none',stroke:'#ffd166','stroke-width':3,'stroke-dasharray':'5 5',class:'pulseTool'}));
+    endMarker.appendChild(el('text',{x:pt.x,y:pt.y-40,'text-anchor':'middle','font-size':'10','font-weight':'900',fill:'#ffd166'})).textContent='dieses Ende?';
+    decorLayer.appendChild(endMarker);
+    roPipe.classList.remove('good','bad');
+    roPipe.textContent='Was passiert an diesem Rohr-Ende?';
+    choiceBox.classList.add('on');
+  }
+  function decide(choice){
+    if(!resolvingEnd) return; AC();
+    const end=resolvingEnd, pt=byId[end.ptId];
+    if(choice!==end.dir){
+      // Fehlversuch — kein Reset, aber kein Fortschritt
+      sndBuzz(); shakeStage();
+      roPipe.classList.remove('good'); roPipe.classList.add('bad');
+      roPipe.textContent = end.dir==='down'
+        ? 'Falsch — hier kommt eine Wand drunter: runterbohren!'
+        : 'Falsch — hier braucht es oben einen Anschluss: hochstehen lassen!';
+      toast('Fehlversuch','#ff7a7a',pt.x,pt.y-30);
+      return;
+    }
+    // correct!
+    roPipe.classList.remove('bad');
+    choiceBox.classList.remove('on');
+    if(endMarker){ endMarker.remove(); endMarker=null; }
+    if(choice==='down'){
+      // bohr ein Loch durch die Schalung nach unten
+      sndDrill();
+      const hole=el('circle',{cx:pt.x,cy:pt.y,r:0,fill:'#06080d',stroke:'#3a2a14','stroke-width':2});
+      decorLayer.appendChild(hole);
+      const stub=el('line',{x1:pt.x,y1:pt.y,x2:pt.x,y2:pt.y,stroke:'url(#pipe)','stroke-width':7,'stroke-linecap':'round',opacity:0.85});
+      decorLayer.appendChild(stub);
+      let t0=performance.now();
+      (function a(t){ const k=Math.min(1,(t-t0)/420);
+        hole.setAttribute('r',(9*k).toFixed(2));
+        if(Math.random()<0.6) puff(pt.x,pt.y,1,{size:5,color:'120,90,50'});
+        if(k<1)requestAnimationFrame(a);
+      })(performance.now());
+      spark(pt.x,pt.y,12,{color:'#ffae42',speed:3,up:0.4});
+      toast('runtergebohrt ⬇','#8ab4ff',pt.x,pt.y-30);
+    } else {
+      // Rohr-Ende steht hoch — ein kleiner aufragender Stutzen
+      sndUp();
+      const upPipe=el('g',{});
+      upPipe.appendChild(el('circle',{cx:pt.x,cy:pt.y,r:9,fill:'url(#pipe)',stroke:'#8a6210','stroke-width':2}));
+      upPipe.appendChild(el('circle',{cx:pt.x,cy:pt.y,r:4,fill:'#1a1408'}));
+      // little glow ring to read as "standing up toward viewer"
+      const halo=el('circle',{cx:pt.x,cy:pt.y,r:9,fill:'none',stroke:'#ffae42','stroke-width':2,opacity:0.9});
+      upPipe.appendChild(halo);
+      decorLayer.appendChild(upPipe);
+      let t0=performance.now();
+      (function a(t){ const k=Math.min(1,(t-t0)/420);
+        halo.setAttribute('r',(9+10*k).toFixed(2)); halo.setAttribute('opacity',(0.9*(1-k)).toFixed(2));
+        if(k<1)requestAnimationFrame(a);
+      })(performance.now());
+      spark(pt.x,pt.y,12,{color:'#ffd166',speed:3,up:1});
+      toast('hochstehen ⬆','#ffae42',pt.x,pt.y-30);
+    }
+    addXp(16); bumpProgress();
+    pendingEnds.shift();
+    resolvingEnd=null;
+    const leftEnds=pendingEnds.length;
+    roPipe.innerHTML='Enden entschieden: <span class="big">'+(endTasks.length-leftEnds)+'/'+endTasks.length+'</span>';
+    setTimeout(()=>nextEnd(),700);
+  }
+  function finishStep(){
+    choiceBox.classList.remove('on');
+    roPipe.classList.add('good');
+    roPipe.textContent='Rohre verlegt & alle Enden korrekt ✓';
+    cleanup();
+    setTimeout(()=>nextStep(),900);
+  }
+
+  // wire up
+  POINTS.forEach(pt=>{ if(pt._node){ pt._node.addEventListener('pointerdown',e=>startDrag(e,pt)); } });
+  window.addEventListener('pointermove',moveDrag);
+  window.addEventListener('pointerup',endDrag);
+  window.addEventListener('pointercancel',endDrag);
+  choiceDownBtn.onclick=()=>decide('down');
+  choiceUpBtn.onclick=()=>decide('up');
+  function cleanup(){
+    window.removeEventListener('pointermove',moveDrag);
+    window.removeEventListener('pointerup',endDrag);
+    window.removeEventListener('pointercancel',endDrag);
+    choiceBox.classList.remove('on');
+    choiceDownBtn.onclick=null; choiceUpBtn.onclick=null;
+  }
+  buildPipe._cleanup=cleanup;
+
+  // first-visit guidance + ghost demo of the first link
+  if(firstVisit('pipe')){
+    showDoHint('hintPipe','Zieh ein <b>Leerrohr</b> von Dose zu Dose. Danach entscheidest du je Ende: <b>runterbohren</b> (Wand drunter) oder <b>hochstehen</b> (Anschluss höher).',5600);
+    const A=byId[PIPE_LINKS[0].a], B=byId[PIPE_LINKS[0].b];
+    ghostDemo(svgPipe,A.x,A.y,B.x,B.y,{dur:1300,hold:400});
+  } else { hideDoHint('hintPipe'); }
+  roPipe.classList.remove('good','bad');
+  roPipe.innerHTML='Verlegt: <span class="big">0/'+totalLinks+'</span> Rohre';
+}
+
+/* =============================================================
+ *  STEP 4 — EISENLEGER ABWARTEN
+ *  Animated rebar mesh gets laid over the installation. The player
+ *  waits (auto-fills), then taps "Decke freigeben" to continue.
+ * ============================================================= */
+const svgIron=document.getElementById('svgIron');
+const roIron=document.getElementById('roIron');
+function buildIron(){
+  svgIron.innerHTML=''; addDefs(svgIron);
+  svgIron.appendChild(drawShuttering(svgIron));
+
+  // show the buried installation faintly (pipes + parts)
+  const base=el('g',{opacity:0.85});
+  const byId={}; POINTS.forEach(p=>byId[p.id]=p);
+  PIPE_LINKS.forEach(l=>{ const A=byId[l.a],B=byId[l.b]; const d=pipePathD(A,B,l);
+    base.appendChild(el('path',{d:d,fill:'none',stroke:'#10151c','stroke-width':11,'stroke-linecap':'round'}));
+    base.appendChild(el('path',{d:d,fill:'none',stroke:'url(#pipe)','stroke-width':8,'stroke-linecap':'round'}));
+  });
+  POINTS.forEach(pt=>{ const p=drawPart(pt.type,1); p.setAttribute('transform','translate('+pt.x+','+pt.y+')'); base.appendChild(p); });
+  svgIron.appendChild(base);
+
+  // rebar mesh layer (drawn progressively)
+  const mesh=el('g',{}); svgIron.appendChild(mesh);
+  const TOP=120, BOT=844;
+  const hLines=[], vLines=[];
+  for(let i=1;i<7;i++){ const y=TOP+i*100;
+    const ln=el('line',{x1:0,y1:y,x2:0,y2:y,stroke:'url(#rebar)','stroke-width':5,'stroke-linecap':'round',opacity:0.92}); mesh.appendChild(ln); hLines.push({ln,y}); }
+  for(let i=1;i<5;i++){ const x=i*78;
+    const ln=el('line',{x1:x,y1:TOP,x2:x,y2:TOP,stroke:'url(#rebar)','stroke-width':5,'stroke-linecap':'round',opacity:0.92}); mesh.appendChild(ln); vLines.push({ln,x}); }
+
+  // worker (Eisenleger) ghost hand that sweeps across while laying
+  const worker=ghostDemo(svgIron,60,200,330,640,{reps:3,dur:1100,hold:120});
+
+  let done=false, releaseBtn=null;
+  let t0=performance.now(); const DUR=2600;
+  let raf=0;
+  function lay(t){
+    if(done) return;
+    const k=Math.min(1,(t-t0)/DUR);
+    // grow horizontals then verticals interleaved
+    hLines.forEach((h,i)=>{ const kk=Math.max(0,Math.min(1,(k*1.3)-(i*0.05))); h.ln.setAttribute('x2',(390*kk).toFixed(1)); });
+    vLines.forEach((v,i)=>{ const kk=Math.max(0,Math.min(1,(k*1.3)-0.2-(i*0.06))); v.ln.setAttribute('y2',(TOP+(BOT-TOP)*kk).toFixed(1)); });
+    if(Math.random()<0.25) sndClang();
+    setSubProgress(k*0.9);
+    roIron.innerHTML='Bewehrung: <span class="big">'+Math.round(k*100)+'%</span>';
+    if(k<1){ raf=requestAnimationFrame(lay); }
+    else { meshReady(); }
+  }
+  function meshReady(){
+    hLines.forEach(h=>h.ln.setAttribute('x2',390));
+    vLines.forEach(v=>v.ln.setAttribute('y2',BOT));
+    roIron.classList.add('good');
+    roIron.textContent='Bewehrung liegt ✓ — Decke freigeben';
+    // show the release button
+    releaseBtn=el('g',{cursor:'pointer',class:'pulseTool'});
+    const bw=210;
+    releaseBtn.appendChild(el('rect',{x:195-bw/2,y:732,width:bw,height:54,rx:18,fill:'rgba(45,212,191,.16)',stroke:'#2dd4bf','stroke-width':2}));
+    releaseBtn.appendChild(el('text',{x:195,y:765,'text-anchor':'middle','font-size':'15','font-weight':'900',fill:'#7af0d9'})).textContent='✓ DECKE FREIGEBEN';
+    const bhit=el('rect',{x:195-bw/2-10,y:722,width:bw+20,height:74,fill:'transparent',cursor:'pointer'}); releaseBtn.appendChild(bhit);
+    svgIron.appendChild(releaseBtn);
+    bhit.addEventListener('pointerdown',release);
+  }
+  function release(e){
+    if(done) return; if(e) e.preventDefault(); done=true; AC(); sndSnap();
+    addXp(18); setSubProgress(1);
+    spark(195,500,24,{color:'#2dd4bf',speed:4,up:1});
+    toast('freigegeben ✓','#7af0d9',195,470);
+    setTimeout(()=>nextStep(),650);
+  }
+  function cleanup(){ done=true; cancelAnimationFrame(raf); if(worker&&worker.stop) worker.stop(); }
+  buildIron._cleanup=cleanup;
+
+  if(firstVisit('iron')){
+    showDoHint('hintIron','Der <b>Eisenleger</b> legt jetzt die <b>Bewehrung</b> (Stahlmatten) über deine Installation. Warte kurz und gib die Decke dann frei.',5200);
+  } else { hideDoHint('hintIron'); }
+  roIron.classList.remove('good','bad');
+  roIron.textContent='Der Eisenleger legt die Bewehrung…';
+  raf=requestAnimationFrame(lay);
+}
+
+/* =============================================================
+ *  STEP 5 — BETONIEREN (hold to pour; concrete rises, parts vanish)
+ * ============================================================= */
+const svgPour=document.getElementById('svgPour');
+const roPour=document.getElementById('roPour');
+function buildPour(){
+  svgPour.innerHTML=''; addDefs(svgPour);
+  svgPour.appendChild(drawShuttering(svgPour));
+
+  // show the finished layout (rebar + pipes + parts) that will get buried
+  const buried=el('g',{});
+  const byId={}; POINTS.forEach(p=>byId[p.id]=p);
+  // faint rebar
+  const TOP=120, BOT=844, H=BOT-TOP;
+  const reb=el('g',{opacity:0.5});
+  for(let i=1;i<7;i++){ const y=TOP+i*100; reb.appendChild(el('line',{x1:0,y1:y,x2:390,y2:y,stroke:'url(#rebar)','stroke-width':4})); }
+  for(let i=1;i<5;i++){ const x=i*78; reb.appendChild(el('line',{x1:x,y1:TOP,x2:x,y2:BOT,stroke:'url(#rebar)','stroke-width':4})); }
+  buried.appendChild(reb);
+  PIPE_LINKS.forEach(l=>{ const A=byId[l.a],B=byId[l.b]; const d=pipePathD(A,B,l);
+    buried.appendChild(el('path',{d:d,fill:'none',stroke:'#10151c','stroke-width':11,'stroke-linecap':'round'}));
+    buried.appendChild(el('path',{d:d,fill:'none',stroke:'url(#pipe)','stroke-width':8,'stroke-linecap':'round'}));
+  });
+  POINTS.forEach(pt=>{ const p=drawPart(pt.type,1); p.setAttribute('transform','translate('+pt.x+','+pt.y+')'); buried.appendChild(p); });
+  svgPour.appendChild(buried);
+
+  // concrete fill: a rect we grow from top (the wet concrete poured onto the deck)
+  const fillClip=el('clipPath',{id:'concClip'});
+  const clipRect=el('rect',{x:0,y:TOP,width:390,height:0});
+  fillClip.appendChild(clipRect);
+  svgPour.querySelector('defs').appendChild(fillClip);
+  const conc=el('g',{'clip-path':'url(#concClip)'});
+  conc.appendChild(el('rect',{x:0,y:TOP,width:390,height:H,fill:'url(#concrete)'}));
+  // surface texture speckles
+  for(let i=0;i<120;i++){ conc.appendChild(el('circle',{cx:Math.random()*390,cy:TOP+Math.random()*H,r:0.6+Math.random()*2.2,fill:Math.random()<0.5?'#7f868d':'#b6bcc2',opacity:0.5})); }
+  svgPour.appendChild(conc);
+  // wavy leading edge of the concrete
+  const edge=el('path',{d:'',fill:'#c4cacf',opacity:0.9});
+  svgPour.appendChild(edge);
+
+  // pour chute / hopper at top
+  const chute=el('g',{});
+  chute.appendChild(el('path',{d:'M 150 100 L 240 100 L 215 150 L 175 150 Z',fill:'url(#metal)',stroke:'#10151c','stroke-width':2}));
+  chute.appendChild(el('rect',{x:188,y:148,width:14,height:18,fill:'#39424d'}));
+  svgPour.appendChild(chute);
+
+  // hold-to-pour button area
+  const btn=el('g',{cursor:'pointer',class:'pulseTool'});
+  const bw=200;
+  btn.appendChild(el('rect',{x:195-bw/2,y:730,width:bw,height:54,rx:18,fill:'rgba(45,212,191,.14)',stroke:'#2dd4bf','stroke-width':2}));
+  const bt=el('text',{x:195,y:763,'text-anchor':'middle','font-size':'15','font-weight':'900',fill:'#7af0d9'}); bt.textContent='⬇ BETON HALTEN'; btn.appendChild(bt);
+  const bhit=el('rect',{x:195-bw/2-10,y:720,width:bw+20,height:74,fill:'transparent'}); btn.appendChild(bhit);
+  svgPour.appendChild(btn);
+
+  let pouring=false, level=0, done=false, raf=0;
+  function updateEdge(yTop){
+    let d='M 0 '+yTop;
+    for(let x=0;x<=390;x+=26){ d+=' L '+x+' '+(yTop+Math.sin((x+performance.now()/200))*3); }
+    d+=' L 390 '+(yTop+14)+' L 0 '+(yTop+14)+' Z';
+    edge.setAttribute('d',d);
+  }
+  function pourLoop(){
+    if(done) return;
+    if(pouring){
+      level=Math.min(1,level+0.006);
+      const h=H*level;
+      clipRect.setAttribute('height',h);
+      const yTop=TOP+h;
+      updateEdge(yTop);
+      if(Math.random()<0.7) puff(190+Math.random()*20,TOP+h-4,1,{size:6,color:'180,185,190'});
+      if(Math.random()<0.5) spark(150+Math.random()*90,TOP+h,1,{color:'#aab0b6',speed:1.4,size:1.6,grav:0.1,glow:false});
+      if(Math.random()<0.12) sndPour();
+      setSubProgress(level);
+      roPour.innerHTML='Betoniert: <span class="big">'+Math.round(level*100)+'%</span>';
+      if(level>=1){ finishPour(); return; }
+    }
+    raf=requestAnimationFrame(pourLoop);
+  }
+  function startPour(e){
+    if(done) return; e.preventDefault(); AC();
+    pouring=true; btn.classList.remove('pulseTool'); hideDoHint('hintPour');
+    sndPour();
+    try{bhit.setPointerCapture(e.pointerId);}catch(_){}
+    pourLoop();
+  }
+  function stopPour(){ if(done)return; pouring=false; if(level<1 && level>0){ roPour.textContent='Weiter halten — Decke bis 100% füllen'; } }
+  function finishPour(){
+    done=true; pouring=false; cancelAnimationFrame(raf);
+    clipRect.setAttribute('height',H);
+    edge.setAttribute('opacity',0);
+    btn.setAttribute('opacity',0); btn.setAttribute('pointer-events','none');
+    roPour.classList.add('good'); roPour.textContent='Decke betoniert ✓';
+    sndSnap();
+    cleanup();
+    setTimeout(()=>triggerWin(),700);
+  }
+  bhit.addEventListener('pointerdown',startPour);
+  window.addEventListener('pointerup',stopPour);
+  window.addEventListener('pointercancel',stopPour);
+  function cleanup(){ cancelAnimationFrame(raf); bhit.removeEventListener('pointerdown',startPour); window.removeEventListener('pointerup',stopPour); window.removeEventListener('pointercancel',stopPour); }
+  buildPour._cleanup=cleanup;
+
+  if(firstVisit('pour')){
+    showDoHint('hintPour','Jetzt wird <b>betoniert</b>: <b>halte</b> die Taste gedrückt, bis sich die Decke ganz mit <b>Beton</b> füllt. Dosen und Rohre verschwinden im Beton.',5200);
+  } else { hideDoHint('hintPour'); }
+  updateEdge(TOP);
+  roPour.classList.remove('good','bad');
+  roPour.textContent='Halte die Taste — Beton einbringen';
+}
+
+/* =============================================================
+ *  WIN
+ * ============================================================= */
+function triggerWin(){
+  document.getElementById('progFill').style.width='100%';
+  sndWin(); burstConfetti();
+  spark(STAGE_W/2,STAGE_H*0.4,40,{color:'#ffd166',speed:6,up:2});
+  setTimeout(()=>{
+    const win=document.getElementById('win');win.classList.add('show');
+    addXp(45);
+    const sts=document.querySelectorAll('#stars .st');
+    sts.forEach((s,i)=>setTimeout(()=>{s.classList.add('lit');sndSnap();},300+i*260));
+    const xb=document.getElementById('xpBig');let v=0;const tt=performance.now();
+    (function cc(t){const k=Math.min(1,(t-tt)/900);v=Math.round(120*(1-Math.pow(1-k,3)));xb.textContent='+'+v+' XP';if(k<1)requestAnimationFrame(cc);})(performance.now());
+  },650);
+}
+document.getElementById('again').onclick=()=>location.reload();
+
+/* =============================================================
+ *  BUILDERS registry + boot
+ * ============================================================= */
+const BUILDERS = {
+  mark: buildMark,
+  nail: buildNail,
+  pipe: buildPipe,
+  iron: buildIron,
+  pour: buildPour
+};
+
+/* =============================================================
+ *  MAIN LOOP + dust
+ * ============================================================= */
+let dust=[];
+function initDust(){
+  for(let i=0;i<22;i++) dust.push({
+    x:Math.random()*STAGE_W,y:Math.random()*STAGE_H,
+    vy:-(0.1+Math.random()*0.25),vx:(Math.random()-.5)*0.2,
+    r:0.5+Math.random()*1.4,a:0.05+Math.random()*0.18,ph:Math.random()*6.28
+  });
+}
+
+function boot(){
+  sizeCanvas();
+  initDust();
+  buildLayout();
+  buildStepsBar();
+  fxLoop();
+  gotoStep('mark');
+}
+window.addEventListener('resize',sizeCanvas);
+
+/* =============================================================
+ *  PLAN-OVERLAY — einfache Decken-/Installationsskizze (SVG)
+ *  Zeigt nach Plan: wo Dosen/Spots/Schoner sitzen + Leerrohr-Wege
+ *  mit Massen & Legende. Schliessbar. Unterstützt das Lernen.
+ * ============================================================= */
+function partColor(type){ return type==='box'?'#e8901f':type==='spot'?'#aab4bf':'#2dd4bf'; }
+function buildPlanSvg(){
+  const W=300,H=420,mL=30,mT=34,mB=30,mR=24;
+  const ix=mL, iw=W-mL-mR, iy=mT, ih=H-mT-mB;
+  function px(x){ return ix + (x/390)*iw; }
+  function py(y){ return iy + ((y-120)/(844-120))*ih; }
+  let s='<svg viewBox="0 0 '+W+' '+H+'">';
+  s+='<rect x="'+ix+'" y="'+iy+'" width="'+iw+'" height="'+ih+'" fill="#13202b" stroke="#3a4a57" stroke-width="1.5"/>';
+  s+='<line x1="'+ix+'" y1="18" x2="'+(ix+iw)+'" y2="18" stroke="#7af0d9" stroke-width="1"/>';
+  s+='<text x="'+(ix+iw/2)+'" y="14" text-anchor="middle" font-size="9" font-weight="800" fill="#7af0d9">ca. 4.20 m</text>';
+  s+='<line x1="16" y1="'+iy+'" x2="16" y2="'+(iy+ih)+'" stroke="#7af0d9" stroke-width="1"/>';
+  s+='<text x="13" y="'+(iy+ih/2)+'" text-anchor="middle" font-size="9" font-weight="800" fill="#7af0d9" transform="rotate(-90 13 '+(iy+ih/2)+')">ca. 7.80 m</text>';
+  const byId={}; POINTS.forEach(p=>byId[p.id]=p);
+  PIPE_LINKS.forEach(l=>{
+    // gebogene Route auch im Plan zeigen (gleiche bend-Logik, in Plan-Koordinaten)
+    const A={x:px(byId[l.a].x),y:py(byId[l.a].y)}, B={x:px(byId[l.b].x),y:py(byId[l.b].y)};
+    s+='<path d="'+pipePathD(A,B,l)+'" fill="none" stroke="#f2c33a" stroke-width="2" stroke-dasharray="5 4" opacity="0.9"/>';
+  });
+  PIPE_LINKS.forEach(l=>{
+    [['a',l.aDir],['b',l.bDir]].forEach(function(e){
+      if(!e[1]) return; const p=byId[l[e[0]]]; const X=px(p.x),Y=py(p.y);
+      const up=e[1]==='up'; const col=up?'#ffae42':'#8ab4ff';
+      const dir=up?-1:1;
+      s+='<line x1="'+(X+14)+'" y1="'+Y+'" x2="'+(X+14)+'" y2="'+(Y+dir*12)+'" stroke="'+col+'" stroke-width="2"/>';
+      s+='<path d="M '+(X+14)+' '+(Y+dir*14)+' l -3 '+(-dir*5)+' l 6 0 z" fill="'+col+'"/>';
+    });
+  });
+  POINTS.forEach((p,i)=>{ const X=px(p.x),Y=py(p.y);
+    s+='<circle cx="'+X.toFixed(1)+'" cy="'+Y.toFixed(1)+'" r="9" fill="'+partColor(p.type)+'" stroke="#0c1117" stroke-width="1.5"/>';
+    s+='<text x="'+X.toFixed(1)+'" y="'+(Y+3.5).toFixed(1)+'" text-anchor="middle" font-size="9" font-weight="900" fill="#0c1117">'+(i+1)+'</text>';
+  });
+  s+='</svg>';
+  let leg='<div class="planLeg">';
+  leg+='<b>Legende:</b> nummerierte Punkte = Bauteile nach Plan setzen.<br>';
+  leg+='<span style="color:#e8901f">&#9679;</span> Abzweigdose &nbsp; <span style="color:#aab4bf">&#9679;</span> Spotbüchse &nbsp; <span style="color:#2dd4bf">&#9679;</span> Schalungsschoner<br>';
+  leg+='<span style="color:#f2c33a">- - -</span> Leerrohr-Weg (Dose zu Dose)<br>';
+  leg+='<span style="color:#8ab4ff">&#8595;</span> Ende runterbohren (Wand drunter) &nbsp; <span style="color:#ffae42">&#8593;</span> hochstehen lassen (Anschluss höher)';
+  leg+='</div>';
+  return s+leg;
+}
+(function(){
+  const ov=document.getElementById('planOv');
+  const btn=document.getElementById('planBtn');
+  const cl=document.getElementById('planClose');
+  const body=document.getElementById('planBody');
+  if(!ov||!btn) return;
+  function open(){ try{ body.innerHTML=buildPlanSvg(); }catch(e){ body.textContent='Plan nicht verfügbar.'; }
+    ov.classList.add('show'); }
+  function close(){ ov.classList.remove('show'); }
+  btn.addEventListener('click',open);
+  if(cl) cl.addEventListener('click',close);
+  ov.addEventListener('click',function(e){ if(e.target===ov) close(); });
+})();
+
+boot();
+
+})();
+</script>
+</body>
+</html>

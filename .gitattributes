@@ -1,0 +1,2 @@
+# WebApp-Build-Artefakte nicht EOL-normalisieren (stoppt CRLF-Warnungen + Diff-Rauschen).
+app/** -text

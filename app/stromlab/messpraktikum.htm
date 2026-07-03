@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>StromLab — Messpraktikum</title>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;min-height:100vh;background:radial-gradient(130% 100% at 50% 0%,#15222e 0%,#0b1017 70%);
+    color:#e8edf2;font-family:'Segoe UI',system-ui,sans-serif;padding:18px 14px 40px}
+  .wrap{max-width:620px;margin:0 auto}
+  .backlink{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:#8aa0b2;
+    text-decoration:none;margin-bottom:10px;padding:5px 11px;border-radius:20px;
+    border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);transition:.15s}
+  .backlink:hover{color:#7af0d9;border-color:rgba(45,212,191,.35);background:rgba(45,212,191,.08)}
+  .backlink svg{width:13px;height:13px;display:block}
+  header h1{font-size:24px;font-weight:900;margin:0;letter-spacing:.3px}
+  header h1 .lab{color:#7af0d9}
+  header .sub{font-size:12.5px;color:#8da0b2;font-weight:600;margin-top:3px}
+  header .tag{display:inline-block;margin-top:8px;font-size:10.5px;font-weight:800;letter-spacing:.5px;
+    text-transform:uppercase;color:#7af0d9;background:rgba(45,212,191,.12);border:1px solid rgba(45,212,191,.3);
+    padding:4px 10px;border-radius:20px}
+  .card{background:linear-gradient(180deg,#172230,#101824);border:1px solid rgba(255,255,255,.07);
+    border-radius:18px;padding:16px;margin-top:14px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+  .grp{margin-top:14px}
+  .grp:first-child{margin-top:0}
+  .grp .h{font-size:11px;font-weight:800;color:#8da0b2;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;display:flex;justify-content:space-between}
+  .grp .h .v{color:#7af0d9}
+  .pills{display:flex;flex-wrap:wrap;gap:6px}
+  .pill{padding:8px 12px;border-radius:11px;border:1px solid rgba(255,255,255,.1);background:#1b2735;
+    color:#cdd8e2;font-weight:800;font-size:12.5px;cursor:pointer;transition:.15s}
+  .pill small{display:block;font-size:9.5px;color:#8093a4;font-weight:600;margin-top:1px}
+  .pill:hover{transform:translateY(-2px)}
+  .pill.on{background:linear-gradient(180deg,#2dd4bf,#14b8a6);color:#06281f;border-color:#2dd4bf;box-shadow:0 0 16px rgba(45,212,191,.4)}
+  .pill.on small{color:#06403a}
+  .btn{display:inline-block;padding:11px 16px;border-radius:12px;border:none;font-weight:900;font-size:14px;cursor:pointer;transition:.15s}
+  .btn.primary{background:linear-gradient(180deg,#2dd4bf,#14b8a6);color:#06281f;box-shadow:0 0 18px rgba(45,212,191,.4)}
+  .btn.ghost{background:#1b2735;color:#cdd8e2;border:1px solid rgba(255,255,255,.12)}
+  .btn:hover{transform:translateY(-2px)}
+  .meter{background:linear-gradient(180deg,#10302a,#0e1c1a);border:1px solid rgba(45,212,191,.35);
+    border-radius:14px;padding:14px;margin-top:12px;display:flex;align-items:center;gap:14px;min-height:78px}
+  .meter .disp{flex:1}
+  .meter .reading{font-size:30px;font-weight:900;color:#7af0d9;font-variant-numeric:tabular-nums;line-height:1}
+  .meter .mlbl{font-size:11px;color:#9fb0c0;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-top:5px}
+  .meter .mlbl b{color:#cdd8e2}
+  .meter.bad .reading{color:#fb7185}
+  .meter.ok .reading{color:#7af0d9}
+  .scenario{font-size:13px;color:#cdd8e2;line-height:1.5}
+  .scenario b{color:#7af0d9}
+  .verdict{margin-top:12px;padding:12px;border-radius:12px;font-weight:800;font-size:13.5px;display:none}
+  .verdict.win{display:block;background:rgba(45,212,191,.13);border:1px solid rgba(45,212,191,.4);color:#7af0d9}
+  .verdict.lose{display:block;background:rgba(251,113,133,.12);border:1px solid rgba(251,113,133,.4);color:#fda4af}
+  .note{font-size:11px;color:#6f8093;margin-top:12px;line-height:1.5}
+  .badge{display:inline-block;font-size:10px;font-weight:800;padding:2px 8px;border-radius:8px;background:rgba(45,212,191,.12);color:#7af0d9;margin-left:6px}
+  .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  select{background:#1b2735;color:#cdd8e2;border:1px solid rgba(255,255,255,.12);border-radius:11px;padding:9px 10px;font-weight:800;font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="backlink" href="index.htm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>StromLab</a>
+  <header>
+    <h1><span class="lab">StromLab</span> · Messpraktikum</h1>
+    <div class="sub">Fehlersuch-Simulator — virtuelle Messgeräte (Erstprüfung)</div>
+    <div class="tag">Erstprüfung · NIN · Niederohm · Iso · Schleife · RCD</div>
+  </header>
+
+  <div class="card">
+    <div class="grp"><div class="h"><span>Ausbildungslevel</span></div>
+      <select id="level"></select>
+    </div>
+    <div class="grp"><div class="h"><span>Netz</span></div>
+      <div class="pills" id="netRow"></div>
+    </div>
+    <div class="grp"><div class="h"><span>Fehler</span><span class="v" id="modeV">zufällig versteckt</span></div>
+      <div class="pills" id="faultRow"></div>
+    </div>
+    <div class="row">
+      <button class="btn primary" id="start">Aufgabe starten</button>
+    </div>
+  </div>
+
+  <div class="card" id="game" style="display:none">
+    <div class="grp"><div class="h"><span>Auftrag</span><span class="badge" id="netBadge">–</span></div>
+      <div class="scenario" id="scenario">–</div>
+    </div>
+
+    <div class="grp"><div class="h"><span>Messgerät wählen &amp; messen</span></div>
+      <div class="pills" id="instRow"></div>
+    </div>
+
+    <div class="meter" id="meter">
+      <div class="disp">
+        <div class="reading" id="reading">– – –</div>
+        <div class="mlbl" id="mlbl">Messgerät auswählen und Messpunkt antippen</div>
+      </div>
+    </div>
+    <div class="pills" id="pointRow" style="margin-top:10px"></div>
+
+    <div class="grp"><div class="h"><span>Diagnose stellen</span><span class="v">Welcher Fehler liegt vor?</span></div>
+      <div class="pills" id="diagRow"></div>
+    </div>
+    <div class="verdict" id="verdict"></div>
+    <div class="row">
+      <button class="btn ghost" id="reveal">Auflösen</button>
+      <button class="btn ghost" id="again">Neue Aufgabe</button>
+    </div>
+    <div class="note" id="note"></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* StromLab Messpraktikum — Daten aus messpraktikum.json.
+   TN-S 230/400V. Plausible Messwerte je Fehler (Erstprüfung NIN 6.x). */
+const LEVELS=["Praktikant","Azubi 1.Lj","Azubi 2.Lj","Azubi 3.Lj","Elektroinstallateur","Erfahrener EI","Techniker","Meister","Spezialist","Rentner"];
+const NETZE=["Vereinfachtes Netz","Vollständiges Netz"];
+
+// virtuelle Messgeräte
+const INSTRUMENTS=[
+  {id:'U',  name:'Spannung',      sub:'V (L-N / L-PE)'},
+  {id:'PE', name:'Durchgang PE',  sub:'Schutzleiter Ω'},
+  {id:'ISO',name:'Isolation',     sub:'MΩ @500V'},
+  {id:'IK', name:'Kurzschlussstrom', sub:'I_k / Z_s'},
+  {id:'RCD',name:'RCD/FI-Test',   sub:'I_ΔN / t_a'}
+];
+// Messpunkte
+const POINTS=[
+  {id:'sd', name:'Steckdose'},
+  {id:'ve', name:'Verbraucher'},
+  {id:'vt', name:'Verteilung'}
+];
+
+/* Fehlerszenarien aus JSON, jeweils mit plausiblen Messwerten je Gerät.
+   readings[inst] = funktion(point) -> {val, unit, status:'ok|bad|warn', hint} */
+const FAULTS=[
+  {
+    id:'pe_unterbruch', name:'PE-Unterbruch', short:'Unterbruch PE auf Leitung',
+    desc:'An einer Steckdose besteht Verdacht auf fehlenden Schutzleiter. Prüfe den Schutzleiter und die Spannungen.',
+    diag:'Unterbruch des PE auf einer Leitung',
+    r:{
+      U:p=>({val: p==='ve'?'0':'230', unit:'V', status:'warn', hint:'L-N ok, aber L-PE auffällig'}),
+      PE:p=>({val: p==='vt'?'0,3':'∞', unit:'Ω', status: p==='vt'?'ok':'bad', hint:'PE an Steckdose ohne Durchgang → unterbrochen'}),
+      ISO:p=>({val:'>299', unit:'MΩ', status:'ok', hint:'Isolation in Ordnung'}),
+      IK:p=>({val:'0,02', unit:'kA', status:'bad', hint:'Z_s sehr hoch / kein Schleifenstrom → PE fehlt'}),
+      RCD:p=>({val:'kein Auslösen', unit:'', status:'bad', hint:'FI testet nicht über PE auslösbar'})
+    }
+  },
+  {
+    id:'n_pe_vertauscht', name:'N-PE vertauscht', short:'N und PE vertauscht (Steckdose)',
+    desc:'Eine Wechselstromsteckdose verhält sich seltsam. Miss Spannungen und teste den FI.',
+    diag:'Vertauschen von N-PE an Wechselstromsteckdose',
+    r:{
+      U:p=>({val:'230', unit:'V', status:'warn', hint:'L-N=230V, L-PE=230V, N-PE=0V → N und PE auf gleichem Potential'}),
+      PE:p=>({val:'0,4', unit:'Ω', status:'ok', hint:'scheinbar PE-Durchgang (ist aber N!)'}),
+      ISO:p=>({val:'0,0', unit:'MΩ', status:'bad', hint:'N-PE quasi kurzgeschlossen → 0 MΩ'}),
+      IK:p=>({val:'1,1', unit:'kA', status:'ok', hint:'Schleife scheinbar ok'}),
+      RCD:p=>({val:'löst sofort', unit:'', status:'bad', hint:'Betriebsstrom fließt über PE → FI löst beim Einschalten aus'})
+    }
+  },
+  {
+    id:'fi_defekt', name:'FI-Fehlfunktion', short:'FI/RCD funktioniert nicht',
+    desc:'Der FI soll geprüft werden. Führe RCD-Test und Spannungsmessung durch.',
+    diag:'Fehl-(Nicht-)funktion eines FI-Schalters',
+    r:{
+      U:p=>({val:'230', unit:'V', status:'ok', hint:'Spannungen normal'}),
+      PE:p=>({val:'0,3', unit:'Ω', status:'ok', hint:'PE durchgängig'}),
+      ISO:p=>({val:'>299', unit:'MΩ', status:'ok', hint:'Isolation ok'}),
+      IK:p=>({val:'1,2', unit:'kA', status:'ok', hint:'Schleifenimpedanz ok'}),
+      RCD:p=>({val:'>300 / kein Aus', unit:'ms', status:'bad', hint:'I_ΔN überschritten, t_a > Grenzwert → FI löst nicht / zu spät aus'})
+    }
+  },
+  {
+    id:'iso_l_pe_leit', name:'Iso-Fehler L-PE (Leitung)', short:'Isolationsfehler L-PE auf Leitung',
+    desc:'FI fällt sporadisch. Prüfe Isolation und Schleifenstrom an der Leitung.',
+    diag:'Kurzschluss/Isolationsfehler L-PE auf Leitung',
+    r:{
+      U:p=>({val:'225', unit:'V', status:'warn', hint:'leicht reduziert'}),
+      PE:p=>({val:'0,4', unit:'Ω', status:'ok', hint:'PE ok'}),
+      ISO:p=>({val:'0,05', unit:'MΩ', status:'bad', hint:'L gegen PE sehr niederohmig → Iso-Fehler L-PE'}),
+      IK:p=>({val:'1,3', unit:'kA', status:'ok', hint:'Schleife messbar'}),
+      RCD:p=>({val:'löst bei Last', unit:'', status:'warn', hint:'Ableitstrom über PE → FI spricht an'})
+    }
+  },
+  {
+    id:'iso_n_pe_leit', name:'Iso-Fehler N-PE (Leitung)', short:'Isolationsfehler N-PE auf Leitung',
+    desc:'FI hält nicht. Miss Isolation N gegen PE auf der Leitung.',
+    diag:'Kurzschluss/Isolationsfehler N-PE auf Leitung',
+    r:{
+      U:p=>({val:'230', unit:'V', status:'ok', hint:'L-N normal'}),
+      PE:p=>({val:'0,3', unit:'Ω', status:'ok', hint:'PE ok'}),
+      ISO:p=>({val:'0,08', unit:'MΩ', status:'bad', hint:'N gegen PE niederohmig → Iso-Fehler N-PE'}),
+      IK:p=>({val:'1,2', unit:'kA', status:'ok', hint:'Schleife ok'}),
+      RCD:p=>({val:'löst bei Last', unit:'', status:'warn', hint:'N-PE-Brücke → Differenzstrom, FI löst'})
+    }
+  },
+  {
+    id:'leitung_lang', name:'Leitung zu lang/dünn', short:'Querschnitt zu klein / Leitung zu lang',
+    desc:'Bei Last bricht die Spannung ein, Schutz löst evtl. nicht aus. Prüfe Spannung und I_k.',
+    diag:'Leitung zu lang/dünn',
+    r:{
+      U:p=>({val: p==='ve'?'201':'228', unit:'V', status:'warn', hint:'großer Spannungsfall am Verbraucher (Δu > 4%)'}),
+      PE:p=>({val:'1,9', unit:'Ω', status:'warn', hint:'PE-Widerstand hoch (lange/dünne Leitung)'}),
+      ISO:p=>({val:'>299', unit:'MΩ', status:'ok', hint:'Isolation ok'}),
+      IK:p=>({val:'0,18', unit:'kA', status:'bad', hint:'Z_s zu hoch → I_k zu klein, Abschaltbedingung nicht erfüllt'}),
+      RCD:p=>({val:'30 mA / 28 ms', unit:'', status:'ok', hint:'FI selbst ok'})
+    }
+  },
+  {
+    id:'iso_l_pe_verb', name:'Iso-Fehler L-PE (Verbraucher)', short:'Isolationsfehler L-PE im Verbraucher',
+    desc:'Ein Gerät löst den FI aus. Prüfe das Gerät separat (Isolation, Spannung).',
+    diag:'Kurzschluss/Isolationsfehler L-PE im Verbraucher',
+    r:{
+      U:p=>({val:'230', unit:'V', status:'ok', hint:'Netz/Leitung ok'}),
+      PE:p=>({val:'0,3', unit:'Ω', status:'ok', hint:'PE ok'}),
+      ISO:p=>({val: p==='ve'?'0,02':'>299', unit:'MΩ', status: p==='ve'?'bad':'ok', hint:'nur am Verbraucher L-PE niederohmig → Fehler im Gerät'}),
+      IK:p=>({val:'1,2', unit:'kA', status:'ok', hint:'Schleife ok'}),
+      RCD:p=>({val:'löst bei Gerät', unit:'', status:'warn', hint:'Ableitstrom nur mit diesem Verbraucher'})
+    }
+  },
+  {
+    id:'iso_n_pe_verb', name:'Iso-Fehler N-PE (Verbraucher)', short:'Isolationsfehler N-PE im Verbraucher',
+    desc:'FI löst nur mit einem bestimmten Gerät. Prüfe Isolation N-PE am Verbraucher.',
+    diag:'Kurzschluss/Isolationsfehler N-PE im Verbraucher',
+    r:{
+      U:p=>({val:'230', unit:'V', status:'ok', hint:'Spannungen ok'}),
+      PE:p=>({val:'0,3', unit:'Ω', status:'ok', hint:'PE ok'}),
+      ISO:p=>({val: p==='ve'?'0,06':'>299', unit:'MΩ', status: p==='ve'?'bad':'ok', hint:'nur am Verbraucher N-PE niederohmig → Fehler im Gerät'}),
+      IK:p=>({val:'1,2', unit:'kA', status:'ok', hint:'Schleife ok'}),
+      RCD:p=>({val:'löst bei Gerät', unit:'', status:'warn', hint:'N-PE-Brücke im Gerät → Differenzstrom'})
+    }
+  }
+];
+
+const $=id=>document.getElementById(id);
+const st={ level:4, netz:0, faultPick:-1, current:null, inst:'U', point:'sd', solved:false };
+
+function buildSetup(){
+  const sel=$('level'); sel.innerHTML='';
+  LEVELS.forEach((l,i)=>{const o=document.createElement('option');o.value=i;o.textContent=l;if(i===st.level)o.selected=true;sel.appendChild(o);});
+  sel.onchange=e=>st.level=+e.target.value;
+  const nr=$('netRow'); nr.innerHTML='';
+  NETZE.forEach((n,i)=>{const p=document.createElement('button');p.className='pill'+(i===st.netz?' on':'');p.textContent=n;
+    p.onclick=()=>{st.netz=i;buildSetup();};nr.appendChild(p);});
+  const fr=$('faultRow'); fr.innerHTML='';
+  const rnd=document.createElement('button');rnd.className='pill'+(st.faultPick<0?' on':'');rnd.innerHTML='Zufällig<small>versteckter Fehler</small>';
+  rnd.onclick=()=>{st.faultPick=-1;$('modeV').textContent='zufällig versteckt';buildSetup();};fr.appendChild(rnd);
+  FAULTS.forEach((f,i)=>{const p=document.createElement('button');p.className='pill'+(i===st.faultPick?' on':'');
+    p.innerHTML=f.name+'<small>'+f.short+'</small>';p.onclick=()=>{st.faultPick=i;$('modeV').textContent='gewählt';buildSetup();};fr.appendChild(p);});
+}
+
+function startGame(){
+  const idx = st.faultPick>=0 ? st.faultPick : Math.floor(Math.random()*FAULTS.length);
+  st.current=FAULTS[idx]; st.solved=false; st.inst='U'; st.point='sd';
+  $('game').style.display='block';
+  $('netBadge').textContent=NETZE[st.netz]+' · '+LEVELS[st.level];
+  $('scenario').innerHTML=st.current.desc+' <br><span style="color:#8da0b2">Nutze die Messgeräte, finde den Fehler und stelle die Diagnose.</span>';
+  $('verdict').className='verdict'; $('verdict').style.display='none';
+  $('reading').textContent='– – –'; $('reading').parentElement.parentElement.className='meter';
+  $('mlbl').textContent='Messgerät auswählen und Messpunkt antippen';
+  $('note').textContent='';
+  buildInstruments(); buildPoints(); buildDiag();
+  $('game').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function buildInstruments(){
+  const ir=$('instRow'); ir.innerHTML='';
+  INSTRUMENTS.forEach(m=>{const p=document.createElement('button');p.className='pill'+(m.id===st.inst?' on':'');
+    p.innerHTML=m.name+'<small>'+m.sub+'</small>';p.onclick=()=>{st.inst=m.id;buildInstruments();measure();};ir.appendChild(p);});
+}
+function buildPoints(){
+  const pr=$('pointRow'); pr.innerHTML='';
+  POINTS.forEach(pt=>{const p=document.createElement('button');p.className='pill'+(pt.id===st.point?' on':'');
+    p.textContent='@ '+pt.name;p.onclick=()=>{st.point=pt.id;buildPoints();measure();};pr.appendChild(p);});
+}
+function buildDiag(){
+  const dr=$('diagRow'); dr.innerHTML='';
+  // Optionen = alle Fehler-Diagnosen (gemischte Reihenfolge stabil)
+  FAULTS.forEach(f=>{const p=document.createElement('button');p.className='pill';p.textContent=f.name;
+    p.onclick=()=>diagnose(f.id);dr.appendChild(p);});
+}
+
+function measure(){
+  if(!st.current)return;
+  const fn=st.current.r[st.inst]; const res=fn(st.point);
+  const m=$('meter');
+  m.className='meter '+(res.status==='bad'?'bad':res.status==='ok'?'ok':'');
+  const inst=INSTRUMENTS.find(i=>i.id===st.inst);
+  const pt=POINTS.find(p=>p.id===st.point);
+  $('reading').textContent = res.val + (res.unit?(' '+res.unit):'');
+  $('mlbl').innerHTML='<b>'+inst.name+'</b> @ '+pt.name+' — '+res.hint;
+}
+
+function diagnose(id){
+  if(st.solved)return;
+  const v=$('verdict');
+  const icoOk='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><path d="M4 12.5 9.5 18 20 6"/></svg>';
+  const icoX='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>';
+  if(id===st.current.id){
+    st.solved=true;
+    v.className='verdict win';
+    v.innerHTML=icoOk+'Richtig! Fehler erkannt: <b>'+st.current.name+'</b> — '+st.current.diag+'. Stufe '+LEVELS[st.level]+': bestanden.';
+  } else {
+    const guess=FAULTS.find(f=>f.id===id);
+    v.className='verdict lose';
+    v.innerHTML=icoX+'Nicht ganz: <b>'+guess.name+'</b> passt nicht zu den Messwerten. Weiter messen (Iso/PE/RCD vergleichen) und erneut diagnostizieren.';
+  }
+}
+
+$('start').onclick=startGame;
+$('again').onclick=startGame;
+$('reveal').onclick=()=>{ if(!st.current)return; st.solved=true;
+  const v=$('verdict'); v.className='verdict win';
+  v.innerHTML='Auflösung: versteckter Fehler war <b>'+st.current.name+'</b> ('+st.current.diag+'). Typisch: '+
+    'Iso/PE/RCD-Messwerte zeigen den Defekt eindeutig.'; };
+
+buildSetup();
+</script>
+</body>
+</html>
